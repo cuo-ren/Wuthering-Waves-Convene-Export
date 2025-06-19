@@ -21,6 +21,10 @@
 - Windows 10 或更高版本
 - 直接运行，无需额外依赖（内置所需库）
 
+### 下载链接
+- github realease
+- 蓝奏云链接 
+
 ### 📥 使用步骤
 1. **打开游戏客户端**
 2. **点击游戏内的“历史记录”按钮**
@@ -31,6 +35,8 @@
 5. **选择“更新数据”**：程序将自动解析日志并更新唤取记录
 6. **更新完成后**，你可以：
    - 选择 **查看当前数据**
+     展示效果大致为
+     ![展示图片](./image/展示图片.png)
    - 或选择 **导出唤取记录**，将其保存为 Excel / CSV / UIGF(这里指的是类uigf格式，uigf并不支持鸣潮) 等格式
 
 ### 📤 导出文件结构
@@ -49,7 +55,7 @@
 - **主要依赖库**：
   - [`nlohmann/json`](https://github.com/nlohmann/json)：用于 JSON 数据读写
   - [`picosha2`](https://github.com/okdshin/PicoSHA2)：用于生成记录指纹
-  - （计划）[`Qt`](https://www.qt.io/)：用于未来图形界面开发
+  - （计划）Qt：用于未来图形界面开发
 
 ## 📃 许可证
 本项目采用 **GNU General Public License v3.0 (GPLv3)**。
