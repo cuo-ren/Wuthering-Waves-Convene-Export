@@ -23,7 +23,7 @@
 
 ### 下载链接
 - github realease
-- 蓝奏云链接 
+- 蓝奏云链接 https://wwuk.lanzouo.com/b004ina3gb 密码:1234
 
 ### 📥 使用步骤
 1. **打开游戏客户端**
