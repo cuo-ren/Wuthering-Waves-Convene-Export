@@ -1,20 +1,20 @@
-#include "validate.h"
+ï»¿#include "validate.h"
 
 bool validate_datetime(const std::string& datetime) {
-	// 1. ÕıÔò¼ì²é¸ñÊ½£¨ÑÏ¸ñÒªÇó£ºYYYY-MM-DD HH:MM:SS£©
+	// 1. æ­£åˆ™æ£€æŸ¥æ ¼å¼ï¼ˆä¸¥æ ¼è¦æ±‚ï¼šYYYY-MM-DD HH:MM:SSï¼‰
 	static const std::regex pattern(R"(^(?:\d{4})-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\d|3[01]) (?:[01]\d|2[0-3]):(?:[0-5]\d):(?:[0-5]\d)$)");
 	if (!std::regex_match(datetime, pattern)) {
 		return false;
 	}
 
-	// 2. Ê¹ÓÃ std::get_time ³¢ÊÔ½âÎö
+	// 2. ä½¿ç”¨ std::get_time å°è¯•è§£æ
 	std::tm tm = {};
 	std::istringstream ss(datetime);
 	ss >> std::get_time(&tm, "%Y-%m-%d %H:%M:%S");
 
 	if (ss.fail()) return false;
 
-	// 3. Ê¹ÓÃ mktime Õı¹æ»¯ºó·´¼ì²éÊÇ·ñÏàµÈ
+	// 3. ä½¿ç”¨ mktime æ­£è§„åŒ–ååæ£€æŸ¥æ˜¯å¦ç›¸ç­‰
 	std::tm tm_check = tm;
 	std::mktime(&tm_check);
 
@@ -24,24 +24,24 @@ bool validate_datetime(const std::string& datetime) {
 }
 
 bool validate_GachaType(const json& data) {
-	//ÅĞ¶ÏÊÇ·ñ´æÔÚdata
+	//åˆ¤æ–­æ˜¯å¦å­˜åœ¨data
 	if (!data.contains("data")) {
-		std::cerr << "¿¨³ØÅäÖÃÊı¾İ²»´æÔÚ" << std::endl;
+		std::cerr << "å¡æ± é…ç½®æ•°æ®ä¸å­˜åœ¨" << std::endl;
 		return false;
 	}
-	//ÅĞ¶ÏdataÊÇ·ñÊÇÊı×é
+	//åˆ¤æ–­dataæ˜¯å¦æ˜¯æ•°ç»„
 	if (!data["data"].is_array()) {
-		std::cerr << "¿¨³ØÅäÖÃÀàĞÍ´íÎó" << std::endl;
+		std::cerr << "å¡æ± é…ç½®ç±»å‹é”™è¯¯" << std::endl;
 		return false;
 	}
 
 	for (auto& item : data["data"]) {
 		if ((item.size() != 2) or (!item.contains("key")) or (!item.contains("name"))) {
-			std::cerr << "×Ö¶ÎÊıÁ¿´íÎó" << std::endl;
+			std::cerr << "å­—æ®µæ•°é‡é”™è¯¯" << std::endl;
 			return false;
 		}
 		if (!item["key"].is_string() or !item["name"].is_string()) {
-			std::cerr << "×Ö¶ÎÀàĞÍ´íÎó" << std::endl;
+			std::cerr << "å­—æ®µç±»å‹é”™è¯¯" << std::endl;
 			return false;
 		}
 		int number;
@@ -49,11 +49,11 @@ bool validate_GachaType(const json& data) {
 			number = std::stoi(item["key"].get<std::string>());
 		}
 		catch (...) {
-			std::cerr << "keyµÄÖµ²»ÊÇÊı×Ö×Ö·û´®" << std::endl;
+			std::cerr << "keyçš„å€¼ä¸æ˜¯æ•°å­—å­—ç¬¦ä¸²" << std::endl;
 			return false;
 		}
 		if (std::to_string(number) != item["key"].get<std::string>()) {
-			std::cerr << "keyµÄÖµ²»ÊÇÊı×Ö×Ö·û´®" << std::endl;
+			std::cerr << "keyçš„å€¼ä¸æ˜¯æ•°å­—å­—ç¬¦ä¸²" << std::endl;
 			return false;
 		}
 	}
@@ -63,22 +63,22 @@ bool validate_GachaType(const json& data) {
 
 json validate_data() {
 	std::vector<std::pair<int, std::string>> ERROR_CODES = {
-		{-1,"Î´Öª´íÎó"},
-		{0,"Ğ£Ñé³É¹¦"},
-		{1,"UID¼ü´íÎó"},
-		{2,"UIDÖµ´íÎó"},
-		{3,"·Ç·¨¿¨³Økey"},
-		{4,"¿¨³ØkeyÖµÀàĞÍ´íÎó"},
-		{5,"¿¨³ØkeyÈ±Ê§"},
-		{6,"×Ö¶Î·Ç×Öµä"},
-		{7,"¼ÇÂ¼È±×Ö¶Î»òÊıÁ¿Òì³£"},
-		{8,"¼ÇÂ¼×Ö¶ÎÀàĞÍÒì³£"},
-		{9,"type´íÎó"},
-		{10,"qualityLevel´íÎó"},
-		{11,"Ê±¼ä¸ñÊ½´íÎó"},
-		{12,"Ê±¼ä·ÇµİÔö"}
+		{-1,"æœªçŸ¥é”™è¯¯"},
+		{0,"æ ¡éªŒæˆåŠŸ"},
+		{1,"UIDé”®é”™è¯¯"},
+		{2,"UIDå€¼é”™è¯¯"},
+		{3,"éæ³•å¡æ± key"},
+		{4,"å¡æ± keyå€¼ç±»å‹é”™è¯¯"},
+		{5,"å¡æ± keyç¼ºå¤±"},
+		{6,"å­—æ®µéå­—å…¸"},
+		{7,"è®°å½•ç¼ºå­—æ®µæˆ–æ•°é‡å¼‚å¸¸"},
+		{8,"è®°å½•å­—æ®µç±»å‹å¼‚å¸¸"},
+		{9,"typeé”™è¯¯"},
+		{10,"qualityLevelé”™è¯¯"},
+		{11,"æ—¶é—´æ ¼å¼é”™è¯¯"},
+		{12,"æ—¶é—´éé€’å¢"}
 	};
-	//Ê×ÏÈ¼ì²â¼üÊÇ·ñÎª´¿Êı×Ö
+	//é¦–å…ˆæ£€æµ‹é”®æ˜¯å¦ä¸ºçº¯æ•°å­—
 	for (auto& [uid, value] : old_gacha_list.items()) {
 		int number;
 		json error1 = {
@@ -89,16 +89,16 @@ json validate_data() {
 			number = std::stoi(uid);
 		}
 		catch (...) {
-			std::cerr << "UID´íÎó,²»ÊÇÊı×Ö" << std::endl;
+			std::cerr << "UIDé”™è¯¯,ä¸æ˜¯æ•°å­—" << std::endl;
 			return error1;
 		}
 		if (std::to_string(number) != uid) {
-			std::cerr << "UID´íÎó,²»ÊÇÊı×Ö" << std::endl;
+			std::cerr << "UIDé”™è¯¯,ä¸æ˜¯æ•°å­—" << std::endl;
 			return error1;
 		}
-		//Ğ£ÑéuidºóÊÇ·ñÎª×Öµä
+		//æ ¡éªŒuidåæ˜¯å¦ä¸ºå­—å…¸
 		if (!value.is_object()) {
-			std::cerr << "ÀàĞÍ´íÎó£¬²»ÊÇ×Öµä" << std::endl;
+			std::cerr << "ç±»å‹é”™è¯¯ï¼Œä¸æ˜¯å­—å…¸" << std::endl;
 			json error2 = {
 				{"code",2},
 				{"data",{{"uid",uid}}}
@@ -106,17 +106,17 @@ json validate_data() {
 			return error2;
 		}
 	}
-	//ÏÈ½«GachaTypeµÄËùÓĞkey±£´æ½øÒ»¸övector·½±ãÅĞ¶Ï
+	//å…ˆå°†GachaTypeçš„æ‰€æœ‰keyä¿å­˜è¿›ä¸€ä¸ªvectoræ–¹ä¾¿åˆ¤æ–­
 	std::vector<std::string> gacha_type_list;
 	for (auto& k : gacha_type["data"]) {
 		gacha_type_list.push_back(k["key"].get<std::string>());
 	}
-	//Ğ£ÑéÃ¿Ò»¸öuidºóµÄ¿¨³ØidÊÇ·ñºÏ·¨£¬ÊÇ·ñÆëÈ«£¬Ã¿Ò»¸ö¿¨³ØidºóÊÇ·ñÎªÁĞ±í
+	//æ ¡éªŒæ¯ä¸€ä¸ªuidåçš„å¡æ± idæ˜¯å¦åˆæ³•ï¼Œæ˜¯å¦é½å…¨ï¼Œæ¯ä¸€ä¸ªå¡æ± idåæ˜¯å¦ä¸ºåˆ—è¡¨
 	for (auto& [uid, value] : old_gacha_list.items()) {
 		for (auto& [key, list] : value.items()) {
-			//Ğ£ÑékeyÊÇ·ñºÏ·¨
+			//æ ¡éªŒkeyæ˜¯å¦åˆæ³•
 			if (std::find(gacha_type_list.begin(), gacha_type_list.end(), key) == gacha_type_list.end()) {
-				std::cerr << "·Ç·¨µÄ¿¨³Økey" << std::endl;
+				std::cerr << "éæ³•çš„å¡æ± key" << std::endl;
 				json error3 = {
 					{"code", 3},
 					{"data", {
@@ -127,9 +127,9 @@ json validate_data() {
 				};
 				return error3;
 			}
-			//Ğ£ÑékeyµÄÖµÊÇ·ñÎªÁĞ±í
+			//æ ¡éªŒkeyçš„å€¼æ˜¯å¦ä¸ºåˆ—è¡¨
 			if (!list.is_array()) {
-				std::cerr << "¿¨³ØkeyµÄÖµÀàĞÍ´íÎó" << std::endl;
+				std::cerr << "å¡æ± keyçš„å€¼ç±»å‹é”™è¯¯" << std::endl;
 				json error4 = {
 					{"code", 4},
 					{"data", {
@@ -141,14 +141,14 @@ json validate_data() {
 				return error4;
 			}
 		}
-		//Ğ£ÑéÊÇ·ñÃ¿Ò»¸ökey¶¼´æÔÚ
+		//æ ¡éªŒæ˜¯å¦æ¯ä¸€ä¸ªkeyéƒ½å­˜åœ¨
 		std::vector<std::string> uid_key_list;
 		for (auto& [key, list] : value.items()) {
 			uid_key_list.push_back(key);
 		}
 		for (auto key : gacha_type_list) {
 			if (std::find(uid_key_list.begin(), uid_key_list.end(), key) == uid_key_list.end()) {
-				std::cerr << "¿¨³ØkeyÈ±Ê§" << std::endl;
+				std::cerr << "å¡æ± keyç¼ºå¤±" << std::endl;
 				json error5 = {
 					{"code", 5},
 					{"data", {
@@ -161,16 +161,16 @@ json validate_data() {
 			}
 		}
 	}
-	//Ğ£ÑéÃ¿Ò»¸ö¼ÇÂ¼ÊÇ·ñºÏ·¨£¬Ê±¼äÊÇ·ñÕıĞò
+	//æ ¡éªŒæ¯ä¸€ä¸ªè®°å½•æ˜¯å¦åˆæ³•ï¼Œæ—¶é—´æ˜¯å¦æ­£åº
 	for (auto& [uid, value] : old_gacha_list.items()) {
 		for (auto& [key, list] : value.items()) {
 			std::string last_time = "0000-00-00 00:00:00";
 			int index = 0;
 			bool flag = false;
 			for (auto& item : list) {
-				//Ğ£ÑéÔªËØÊÇ·ñÎª×Öµä
+				//æ ¡éªŒå…ƒç´ æ˜¯å¦ä¸ºå­—å…¸
 				if (!item.is_object()) {
-					std::cerr << "×Ö¶Î·Ç×Öµä" << std::endl;
+					std::cerr << "å­—æ®µéå­—å…¸" << std::endl;
 					json error6 = {
 						{"code", 6},
 						{"data", {
@@ -182,9 +182,9 @@ json validate_data() {
 					};
 					return error6;
 				}
-				//Ğ£ÑéÔªËØÊıÁ¿£¬×Ö¶ÎÊÇ·ñÆëÈ«
+				//æ ¡éªŒå…ƒç´ æ•°é‡ï¼Œå­—æ®µæ˜¯å¦é½å…¨
 				if (item.size() != 5 or !item.contains("name") or !item.contains("id") or !item.contains("type") or !item.contains("qualityLevel") or !item.contains("time")) {
-					std::cerr << "¼ÇÂ¼È±×Ö¶Î»òÊıÁ¿Òì³£" << std::endl;
+					std::cerr << "è®°å½•ç¼ºå­—æ®µæˆ–æ•°é‡å¼‚å¸¸" << std::endl;
 					json error7 = {
 						{"code", 7},
 						{"data", {
@@ -196,9 +196,9 @@ json validate_data() {
 					};
 					return error7;
 				}
-				//Ğ£Ñé×Ö¶ÎÀàĞÍÊÇ·ñºÏ·¨
+				//æ ¡éªŒå­—æ®µç±»å‹æ˜¯å¦åˆæ³•
 				if (!item["name"].is_string() or !item["id"].is_number_integer() or !item["type"].is_string() or !item["qualityLevel"].is_number_integer() or !item["time"].is_string()) {
-					std::cerr << "¼ÇÂ¼×Ö¶ÎÀàĞÍÒì³£" << std::endl;
+					std::cerr << "è®°å½•å­—æ®µç±»å‹å¼‚å¸¸" << std::endl;
 					json error8 = {
 						{"code", 8},
 						{"data", {
@@ -210,9 +210,9 @@ json validate_data() {
 					};
 					return error8;
 				}
-				//Ğ£ÑétypeÀàĞÍÊÇ·ñÎªÎäÆ÷/½ÇÉ«
-				if (utf8_to_gbk(item["type"]) != "½ÇÉ«" and utf8_to_gbk(item["type"]) != "ÎäÆ÷") {
-					std::cerr << "type´íÎó" << std::endl;
+				//æ ¡éªŒtypeç±»å‹æ˜¯å¦ä¸ºæ­¦å™¨/è§’è‰²
+				if (utf8_to_gbk(item["type"]) != "è§’è‰²" and utf8_to_gbk(item["type"]) != "æ­¦å™¨") {
+					std::cerr << "typeé”™è¯¯" << std::endl;
 					json error9 = {
 						{"code", 9},
 						{"data", {
@@ -224,9 +224,9 @@ json validate_data() {
 					};
 					return error9;
 				}
-				//Ğ£ÑéĞÇ¼¶ÊÇ·ñÔÚ3~5Ö®¼ä
+				//æ ¡éªŒæ˜Ÿçº§æ˜¯å¦åœ¨3~5ä¹‹é—´
 				if (item["qualityLevel"] > 5 or item["qualityLevel"] < 3) {
-					std::cerr << "qualityLevel´íÎó" << std::endl;
+					std::cerr << "qualityLevelé”™è¯¯" << std::endl;
 					json error10 = {
 						{"code", 10},
 						{"data", {
@@ -238,9 +238,9 @@ json validate_data() {
 					};
 					return error10;
 				}
-				//Ğ£ÑéÊ±¼äÊÇ·ñ·ûºÏ±ê×¼
+				//æ ¡éªŒæ—¶é—´æ˜¯å¦ç¬¦åˆæ ‡å‡†
 				if (!validate_datetime(item["time"].get<std::string>())) {
-					std::cerr << "Ê±¼ä¸ñÊ½´íÎó" << item["time"].get<std::string>() << std::endl;
+					std::cerr << "æ—¶é—´æ ¼å¼é”™è¯¯" << item["time"].get<std::string>() << std::endl;
 					json error11 = {
 						{"code", 11},
 						{"data", {
@@ -252,10 +252,10 @@ json validate_data() {
 					};
 					return error11;
 				}
-				//ÅĞ¶ÏÊ±¼äÊÇ·ñµİÔö£¬Èç¹û·ÇµİÔö£¬ÔİÊ±²»·µ»Ø£¬µÈ´ıÑ­»·½áÊøÔÙ·µ»Ø
+				//åˆ¤æ–­æ—¶é—´æ˜¯å¦é€’å¢ï¼Œå¦‚æœéé€’å¢ï¼Œæš‚æ—¶ä¸è¿”å›ï¼Œç­‰å¾…å¾ªç¯ç»“æŸå†è¿”å›
 				std::string now_time = item["time"].get<std::string>();
 				if (now_time < last_time and !flag) {
-					std::cerr << "Ê±¼ä·ÇµİÔö" << std::endl;
+					std::cerr << "æ—¶é—´éé€’å¢" << std::endl;
 					flag = true;
 				}
 				last_time = now_time;

@@ -1,9 +1,9 @@
-#include "getData.h"
+ï»¿#include "getData.h"
 
 std::map<std::string, std::string> get_params(const std::string& url) {
 	std::map<std::string, std::string> params;
 	if (url.find("?") == std::string::npos) {
-		throw std::runtime_error("url²»º¬²ÎÊı");
+		throw std::runtime_error("urlä¸å«å‚æ•°");
 	}
 	std::string find_url = url.substr(url.find("?") + 1);
 	std::string key = "";
@@ -40,7 +40,7 @@ json find_apis() {
 
 	std::ifstream file(log_path);
 	if (!file.is_open()) {
-		std::cerr << "ÎŞ·¨´ò¿ªÈÕÖ¾ÎÄ¼ş£º" << log_path << std::endl;
+		std::cerr << "æ— æ³•æ‰“å¼€æ—¥å¿—æ–‡ä»¶ï¼š" << log_path << std::endl;
 		return uid_url_map;
 	}
 
@@ -64,7 +64,7 @@ json find_apis() {
 				};
 			}
 			catch (const std::exception& e) {
-				std::cerr << "get_params ½âÎöÊ§°Ü: " << e.what() << std::endl;
+				std::cerr << "get_params è§£æå¤±è´¥: " << e.what() << std::endl;
 				continue;
 			}
 		}
@@ -73,21 +73,21 @@ json find_apis() {
 }
 
 json get_gacha_data(std::string cardPoolId, std::string cardPoolType, std::string playerId, std::string recordId, std::string serverId) {
-	//µ÷ÓÃpython½øĞĞpostÇëÇó
-	//ÔËĞĞpythonÃüÁî
+	//è°ƒç”¨pythonè¿›è¡Œpostè¯·æ±‚
+	//è¿è¡Œpythonå‘½ä»¤
 	std::string cmd = "./python/request/request.exe ";//"python request.py ";
-	//Ìí¼Óurl²ÎÊı
+	//æ·»åŠ urlå‚æ•°
 	cmd += "--url https://gmserver-api.aki-game2.com/gacha/record/query ";
-	//Ìí¼Ópost²ÎÊı
+	//æ·»åŠ postå‚æ•°
 	cmd += "--type post ";
-	//Ìí¼Óheaders²ÎÊı
+	//æ·»åŠ headerså‚æ•°
 	cmd += "--headers \"{\\\"user-agent\\\":\\\"Mozilla / 5.0 (Windows NT 10.0; Win64; x64) AppleWebKit / 537.36 (KHTML, like Gecko) Chrome / 133.0.0.0 Safari / 537.36 Edg / 133.0.0.0\\\"}\" ";
-	//¹¹Ôì²ÎÊıÁĞ±í
+	//æ„é€ å‚æ•°åˆ—è¡¨
 	cmd = cmd + "--params \"cardPoolId=" + cardPoolId + "|str&cardPoolType=" + cardPoolType + "|int&languageCode=" + "zh-Hans" + "|str&playerId=" + playerId + "|str&recordId=" + recordId + "|str&serverId=" + serverId + "|str\"";
-	//python,Æô¶¯£¡
+	//python,å¯åŠ¨ï¼
 	std::string output = gbk_to_utf8(RunAndGetOutput(cmd));
 	if (output.find("SUCCESS") == std::string::npos) {
-		std::cerr << "ÍøÂçÒì³£" << std::endl;
+		std::cerr << "ç½‘ç»œå¼‚å¸¸" << std::endl;
 		json result = {
 			{"code",-2}
 		};
@@ -102,13 +102,13 @@ json get_gacha_data(std::string cardPoolId, std::string cardPoolType, std::strin
 }
 
 void merge(const std::string target_uid, json new_gacha_list) {
-	//½¨Á¢uidÁĞ±í£¬·½±ãºóĞø²Ù×÷
+	//å»ºç«‹uidåˆ—è¡¨ï¼Œæ–¹ä¾¿åç»­æ“ä½œ
 	std::vector<std::string> uid_list;
 	for (auto& [uid, value] : old_gacha_list.items()) {
 		uid_list.push_back(uid);
 	}
 	if (std::find(uid_list.begin(), uid_list.end(), target_uid) == uid_list.end()) {
-		//Èç¹ûÊÇĞÂÓÃ»§£¬Ôò´´½¨
+		//å¦‚æœæ˜¯æ–°ç”¨æˆ·ï¼Œåˆ™åˆ›å»º
 		old_gacha_list[target_uid] = json::object();
 		for (auto& t : gacha_type["data"]) {
 			old_gacha_list[target_uid][t["key"].get<std::string>()] = json::array();
@@ -117,34 +117,34 @@ void merge(const std::string target_uid, json new_gacha_list) {
 	for (auto& t : gacha_type["data"]) {
 		std::string gacha_key = t["key"].get<std::string>();
 		if (new_gacha_list[target_uid][gacha_key].size() == 0) {
-			//Èç¹ûĞÂÊı¾İÎª¿Õ£¬ÔòÌø¹ı±¾´ÎºÏ²¢
+			//å¦‚æœæ–°æ•°æ®ä¸ºç©ºï¼Œåˆ™è·³è¿‡æœ¬æ¬¡åˆå¹¶
 			continue;
 		}
 		if (old_gacha_list[target_uid][gacha_key].size() == 0) {
-			//Èç¹û¾ÉÊı¾İÎª¿Õ£¬Ôò×·¼ÓĞÂÊı¾İ
+			//å¦‚æœæ—§æ•°æ®ä¸ºç©ºï¼Œåˆ™è¿½åŠ æ–°æ•°æ®
 			for (auto& item : new_gacha_list[target_uid][gacha_key]) {
 				old_gacha_list[target_uid][gacha_key].push_back(item);
 			}
 			continue;
 		}
-		//ÌáÈ¡¾ÉÊı¾İ×îĞÂµÄÊ±¼äµã
+		//æå–æ—§æ•°æ®æœ€æ–°çš„æ—¶é—´ç‚¹
 		std::string last_date = old_gacha_list[target_uid][gacha_key].back()["time"].get<std::string>();
-		//ÌáÈ¡ĞÂÊı¾İ×îÀÏµÄÊ±¼äµã
+		//æå–æ–°æ•°æ®æœ€è€çš„æ—¶é—´ç‚¹
 		std::string first_date = new_gacha_list[target_uid][gacha_key][0]["time"].get<std::string>();
 
 		if (last_date < first_date) {
-			//Èç¹û¾ÉÊı¾İ×îĞÂµÄÊ±¼äµã±ÈĞÂÊı¾İ×îÀÏÊ±¼äµãÀÏ£¬ÔòÆ´½ÓĞÂ¾ÉÊı¾İ
-			//ÈË»°£º¾ÉÊı¾İ  ¶Ïµµ  ĞÂÊı¾İ   ºÏ²¢Êı¾İ = ¾ÉÊı¾İ + ĞÂÊı¾İ
+			//å¦‚æœæ—§æ•°æ®æœ€æ–°çš„æ—¶é—´ç‚¹æ¯”æ–°æ•°æ®æœ€è€æ—¶é—´ç‚¹è€ï¼Œåˆ™æ‹¼æ¥æ–°æ—§æ•°æ®
+			//äººè¯ï¼šæ—§æ•°æ®  æ–­æ¡£  æ–°æ•°æ®   åˆå¹¶æ•°æ® = æ—§æ•°æ® + æ–°æ•°æ®
 			for (auto& item : new_gacha_list[target_uid][gacha_key]) {
 				old_gacha_list[target_uid][gacha_key].push_back(item);
 			}
 		}
 		else if (last_date > first_date) {
-			//Èç¹û¾ÉÊı¾İ×îĞÂµÄÊ±¼äµã±ÈĞÂÊı¾İ×îÀÏÊ±¼äµãĞÂ£¬¼´Á½¶ÎÊı¾İÖØºÏ£¬Ôò±£Áô¾ÉÊı¾İ×îĞÂÊ±¼äµãÒÔÇ°µÄÊı¾İ£¬Æ´½ÓĞÂÊı¾İ°üº¬Ê±¼äµã¼´Ê±¼äµãÖ®ºóµÄÊı¾İ
-			//ÈË»°: ¾ÉÊı¾İ
-			//          ĞÂÊı¾İ
-			//ºÏ²¢Êı¾İ = ¾ÉÊı¾İ£¨Î´ÖØµşµÄ²¿·Ö£©+ ÖØµş²¿·Ö + ĞÂÊı¾İ£¨Î´ÖØµşµÄ²¿·Ö£©
-			//Èç¹ûÒòÈËÎª»òÆäËûÒòËØÕÒ²»µ½ÖØµş²¿·Ö£¬Ôò²ÉÓÃÆ´½Ó£¬¶ş·Ö²éÕÒÊ±¼ä
+			//å¦‚æœæ—§æ•°æ®æœ€æ–°çš„æ—¶é—´ç‚¹æ¯”æ–°æ•°æ®æœ€è€æ—¶é—´ç‚¹æ–°ï¼Œå³ä¸¤æ®µæ•°æ®é‡åˆï¼Œåˆ™ä¿ç•™æ—§æ•°æ®æœ€æ–°æ—¶é—´ç‚¹ä»¥å‰çš„æ•°æ®ï¼Œæ‹¼æ¥æ–°æ•°æ®åŒ…å«æ—¶é—´ç‚¹å³æ—¶é—´ç‚¹ä¹‹åçš„æ•°æ®
+			//äººè¯: æ—§æ•°æ®
+			//          æ–°æ•°æ®
+			//åˆå¹¶æ•°æ® = æ—§æ•°æ®ï¼ˆæœªé‡å çš„éƒ¨åˆ†ï¼‰+ é‡å éƒ¨åˆ† + æ–°æ•°æ®ï¼ˆæœªé‡å çš„éƒ¨åˆ†ï¼‰
+			//å¦‚æœå› äººä¸ºæˆ–å…¶ä»–å› ç´ æ‰¾ä¸åˆ°é‡å éƒ¨åˆ†ï¼Œåˆ™é‡‡ç”¨æ‹¼æ¥ï¼ŒäºŒåˆ†æŸ¥æ‰¾æ—¶é—´
 			int left = 0, right = new_gacha_list[target_uid][gacha_key].size() - 1;
 			while (left < right) {
 				int mid = (left + right) / 2;
@@ -159,30 +159,30 @@ void merge(const std::string target_uid, json new_gacha_list) {
 			}
 
 			if (new_gacha_list[target_uid][gacha_key][right]["time"].get<std::string>() != last_date) {
-				std::cerr << "Î´ÕÒµ½¶ÔÓ¦Ê±¼ä£¬Çë¼ì²éÊı¾İÊÇ·ñ±»ĞŞ¸Ä£¬¿É´Ó±¸·İÎÄ¼şÖĞ»Ö¸´Êı¾İ" << std::endl;
-				std::cerr << "²ÉÓÃ±£ÊØÆ´½Ó¸üĞÂÊı¾İ£¬ÈçÊı¾İÎŞÎó£¬¿ÉÒÔ²»Àí»á´Ë´Î±¨´í" << std::endl;
+				std::cerr << "æœªæ‰¾åˆ°å¯¹åº”æ—¶é—´ï¼Œè¯·æ£€æŸ¥æ•°æ®æ˜¯å¦è¢«ä¿®æ”¹ï¼Œå¯ä»å¤‡ä»½æ–‡ä»¶ä¸­æ¢å¤æ•°æ®" << std::endl;
+				std::cerr << "é‡‡ç”¨ä¿å®ˆæ‹¼æ¥æ›´æ–°æ•°æ®ï¼Œå¦‚æ•°æ®æ— è¯¯ï¼Œå¯ä»¥ä¸ç†ä¼šæ­¤æ¬¡æŠ¥é”™" << std::endl;
 			}
 			else {
-				//É¾³ı¾ÉÊı¾İlast_timeÊ±¼äµãµÄÊı¾İ
+				//åˆ é™¤æ—§æ•°æ®last_timeæ—¶é—´ç‚¹çš„æ•°æ®
 				for (int i = old_gacha_list[target_uid][gacha_key].size() - 1; i >= 0; i--) {
 					if (old_gacha_list[target_uid][gacha_key][i]["time"] == last_date) {
 						old_gacha_list[target_uid][gacha_key].erase(old_gacha_list[target_uid][gacha_key].begin() + i);
 					}
 				}
 			}
-			//½«ĞÂÊı¾İÌí¼Óµ½¾ÉÊı¾İÄ©Î²
+			//å°†æ–°æ•°æ®æ·»åŠ åˆ°æ—§æ•°æ®æœ«å°¾
 			for (int i = right; i < new_gacha_list[target_uid][gacha_key].size(); i++) {
 				old_gacha_list[target_uid][gacha_key].push_back(new_gacha_list[target_uid][gacha_key][i]);
 			}
 		}
 		else {
-			//ÕâÀïÊÇ¾ÉÊı¾İ×îĞÂÊ±¼äºÍĞÂÊı¾İ×îÀÏÊ±¼äÏàµÈµÄÇé¿ö£¬Ñ°ÕÒÏàµÈÊ±¼ä¼ÇÂ¼µÄ×î´ó¹«¹²Ç°ºó×º²¢Æ´½Ó
-			//ÈË»°£ºÀíÂÛÉÏÖ®¼äÆ´½Ó¾ÍĞĞ£¬µ«ÎªÁË±ÜÃâÊ®Á¬³éÊ±¼äÒ»ÖÂ£¬¶ø¾ÉÊı¾İÈ±Ê§²¿·ÖÊı¾İ»òĞÂÊı¾İÈ±Ê§Êı¾İËùÓĞÒª´¦Àí
-			//Í¨¹ı×î´ó¹«¹²Ç°ºó×ºµÄ³¤¶ÈÈ·¶¨ÖØµş²¿·ÖÊı¾İ£¬ÆäÓà´¦ÀíºÍÉÏÒ»ÖÖÇé¿öÏàÍ¬
+			//è¿™é‡Œæ˜¯æ—§æ•°æ®æœ€æ–°æ—¶é—´å’Œæ–°æ•°æ®æœ€è€æ—¶é—´ç›¸ç­‰çš„æƒ…å†µï¼Œå¯»æ‰¾ç›¸ç­‰æ—¶é—´è®°å½•çš„æœ€å¤§å…¬å…±å‰åç¼€å¹¶æ‹¼æ¥
+			//äººè¯ï¼šç†è®ºä¸Šä¹‹é—´æ‹¼æ¥å°±è¡Œï¼Œä½†ä¸ºäº†é¿å…åè¿æŠ½æ—¶é—´ä¸€è‡´ï¼Œè€Œæ—§æ•°æ®ç¼ºå¤±éƒ¨åˆ†æ•°æ®æˆ–æ–°æ•°æ®ç¼ºå¤±æ•°æ®æ‰€æœ‰è¦å¤„ç†
+			//é€šè¿‡æœ€å¤§å…¬å…±å‰åç¼€çš„é•¿åº¦ç¡®å®šé‡å éƒ¨åˆ†æ•°æ®ï¼Œå…¶ä½™å¤„ç†å’Œä¸Šä¸€ç§æƒ…å†µç›¸åŒ
 			int max_num = 0;
 			std::vector<json> temp_old;
 			std::vector<json> temp_new;
-			//½«¾É¼ÍÂ¼µÈÓÚlast_timeµÄ¼ÇÂ¼µ¥¶ÀÌáÈ¡³öÀ´²¢É¾³ı¾É¼ÍÂ¼µÄÊı¾İ
+			//å°†æ—§çºªå½•ç­‰äºlast_timeçš„è®°å½•å•ç‹¬æå–å‡ºæ¥å¹¶åˆ é™¤æ—§çºªå½•çš„æ•°æ®
 			for (int i = old_gacha_list[target_uid][gacha_key].size() - 1; i >= 0; i--) {
 				std::string temp_date = old_gacha_list[target_uid][gacha_key][i]["time"];
 				if (last_date == temp_date) {
@@ -193,9 +193,9 @@ void merge(const std::string target_uid, json new_gacha_list) {
 					break;
 				}
 			}
-			//·´×ªÁĞ±í
+			//åè½¬åˆ—è¡¨
 			std::reverse(temp_old.begin(), temp_old.end());
-			//½«ĞÂ¼ÍÂ¼µÈÓÚlast_timeµÄ¼ÇÂ¼µ¥¶ÀÌáÈ¡³öÀ´²¢É¾³ıĞÂ¼ÍÂ¼µÄÊı¾İ
+			//å°†æ–°çºªå½•ç­‰äºlast_timeçš„è®°å½•å•ç‹¬æå–å‡ºæ¥å¹¶åˆ é™¤æ–°çºªå½•çš„æ•°æ®
 
 			while (new_gacha_list[target_uid][gacha_key].size() != 0) {
 				std::string temp_date = new_gacha_list[target_uid][gacha_key][0]["time"];
@@ -207,13 +207,13 @@ void merge(const std::string target_uid, json new_gacha_list) {
 					break;
 				}
 			}
-			//Ñ°ÕÒ×î³¤¹«¹²Ç°ºó×ºµÄ³¤¶È
+			//å¯»æ‰¾æœ€é•¿å…¬å…±å‰åç¼€çš„é•¿åº¦
 			for (int i = 1; i <= min(temp_old.size(), temp_new.size()); i++) {
 				if (std::vector<json>(temp_old.end() - i, temp_old.end()) == std::vector<json>(temp_new.begin(), temp_new.begin() + i)) {
 					max_num = i;
 				}
 			}
-			//Æ´½ÓÊı¾İ
+			//æ‹¼æ¥æ•°æ®
 			for (int i = 0; i < temp_old.size() - max_num; i++) {
 				old_gacha_list[target_uid][gacha_key].push_back(temp_old[i]);
 			}
@@ -228,38 +228,38 @@ void merge(const std::string target_uid, json new_gacha_list) {
 }
 
 void update_data() {
-	//ÇåÆÁ
+	//æ¸…å±
 	system("cls");
-	//¼ì²éÓÎÏ·ÈÕÖ¾Â·¾¶ÊÇ·ñÓĞĞ§
+	//æ£€æŸ¥æ¸¸æˆæ—¥å¿—è·¯å¾„æ˜¯å¦æœ‰æ•ˆ
 	if (!std::filesystem::exists(utf8_to_gbk(config["path"]) + "/Client/Saved/Logs/Client.log")) {
-		std::cout << "Î´ÕÒµ½ÈÕÖ¾ÎÄ¼ş£¬ÇëÏÈ²éÕÒÓÎÏ·Î»ÖÃ" << std::endl;
+		std::cout << "æœªæ‰¾åˆ°æ—¥å¿—æ–‡ä»¶ï¼Œè¯·å…ˆæŸ¥æ‰¾æ¸¸æˆä½ç½®" << std::endl;
 		system("pause");
 		return;
 	}
-	//²éÕÒurl
+	//æŸ¥æ‰¾url
 	json urls = find_apis();
 	json new_gacha_list = json::object();
-	//¶ÔÃ¿Ò»¸öurl¸üĞÂÊı¾İ
+	//å¯¹æ¯ä¸€ä¸ªurlæ›´æ–°æ•°æ®
 	for (auto& [uid, params] : urls.items()) {
 		bool flag = true;
-		//ĞÂ½¨uid×Ö¶Î
+		//æ–°å»ºuidå­—æ®µ
 		new_gacha_list[uid] = json::object();
-		std::cout << "³¢ÊÔ»ñÈ¡" << uid << "Êı¾İ" << std::endl;
+		std::cout << "å°è¯•è·å–" << uid << "æ•°æ®" << std::endl;
 		for (auto& t : gacha_type["data"]) {
-			std::cout << "ÕıÔÚ»ñÈ¡" << utf8_to_gbk(t["name"]) << "Êı¾İ" << std::endl;
-			//ÕâÀïµÄÊı¾İÊÇutf-8£¬×¢Òâ×ª»¯
+			std::cout << "æ­£åœ¨è·å–" << utf8_to_gbk(t["name"]) << "æ•°æ®" << std::endl;
+			//è¿™é‡Œçš„æ•°æ®æ˜¯utf-8ï¼Œæ³¨æ„è½¬åŒ–
 			json new_data = get_gacha_data(urls[uid]["resources_id"].get<std::string>(), t["key"].get<std::string>(), uid, urls[uid]["record_id"].get<std::string>(), urls[uid]["svr_id"].get<std::string>());
 			if (new_data["code"] != 0) {
-				std::cout << "uid: " << uid << " apiÒÑ¹ıÆÚ£¬Çë½øÈëÓÎÏ·Ë¢ĞÂ" << std::endl;
+				std::cout << "uid: " << uid << " apiå·²è¿‡æœŸï¼Œè¯·è¿›å…¥æ¸¸æˆåˆ·æ–°" << std::endl;
 				flag = false;
 				break;
 			}
-			//µ±Êı¾İ»ñÈ¡³É¹¦Ê±£¬ÇĞ»»ÓÃ»§
+			//å½“æ•°æ®è·å–æˆåŠŸæ—¶ï¼Œåˆ‡æ¢ç”¨æˆ·
 			config["active_uid"] = uid;
 			WriteConfig();
-			//´´½¨¿¨³ØÁĞ±í
+			//åˆ›å»ºå¡æ± åˆ—è¡¨
 			new_gacha_list[uid][t["key"]] = json::array();
-			//µ¹Ğò±éÀúĞÂÊı¾İ
+			//å€’åºéå†æ–°æ•°æ®
 			for (auto it = new_data["data"].rbegin(); it != new_data["data"].rend(); ++it) {
 				std::string time_str = "";
 				for (char c : utf8_to_gbk((*it)["time"].get<std::string>())) {
@@ -301,7 +301,7 @@ void update_data() {
 			WriteData(old_gacha_list);
 		}
 	}
-	std::cout << "Êı¾İ¸üĞÂÍê³É" << std::endl;
+	std::cout << "æ•°æ®æ›´æ–°å®Œæˆ" << std::endl;
 	system("pause");
 	return;
 }

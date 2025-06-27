@@ -1,4 +1,4 @@
-#include "export.h"
+Ôªø#include "export.h"
 
 
 void export_to_csv() {
@@ -6,23 +6,23 @@ void export_to_csv() {
 
 	for (auto& [uid, pools] : old_gacha_list.items()) {
 		std::time_t now = std::time(nullptr);
-		std::string filename = "./export/csv/√˘≥±≥Èø®º«¬º_" + uid + "_" + std::to_string(now) + ".csv";
+		std::string filename = "./export/csv/È∏£ÊΩÆÊäΩÂç°ËÆ∞ÂΩï_" + uid + "_" + std::to_string(now) + ".csv";
 
 		std::ofstream file(filename, std::ios::out);
 		if (!file.is_open()) {
-			std::cerr << "Œﬁ∑®¥Úø™Œƒº˛: " << filename << std::endl;
+			std::cerr << "Êó†Ê≥ïÊâìÂºÄÊñá‰ª∂: " << filename << std::endl;
 			continue;
 		}
 
-		// –¥»ÎUTF-8 BOM
+		// ÂÜôÂÖ•UTF-8 BOM
 		const unsigned char bom[] = { 0xEF, 0xBB, 0xBF };
 		file.write(reinterpret_cast<const char*>(bom), sizeof(bom));
 
-		// –¥»Î±ÌÕ∑
-		file << gbk_to_utf8("ø®≥ÿ, ±º‰,√˚≥∆,¿‡–Õ,–«º∂,◊‹≥È ˝,±£µ◊ƒ⁄≥È ˝\n");
+		// ÂÜôÂÖ•Ë°®Â§¥
+		file << gbk_to_utf8("Âç°Ê±†,Êó∂Èó¥,ÂêçÁß∞,Á±ªÂûã,ÊòüÁ∫ß,ÊÄªÊäΩÊï∞,‰øùÂ∫ïÂÜÖÊäΩÊï∞\n");
 
 		for (auto& [key, items] : pools.items()) {
-			// ªÒ»°÷–Œƒø®≥ÿ√˚£¨ƒ¨»œ π”√ key
+			// Ëé∑Âèñ‰∏≠ÊñáÂç°Ê±†ÂêçÔºåÈªòËÆ§‰ΩøÁî® key
 			std::string pool_name = key;
 			for (const auto& t : gacha_type["data"]) {
 				if (t.contains("key") && t["key"] == key && t.contains("name")) {
@@ -38,7 +38,7 @@ void export_to_csv() {
 				++total_count;
 				++pity_count;
 
-				// –¥»Î“ª––
+				// ÂÜôÂÖ•‰∏ÄË°å
 				file << pool_name << ','
 					<< item.value("time", "") << ','
 					<< item.value("name", "") << ','
@@ -48,7 +48,7 @@ void export_to_csv() {
 					<< pity_count << '\n';
 
 				if (item.value("qualityLevel", 0) == 5) {
-					pity_count = 0; // ŒÂ–«÷ÿ÷√±£µ◊º∆ ˝
+					pity_count = 0; // ‰∫îÊòüÈáçÁΩÆ‰øùÂ∫ïËÆ°Êï∞
 				}
 			}
 		}
@@ -73,7 +73,7 @@ void export_to_uigf3() {
 		uigf3["list"] = json::array();
 
 		for (auto& [key, items] : pools.items()) {
-			// ’“÷–Œƒø®≥ÿ√˚
+			// Êâæ‰∏≠ÊñáÂç°Ê±†Âêç
 			std::string pool_name = key;
 
 			for (const auto& t : gacha_type["data"]) {
@@ -101,7 +101,7 @@ void export_to_uigf3() {
 		std::string filename = "./export/UIGFv3/UIGFv3_" + uid + "_" + std::to_string(uigf3["info"]["export_timestamp"].get<int>()) + ".json";
 		std::ofstream ofs(filename);
 		if (!ofs.is_open()) {
-			std::cerr << "Œﬁ∑®¥Úø™Œƒº˛: " << filename << std::endl;
+			std::cerr << "Êó†Ê≥ïÊâìÂºÄÊñá‰ª∂: " << filename << std::endl;
 			continue;
 		}
 		ofs << uigf3.dump(2);
@@ -129,7 +129,7 @@ void export_to_uigf4() {
 			{"list", json::array()}
 		};
 
-		// ’‚¿Ô√ª”√ record_id ∫Õ counter£¨∞¥ƒ„µƒ Python ¬ﬂº≠£¨À¸√«√ª µº ◊˜”√£¨ø…“‘∫ˆ¬‘
+		// ËøôÈáåÊ≤°Áî® record_id Âíå counterÔºåÊåâ‰Ω†ÁöÑ Python ÈÄªËæëÔºåÂÆÉ‰ª¨Ê≤°ÂÆûÈôÖ‰ΩúÁî®ÔºåÂèØ‰ª•ÂøΩÁï•
 
 		for (auto& [key, items] : pools.items()) {
 			for (const auto& item : items) {
@@ -152,7 +152,7 @@ void export_to_uigf4() {
 		std::string filename = "./export/UIGFv4/UIGFv4_" + uid + "_" + std::to_string(export_data["info"]["export_timestamp"].get<int>()) + ".json";
 		std::ofstream ofs(filename);
 		if (!ofs.is_open()) {
-			std::cerr << "Œﬁ∑®¥Úø™Œƒº˛: " << filename << std::endl;
+			std::cerr << "Êó†Ê≥ïÊâìÂºÄÊñá‰ª∂: " << filename << std::endl;
 			continue;
 		}
 		ofs << export_data.dump(2);
@@ -167,14 +167,14 @@ void export_to_excel() {
 void export_data() {
 	makedirs("export");
 	while (true) {
-		//«Â∆¡
+		//Ê∏ÖÂ±è
 		system("cls");
-		std::cout << "1:µº≥ˆŒ™excel±Ì∏Ò" << std::endl;
-		std::cout << "2:µº≥ˆŒ™csvŒƒº˛" << std::endl;
-		std::cout << "3:µº≥ˆŒ™UIGF 3.0 ∏Ò Ω" << std::endl;
-		std::cout << "4:µº≥ˆŒ™UIGF 4.0 ∏Ò Ω" << std::endl;
-		std::cout << "5:∑µªÿ" << std::endl;
-		std::cout << "«Î—°‘Òµº≥ˆµƒ∏Ò Ω:" << std::endl;
+		std::cout << "1:ÂØºÂá∫‰∏∫excelË°®Ê†º" << std::endl;
+		std::cout << "2:ÂØºÂá∫‰∏∫csvÊñá‰ª∂" << std::endl;
+		std::cout << "3:ÂØºÂá∫‰∏∫UIGF 3.0 Ê†ºÂºè" << std::endl;
+		std::cout << "4:ÂØºÂá∫‰∏∫UIGF 4.0 Ê†ºÂºè" << std::endl;
+		std::cout << "5:ËøîÂõû" << std::endl;
+		std::cout << "ËØ∑ÈÄâÊã©ÂØºÂá∫ÁöÑÊ†ºÂºè:" << std::endl;
 		std::string temp;
 		std::cin >> temp;
 		int choose;
@@ -182,13 +182,13 @@ void export_data() {
 			choose = std::stoi(temp);
 		}
 		catch (...) {
-			std::cout << " ‰»Î¥ÌŒÛ" << std::endl;
+			std::cout << "ËæìÂÖ•ÈîôËØØ" << std::endl;
 			system("pause");
 			continue;
 		}
 
 		if (choose <= 0 or choose >= 6) {
-			std::cout << " ‰»Î¥ÌŒÛ" << std::endl;
+			std::cout << "ËæìÂÖ•ÈîôËØØ" << std::endl;
 			system("pause");
 			continue;
 		}
@@ -199,7 +199,7 @@ void export_data() {
 			export_to_csv();
 		}
 		else if (choose == 3) {
-			//µº≥ˆ ˝æ›
+			//ÂØºÂá∫Êï∞ÊçÆ
 			export_to_uigf3();
 		}
 		else if (choose == 4) {
@@ -208,7 +208,7 @@ void export_data() {
 		else if (choose == 5) {
 			return;
 		}
-		std::cout << "µº≥ˆÕÍ≥…" << std::endl;
+		std::cout << "ÂØºÂá∫ÂÆåÊàê" << std::endl;
 		system("pause");
 		return;
 	}

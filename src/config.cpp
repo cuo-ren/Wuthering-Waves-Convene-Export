@@ -1,4 +1,4 @@
-#include "config.h"
+ï»¿#include "config.h"
 #include "utils.h"
 
 void WriteConfig() {
@@ -7,76 +7,76 @@ void WriteConfig() {
 }
 
 void initConfig() {
-	//¶ÁÈ¡ÎÄ¼ş£¬²»´æÔÚ»ò½âÎöÊ§°ÜÊ±£¬Ê¹ÓÃÄ¬ÈÏÅäÖÃ¸²¸Ç
+	//è¯»å–æ–‡ä»¶ï¼Œä¸å­˜åœ¨æˆ–è§£æå¤±è´¥æ—¶ï¼Œä½¿ç”¨é»˜è®¤é…ç½®è¦†ç›–
 	json default_config = {
-		{"language","zh-cn"},//³ÌĞòÊ¹ÓÃÓïÑÔ£¬Ä¿Ç°ÎŞ×÷ÓÃ
-		{"path",""},//ÓÎÏ·ÈÕÖ¾Â·¾¶
-		{"active_uid", ""},//µ±Ç°ÓÃ»§
-		{"hash",""}//Êı¾İÎÄ¼şhashÖµ
+		{"language","zh-cn"},//ç¨‹åºä½¿ç”¨è¯­è¨€ï¼Œç›®å‰æ— ä½œç”¨
+		{"path",""},//æ¸¸æˆæ—¥å¿—è·¯å¾„
+		{"active_uid", ""},//å½“å‰ç”¨æˆ·
+		{"hash",""}//æ•°æ®æ–‡ä»¶hashå€¼
 	};
 	try {
 		config = ReadJsonFile("config.json");
 	}
 	catch (const std::runtime_error& e) {
-		std::cerr << "ÎÄ¼ş´ò¿ªÊ§°Ü£¬ÕıÔÚ´´½¨" << std::endl;
+		std::cerr << "æ–‡ä»¶æ‰“å¼€å¤±è´¥ï¼Œæ­£åœ¨åˆ›å»º" << std::endl;
 		config = default_config;
 		WriteConfig();
 	}
 	catch (const json::parse_error& e) {
-		std::cerr << "json½âÎöÊ§°Ü£¬ÕıÔÚ´´½¨" << std::endl;
+		std::cerr << "jsonè§£æå¤±è´¥ï¼Œæ­£åœ¨åˆ›å»º" << std::endl;
 		config = default_config;
 		WriteConfig();
 	}
 	catch (...) {
-		std::cerr << "Î´Öª´íÎó" << std::endl;
+		std::cerr << "æœªçŸ¥é”™è¯¯" << std::endl;
 		config = default_config;
 	}
-	//Ğ£Ñé¹Ø¼üÅäÖÃÊÇ·ñ´æÔÚ
+	//æ ¡éªŒå…³é”®é…ç½®æ˜¯å¦å­˜åœ¨
 	if (!config.contains("language")) {
-		std::cerr << "Öµlanguage²»´æÔÚ" << std::endl;
+		std::cerr << "å€¼languageä¸å­˜åœ¨" << std::endl;
 		config["language"] = "zh-cn";
 		WriteConfig();
 	}
 	if (!config.contains("active_uid")) {
-		std::cerr << "Öµactive_uid²»´æÔÚ" << std::endl;
+		std::cerr << "å€¼active_uidä¸å­˜åœ¨" << std::endl;
 		config["active_uid"] = "";
 		WriteConfig();
 	}
 	if (!config.contains("path")) {
-		std::cerr << "Öµpath²»´æÔÚ" << std::endl;
+		std::cerr << "å€¼pathä¸å­˜åœ¨" << std::endl;
 		config["path"] = "";
 		WriteConfig();
 	}
 	if (!config.contains("hash")) {
-		std::cerr << "Öµhash²»´æÔÚ" << std::endl;
+		std::cerr << "å€¼hashä¸å­˜åœ¨" << std::endl;
 		config["hash"] = "";
 		WriteConfig();
 	}
 
-	//¶Ô¼üµÄÖµÀàĞÍ½øĞĞÅĞ¶Ï
+	//å¯¹é”®çš„å€¼ç±»å‹è¿›è¡Œåˆ¤æ–­
 	if (!config["language"].is_string()) {
-		std::cerr << "ÖµlanguageÀàĞÍ´íÎó" << std::endl;
+		std::cerr << "å€¼languageç±»å‹é”™è¯¯" << std::endl;
 		config["language"] = "zh-cn";
 		WriteConfig();
 	}
 	std::vector<std::string> support_languages = { "de-de", "en-us", "es-es", "fr-fr", "id-id", "it-it", "ja-jp", "ko-kr", "pt-pt", "ru-ru", "th-th", "tr-tr", "vi-vn", "zh-cn", "zh-tw" };
 	if (std::find(support_languages.begin(), support_languages.end(), config["language"].get<std::string>()) == support_languages.end()) {
-		std::cerr << "Î´ÖªµÄlanguage´úÂë" << std::endl;
+		std::cerr << "æœªçŸ¥çš„languageä»£ç " << std::endl;
 		config["language"] = "zh-cn";
 		WriteConfig();
 	}
 	if (!config["active_uid"].is_string()) {
-		std::cerr << "Öµactive_uidÀàĞÍ´íÎó" << std::endl;
+		std::cerr << "å€¼active_uidç±»å‹é”™è¯¯" << std::endl;
 		config["active_uid"] = "";
 		WriteConfig();
 	}
 	if (!config["path"].is_string()) {
-		std::cerr << "ÖµpathÀàĞÍ´íÎó" << std::endl;
+		std::cerr << "å€¼pathç±»å‹é”™è¯¯" << std::endl;
 		config["path"] = "";
 		WriteConfig();
 	}
 	if (!config["hash"].is_string()) {
-		std::cerr << "ÖµhashÀàĞÍ´íÎó" << std::endl;
+		std::cerr << "å€¼hashç±»å‹é”™è¯¯" << std::endl;
 		config["hash"] = "";
 		WriteConfig();
 	}
@@ -89,7 +89,7 @@ void change_active_uid() {
 		uid_list.push_back(uid);
 	}
 	while (true) {
-		//ÇåÆÁ
+		//æ¸…å±
 		system("cls");
 		int count = 0;
 		for (std::string uid : uid_list) {
@@ -97,7 +97,7 @@ void change_active_uid() {
 			std::cout << count << ":" << uid << std::endl;
 		}
 		if (uid_list.size() == 0) {
-			std::cout << "ÔİÎŞÓÃ»§" << std::endl;
+			std::cout << "æš‚æ— ç”¨æˆ·" << std::endl;
 			system("pause");
 			return;
 		}
@@ -108,13 +108,13 @@ void change_active_uid() {
 			choose = std::stoi(temp);
 		}
 		catch (...) {
-			std::cout << "ÊäÈë´íÎó" << std::endl;
+			std::cout << "è¾“å…¥é”™è¯¯" << std::endl;
 			system("pause");
 			continue;
 		}
 
 		if (choose <= 0 or choose > uid_list.size()) {
-			std::cout << "ÊäÈë´íÎó" << std::endl;
+			std::cout << "è¾“å…¥é”™è¯¯" << std::endl;
 			system("pause");
 			continue;
 		}

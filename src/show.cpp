@@ -1,16 +1,16 @@
-#include "show.h"
+ï»¿#include "show.h"
 
 int show_menu() {
 	while (true) {
-		//ÇåÆÁ
+		//æ¸…å±
 		system("cls");
-		std::cout << "1:²é¿´µ±Ç°Êı¾İ" << std::endl;
-		std::cout << "2:¸üĞÂÊı¾İ" << std::endl;
-		std::cout << "3:µ¼³öÊı¾İ" << std::endl;
-		std::cout << "4:ÇĞ»»ÓÃ»§" << std::endl;
-		std::cout << "5:²éÕÒÓÎÏ·" << std::endl;
-		std::cout << "6:ÍË³ö" << std::endl;
-		std::cout << "ÇëÑ¡Ôñ²Ù×÷:" << std::endl;
+		std::cout << "1:æŸ¥çœ‹å½“å‰æ•°æ®" << std::endl;
+		std::cout << "2:æ›´æ–°æ•°æ®" << std::endl;
+		std::cout << "3:å¯¼å‡ºæ•°æ®" << std::endl;
+		std::cout << "4:åˆ‡æ¢ç”¨æˆ·" << std::endl;
+		std::cout << "5:æŸ¥æ‰¾æ¸¸æˆ" << std::endl;
+		std::cout << "6:é€€å‡º" << std::endl;
+		std::cout << "è¯·é€‰æ‹©æ“ä½œ:" << std::endl;
 		std::string temp;
 		std::cin >> temp;
 		int choose;
@@ -18,13 +18,13 @@ int show_menu() {
 			choose = std::stoi(temp);
 		}
 		catch (...) {
-			std::cout << "ÊäÈë´íÎó" << std::endl;
+			std::cout << "è¾“å…¥é”™è¯¯" << std::endl;
 			system("pause");
 			continue;
 		}
 
 		if (choose <= 0 or choose >= 7) {
-			std::cout << "ÊäÈë´íÎó" << std::endl;
+			std::cout << "è¾“å…¥é”™è¯¯" << std::endl;
 			system("pause");
 			continue;
 		}
@@ -33,13 +33,13 @@ int show_menu() {
 }
 
 void show_gacha_detail() {
-	//ÇåÆÁ
+	//æ¸…å±
 	system("cls");
 	std::vector<std::string> uid_list;
 	for (auto& [uid, value] : old_gacha_list.items()) {
 		uid_list.push_back(uid);
 	}
-	//¼ì²éÅäÖÃÎÄ¼şÖĞ»îÔ¾uidµÄºÏ·¨ĞÔ
+	//æ£€æŸ¥é…ç½®æ–‡ä»¶ä¸­æ´»è·ƒuidçš„åˆæ³•æ€§
 	if (std::find(uid_list.begin(), uid_list.end(), config["active_uid"].get<std::string>()) == uid_list.end()) {
 		if (uid_list.size() != 0) {
 			config["active_uid"] = uid_list[0];
@@ -52,14 +52,14 @@ void show_gacha_detail() {
 			}
 		}
 	}
-	//Õ¹Ê¾Êı¾İ
-	//active_uidÎª¿ÕÔòÏÔÊ¾ÎŞÊı¾İ
+	//å±•ç¤ºæ•°æ®
+	//active_uidä¸ºç©ºåˆ™æ˜¾ç¤ºæ— æ•°æ®
 	if (config["active_uid"].get<std::string>().size() == 0) {
-		std::cout << "ÔİÎŞÊı¾İ" << std::endl;
+		std::cout << "æš‚æ— æ•°æ®" << std::endl;
 		system("pause");
 		return;
 	}
-	std::cout << "µ±Ç°ÕËºÅuid" << config["active_uid"].get<std::string>() << std::endl;
+	std::cout << "å½“å‰è´¦å·uid" << config["active_uid"].get<std::string>() << std::endl;
 	for (auto& [key, list] : old_gacha_list[config["active_uid"].get<std::string>()].items()) {
 		std::vector<int> count_list;
 		if (old_gacha_list[config["active_uid"].get<std::string>()][key].size() != 0) {
@@ -78,23 +78,23 @@ void show_gacha_detail() {
 						std::cout << "  ";
 					}
 					for (int temp = 0; temp < count; temp++) {
-						std::cout << "¨€";
+						std::cout << "â–ˆ";
 					}
-					std::cout << "  " << count << "³é" << std::endl;
+					std::cout << "  " << count << "æŠ½" << std::endl;
 					count_list.push_back(count);
 					count = 0;
 				}
 			}
-			std::cout << "ÒÑ³é" << count << "Î´³ö½ğ" << std::endl;
+			std::cout << "å·²æŠ½" << count << "æœªå‡ºé‡‘" << std::endl;
 			if (count_list.size() == 0) {
-				std::cout << "Æ½¾ù³ö½ğÊı£ºÎ´Öª" << std::endl << std::endl;
+				std::cout << "å¹³å‡å‡ºé‡‘æ•°ï¼šæœªçŸ¥" << std::endl << std::endl;
 			}
 			else {
 				int sum = 0;
 				for (int num : count_list) {
 					sum += num;
 				}
-				std::cout << "Æ½¾ù³ö½ğÊı£º" << (int)(sum / count_list.size() + 0.5) << std::endl << std::endl;
+				std::cout << "å¹³å‡å‡ºé‡‘æ•°ï¼š" << (int)(sum / count_list.size() + 0.5) << std::endl << std::endl;
 			}
 		}
 	}

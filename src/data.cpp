@@ -1,73 +1,73 @@
-#include "data.h"
+ï»¿#include "data.h"
 
 void initData() {
 	json default_data = json::object();
-	//È·±£dataÄ¿Â¼´æÔÚ
+	//ç¡®ä¿dataç›®å½•å­˜åœ¨
 	makedirs("data");
-	//¶ÁÈ¡hashÖµ
+	//è¯»å–hashå€¼
 	std::string file_hash = config["hash"].get<std::string>();
-	//È·±£jsonÎÄ¼ş´æÔÚ
+	//ç¡®ä¿jsonæ–‡ä»¶å­˜åœ¨
 	if (!std::filesystem::exists("./data/gacha_list.json")) {
 		WriteJsonFile("./data/gacha_list.json", default_data);
 	}
-	//¶ÁÈ¡Êı¾İ
+	//è¯»å–æ•°æ®
 	try {
 		old_gacha_list = ReadJsonFile("./data/gacha_list.json");
 	}
 	catch (const json::parse_error& e) {
-		std::cerr << "json½âÎöÊ§°Ü£¬ÕıÔÚ´´½¨" << std::endl;
+		std::cerr << "jsonè§£æå¤±è´¥ï¼Œæ­£åœ¨åˆ›å»º" << std::endl;
 		old_gacha_list = default_data;
 		WriteJsonFile("./data/gacha_list.json", default_data);
 	}
 	catch (...) {
-		std::cerr << "Î´Öª´íÎó" << std::endl;
+		std::cerr << "æœªçŸ¥é”™è¯¯" << std::endl;
 		old_gacha_list = default_data;
 	}
-	//±È¶Ôhash£¬Èô²»Ò»ÖÂ£¬Ôò¼ì²âÎÄ¼şÊÇ·ñºÏ·¨
+	//æ¯”å¯¹hashï¼Œè‹¥ä¸ä¸€è‡´ï¼Œåˆ™æ£€æµ‹æ–‡ä»¶æ˜¯å¦åˆæ³•
 	if (sha256_file_streaming("./data/gacha_list.json") == config["hash"].get<std::string>()) {
-		std::cout << "ÎÄ¼şĞ£ÑéÍ¨¹ı" << std::endl;
+		std::cout << "æ–‡ä»¶æ ¡éªŒé€šè¿‡" << std::endl;
 	}
 	else {
-		std::cout << "hash±È¶ÔÎ´Í¨¹ı£¬ÕıÔÚĞ£ÑéÊı¾İºÏ·¨ĞÔ" << std::endl;
+		std::cout << "hashæ¯”å¯¹æœªé€šè¿‡ï¼Œæ­£åœ¨æ ¡éªŒæ•°æ®åˆæ³•æ€§" << std::endl;
 		int count = 0;
 		while (true) {
 			count++;
 			json validate_result = validate_data();
 			if (validate_result["code"] == 0) {
-				std::cout << "ÎÄ¼şĞ£ÑéÍ¨¹ı" << std::endl;
+				std::cout << "æ–‡ä»¶æ ¡éªŒé€šè¿‡" << std::endl;
 				config["hash"] = sha256_file_streaming("./data/gacha_list.json");
 				WriteConfig();
 				break;
 			}
 			else if (validate_result["code"] == 1) {
-				//É¾³ı´íÎóuid
+				//åˆ é™¤é”™è¯¯uid
 				old_gacha_list.erase(validate_result["data"]["uid"].get<std::string>());
 			}
 			else if (validate_result["code"] == 2) {
-				//¶Ôuid´íÎóÖµ¸³¿Õ×Öµä
+				//å¯¹uidé”™è¯¯å€¼èµ‹ç©ºå­—å…¸
 				old_gacha_list[validate_result["data"]["uid"].get<std::string>()] = json::object();
 			}
 			else if (validate_result["code"] == 3) {
-				//É¾³ı·Ç·¨¿¨³Økey
+				//åˆ é™¤éæ³•å¡æ± key
 				old_gacha_list[validate_result["data"]["uid"].get<std::string>()].erase(validate_result["data"]["key"].get<std::string>());
 			}
 			else if (validate_result["code"] == 4) {
-				//¶ÔkeyµÄ´íÎóÖµ¸³¿ÕÁĞ±í
+				//å¯¹keyçš„é”™è¯¯å€¼èµ‹ç©ºåˆ—è¡¨
 				old_gacha_list[validate_result["data"]["uid"].get<std::string>()][validate_result["data"]["key"].get<std::string>()] = json::array();
 			}
 			else if (validate_result["code"] == 5) {
-				//²¹È«È±Ê§µÄkey
+				//è¡¥å…¨ç¼ºå¤±çš„key
 				old_gacha_list[validate_result["data"]["uid"].get<std::string>()][validate_result["data"]["key"].get<std::string>()] = json::array();
 			}
 			else if (validate_result["code"] == 6 or validate_result["code"] == 7 or validate_result["code"] == 8 or validate_result["code"] == 9 or validate_result["code"] == 10 or validate_result["code"] == 11) {
-				//É¾³ıÖµÀàĞÍ´íÎóµÄÔªËØ
+				//åˆ é™¤å€¼ç±»å‹é”™è¯¯çš„å…ƒç´ 
 				old_gacha_list[validate_result["data"]["uid"].get<std::string>()][validate_result["data"]["key"].get<std::string>()].erase(old_gacha_list[validate_result["data"]["uid"].get<std::string>()][validate_result["data"]["key"].get<std::string>()].begin() + validate_result["data"]["index"]);
 			}
 			else if (validate_result["code"] == 12) {
 				std::sort(old_gacha_list[validate_result["data"]["uid"].get<std::string>()][validate_result["data"]["key"].get<std::string>()].begin(), old_gacha_list[validate_result["data"]["uid"].get<std::string>()][validate_result["data"]["key"].get<std::string>()].end(), compareByTime);
 			}
 			else {
-				throw std::runtime_error("³öÏÖÎ´ÖªÇé¿ö");
+				throw std::runtime_error("å‡ºç°æœªçŸ¥æƒ…å†µ");
 			}
 		}
 		if (count != 1) {
@@ -77,17 +77,17 @@ void initData() {
 }
 
 void WriteData(const json& data) {
-	//»ñÈ¡Ê±¼ä´Á
+	//è·å–æ—¶é—´æˆ³
 	std::int64_t timestamp = get_timestamp();
-	//±¸·İµ±Ç°ÎÄ¼ş
+	//å¤‡ä»½å½“å‰æ–‡ä»¶
 	try {
 		std::filesystem::copy_file("./data/gacha_list.json", "./data/gacha_list_" + std::to_string(timestamp) + ".json.bak", std::filesystem::copy_options::overwrite_existing);
 	}
 	catch (const std::filesystem::filesystem_error& e) {
-		std::cerr << "±¸·İÊ§°Ü " << e.what() << std::endl;
+		std::cerr << "å¤‡ä»½å¤±è´¥ " << e.what() << std::endl;
 	}
 	WriteJsonFile("./data/gacha_list.json", old_gacha_list);
-	//¸üĞÂÅäÖÃµÄhashÖµ
+	//æ›´æ–°é…ç½®çš„hashå€¼
 	config["hash"] = sha256_file_streaming("./data/gacha_list.json");
 	WriteConfig();
 	trim_backup_files("./data", 9);
@@ -110,17 +110,17 @@ void trim_backup_files(const std::string& dir, int max_backup_count) {
 	}
 
 	if (backups.size() > static_cast<size_t>(max_backup_count)) {
-		// °´Ê±¼ä´ÁÉıĞòÅÅĞò£¨×î¾ÉµÄÔÚÇ°£©
+		// æŒ‰æ—¶é—´æˆ³å‡åºæ’åºï¼ˆæœ€æ—§çš„åœ¨å‰ï¼‰
 		std::sort(backups.begin(), backups.end());
 
 		size_t num_to_delete = backups.size() - max_backup_count;
 		for (size_t i = 0; i < num_to_delete; ++i) {
 			try {
 				fs::remove(backups[i].second);
-				std::cout << "ÒÑÉ¾³ı±¸·İ: " << backups[i].second << std::endl;
+				std::cout << "å·²åˆ é™¤å¤‡ä»½: " << backups[i].second << std::endl;
 			}
 			catch (const fs::filesystem_error& e) {
-				std::cerr << "É¾³ıÊ§°Ü: " << e.what() << std::endl;
+				std::cerr << "åˆ é™¤å¤±è´¥: " << e.what() << std::endl;
 			}
 		}
 	}

@@ -1,19 +1,19 @@
-#include "utils.h"
+ï»¿#include "utils.h"
 
 std::string RunAndGetOutput(const std::string& exePath) {
 	HANDLE hRead, hWrite;
 	SECURITY_ATTRIBUTES sa = { sizeof(SECURITY_ATTRIBUTES), NULL, TRUE };
 
-	// ´´½¨ÄäÃû¹ÜµÀ
+	// åˆ›å»ºåŒ¿åç®¡é“
 	if (!CreatePipe(&hRead, &hWrite, &sa, 0)) {
 		std::cerr << "CreatePipe failed.\n";
 		return "";
 	}
 
-	// ÉèÖÃĞ´¶Ë¼Ì³ĞÊôĞÔÎª false
+	// è®¾ç½®å†™ç«¯ç»§æ‰¿å±æ€§ä¸º false
 	SetHandleInformation(hRead, HANDLE_FLAG_INHERIT, 0);
 
-	// ÉèÖÃÆô¶¯ĞÅÏ¢ÒÔÖØ¶¨ÏòÊä³ö
+	// è®¾ç½®å¯åŠ¨ä¿¡æ¯ä»¥é‡å®šå‘è¾“å‡º
 	STARTUPINFOA si = { sizeof(si) };
 	si.dwFlags = STARTF_USESTDHANDLES;
 	si.hStdOutput = hWrite;
@@ -22,12 +22,12 @@ std::string RunAndGetOutput(const std::string& exePath) {
 
 	PROCESS_INFORMATION pi;
 
-	// ´´½¨½ø³Ì
+	// åˆ›å»ºè¿›ç¨‹
 	if (!CreateProcessA(
 		NULL,
-		const_cast<LPSTR>(exePath.c_str()),  // ¿ÉĞŞ¸ÄµÄ×Ö·û´®
+		const_cast<LPSTR>(exePath.c_str()),  // å¯ä¿®æ”¹çš„å­—ç¬¦ä¸²
 		NULL, NULL, TRUE,
-		CREATE_NO_WINDOW,//¿É¸ÄÎª0
+		CREATE_NO_WINDOW,//å¯æ”¹ä¸º0
 		NULL, NULL,
 		&si, &pi))
 	{
@@ -37,10 +37,10 @@ std::string RunAndGetOutput(const std::string& exePath) {
 		return "";
 	}
 
-	// ¹Ø±ÕĞ´¶ËÒÔ·ÀËÀËø
+	// å…³é—­å†™ç«¯ä»¥é˜²æ­»é”
 	CloseHandle(hWrite);
 
-	// ¶ÁÈ¡Êä³ö
+	// è¯»å–è¾“å‡º
 	char buffer[4096];
 	DWORD bytesRead;
 	std::string output;
@@ -50,10 +50,10 @@ std::string RunAndGetOutput(const std::string& exePath) {
 		output += buffer;
 	}
 
-	// µÈ´ı×Ó½ø³Ì½áÊø
+	// ç­‰å¾…å­è¿›ç¨‹ç»“æŸ
 	WaitForSingleObject(pi.hProcess, INFINITE);
 
-	// ÇåÀí¾ä±ú
+	// æ¸…ç†å¥æŸ„
 	CloseHandle(pi.hProcess);
 	CloseHandle(pi.hThread);
 	CloseHandle(hRead);
@@ -73,7 +73,7 @@ std::string sha256_file_streaming(const std::string& filepath) {
 	picosha2::hash256_one_by_one hasher;
 	hasher.init();
 
-	std::vector<unsigned char> buffer(8192);  // 8KB»º´æ
+	std::vector<unsigned char> buffer(8192);  // 8KBç¼“å­˜
 	while (file) {
 		file.read(reinterpret_cast<char*>(buffer.data()), buffer.size());
 		std::streamsize read_bytes = file.gcount();
@@ -102,14 +102,14 @@ std::string gbk_to_utf8(const std::string& gbk) {
 }
 
 std::string utf8_to_gbk(const std::string& utf8) {
-	// µÚÒ»²½£ºUTF-8 ×ª¿í×Ö·û£¨UTF-16£©
+	// ç¬¬ä¸€æ­¥ï¼šUTF-8 è½¬å®½å­—ç¬¦ï¼ˆUTF-16ï¼‰
 	int wide_len = MultiByteToWideChar(CP_UTF8, 0, utf8.c_str(), -1, nullptr, 0);
 	if (wide_len <= 0) return "";
 
 	std::wstring wide_str(wide_len, 0);
 	MultiByteToWideChar(CP_UTF8, 0, utf8.c_str(), -1, &wide_str[0], wide_len);
 
-	// µÚ¶ş²½£º¿í×Ö·û×ª CP_ACP£¨Èç GBK£©
+	// ç¬¬äºŒæ­¥ï¼šå®½å­—ç¬¦è½¬ CP_ACPï¼ˆå¦‚ GBKï¼‰
 	int gbk_len = WideCharToMultiByte(CP_ACP, 0, wide_str.c_str(), -1, nullptr, 0, nullptr, nullptr);
 	if (gbk_len <= 0) return "";
 
@@ -122,19 +122,19 @@ std::string utf8_to_gbk(const std::string& utf8) {
 json ReadJsonFile(const std::string& path) {
 	std::ifstream f(path);
 	if (!f) {
-		std::cout << "ÎÄ¼ş²»´æÔÚ£¡" << std::endl;
-		throw std::runtime_error("ÎŞ·¨´ò¿ªÎÄ¼ş: " + path);
+		std::cout << "æ–‡ä»¶ä¸å­˜åœ¨ï¼" << std::endl;
+		throw std::runtime_error("æ— æ³•æ‰“å¼€æ–‡ä»¶: " + path);
 	}
 	json data;
 	try {
 		f >> data;
 	}
 	catch (const json::parse_error& e) {
-		std::cerr << "Òì³£·¢Éú: " << e.what() << std::endl;
+		std::cerr << "å¼‚å¸¸å‘ç”Ÿ: " << e.what() << std::endl;
 		throw;
 	}
 	catch (...) {
-		std::cerr << "Î´Öª´íÎó: " << std::endl;
+		std::cerr << "æœªçŸ¥é”™è¯¯: " << std::endl;
 		throw;
 	}
 	return data;
@@ -144,27 +144,27 @@ void WriteJsonFile(const std::string& path, const json& data) {
 	std::ofstream f(path);
 	f.exceptions(std::ofstream::failbit | std::ofstream::badbit);
 	if (!f) {
-		throw std::runtime_error("´ò¿ªÎÄ¼şÊ§°Ü£¡");
+		throw std::runtime_error("æ‰“å¼€æ–‡ä»¶å¤±è´¥ï¼");
 	}
 	try {
 		f << data.dump(2);
 	}
 	catch (const json::type_error& e) {
-		std::cerr << "Òì³£·¢Éú: " << e.what() << std::endl;
+		std::cerr << "å¼‚å¸¸å‘ç”Ÿ: " << e.what() << std::endl;
 		throw;
 	}
 	catch (const std::ios_base::failure& e) {
 		throw std::runtime_error(
-			"Ğ´ÈëÎÄ¼şÊ§°Ü: " + std::string(e.what()));
+			"å†™å…¥æ–‡ä»¶å¤±è´¥: " + std::string(e.what()));
 	}
 	catch (...) {
-		std::cerr << "Î´Öª´íÎó: " << std::endl;
+		std::cerr << "æœªçŸ¥é”™è¯¯: " << std::endl;
 		throw;
 	}
 }
 
 void makedirs(const std::string& path) {
-	std::error_code ec; // ·ÀÖ¹Å×Òì³£
+	std::error_code ec; // é˜²æ­¢æŠ›å¼‚å¸¸
 	if (!std::filesystem::exists(path)) {
 		if (!std::filesystem::create_directories(path, ec)) {
 			if (ec) {

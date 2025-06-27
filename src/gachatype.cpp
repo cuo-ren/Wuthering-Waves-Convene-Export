@@ -1,39 +1,39 @@
-#include "gachatype.h"
+ï»¿#include "gachatype.h"
 
 void initGachaType() {
-	//¶ÁÈ¡ÎÄ¼ş£¬²»´æÔÚ»ò½âÎöÊ§°ÜÊ±£¬Ê¹ÓÃÄ¬ÈÏÅäÖÃ¸²¸Ç
+	//è¯»å–æ–‡ä»¶ï¼Œä¸å­˜åœ¨æˆ–è§£æå¤±è´¥æ—¶ï¼Œä½¿ç”¨é»˜è®¤é…ç½®è¦†ç›–
 	json default_gacha_type = {
 		{"data", {
-			{ { "key", "1" }, { "name", gbk_to_utf8("½ÇÉ«»î¶¯»½È¡") } },//ÕâÀïÒÔºó»»³Éid
-			{ { "key", "2" }, { "name", gbk_to_utf8("ÎäÆ÷»î¶¯»½È¡") } },
-			{ { "key", "3" }, { "name", gbk_to_utf8("½ÇÉ«³£×¤»½È¡") } },
-			{ { "key", "4" }, { "name", gbk_to_utf8("ÎäÆ÷³£×¤»½È¡") } },
-			{ { "key", "5" }, { "name", gbk_to_utf8("ĞÂÊÖ»½È¡") } },
-			{ { "key", "6" }, { "name", gbk_to_utf8("ĞÂÊÖ×ÔÑ¡»½È¡") } },
-			{ { "key", "7" }, { "name", gbk_to_utf8("ĞÂÊÖ×ÔÑ¡»½È¡(¸Ğ¶÷¶¨Ïò»½È¡)") } },
-			{ { "key", "8" }, { "name", gbk_to_utf8("½ÇÉ«ĞÂÂÃ»½È¡") } },
-			{ { "key", "9" }, { "name", gbk_to_utf8("ÎäÆ÷ĞÂÂÃ»½È¡") } }
+			{ { "key", "1" }, { "name", gbk_to_utf8("è§’è‰²æ´»åŠ¨å”¤å–") } },//è¿™é‡Œä»¥åæ¢æˆid
+			{ { "key", "2" }, { "name", gbk_to_utf8("æ­¦å™¨æ´»åŠ¨å”¤å–") } },
+			{ { "key", "3" }, { "name", gbk_to_utf8("è§’è‰²å¸¸é©»å”¤å–") } },
+			{ { "key", "4" }, { "name", gbk_to_utf8("æ­¦å™¨å¸¸é©»å”¤å–") } },
+			{ { "key", "5" }, { "name", gbk_to_utf8("æ–°æ‰‹å”¤å–") } },
+			{ { "key", "6" }, { "name", gbk_to_utf8("æ–°æ‰‹è‡ªé€‰å”¤å–") } },
+			{ { "key", "7" }, { "name", gbk_to_utf8("æ–°æ‰‹è‡ªé€‰å”¤å–(æ„Ÿæ©å®šå‘å”¤å–)") } },
+			{ { "key", "8" }, { "name", gbk_to_utf8("è§’è‰²æ–°æ—…å”¤å–") } },
+			{ { "key", "9" }, { "name", gbk_to_utf8("æ­¦å™¨æ–°æ—…å”¤å–") } }
 		}}
 	};
-	//¶ÁÈ¡¿¨³ØÅäÖÃÎÄ¼ş
+	//è¯»å–å¡æ± é…ç½®æ–‡ä»¶
 	try {
 		gacha_type = ReadJsonFile("GachaType.json");
 	}
 	catch (const std::runtime_error& e) {
-		std::cerr << "ÎÄ¼ş´ò¿ªÊ§°Ü£¬ÕıÔÚ´´½¨" << std::endl;
+		std::cerr << "æ–‡ä»¶æ‰“å¼€å¤±è´¥ï¼Œæ­£åœ¨åˆ›å»º" << std::endl;
 		gacha_type = default_gacha_type;
 		WriteJsonFile("GachaType.json", default_gacha_type);
 	}
 	catch (const json::parse_error& e) {
-		std::cerr << "json½âÎöÊ§°Ü£¬ÕıÔÚ´´½¨" << std::endl;
+		std::cerr << "jsonè§£æå¤±è´¥ï¼Œæ­£åœ¨åˆ›å»º" << std::endl;
 		gacha_type = default_gacha_type;
 		WriteJsonFile("GachaType.json", default_gacha_type);
 	}
 	catch (...) {
-		std::cerr << "Î´Öª´íÎó" << std::endl;
+		std::cerr << "æœªçŸ¥é”™è¯¯" << std::endl;
 		gacha_type = default_gacha_type;
 	}
-	//Ğ£ÑéGachaTypeÊÇ·ñ·ûºÏÒªÇó
+	//æ ¡éªŒGachaTypeæ˜¯å¦ç¬¦åˆè¦æ±‚
 	if (!validate_GachaType(gacha_type)) {
 		gacha_type = default_gacha_type;
 		WriteJsonFile("GachaType.json", default_gacha_type);

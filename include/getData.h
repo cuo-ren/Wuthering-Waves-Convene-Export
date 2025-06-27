@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "globals.h"
 #include "config.h"
 #include "utils.h"

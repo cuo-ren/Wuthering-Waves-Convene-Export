@@ -1,8 +1,8 @@
-#include "path.h"
+ï»¿#include "path.h"
 
 bool FindGamePath() {
-	std::cout << "ÕýÔÚ²éÕÒÓÎÏ·Â·¾¶\n";
-	// »ñÈ¡ APPDATA »·¾³±äÁ¿
+	std::cout << "æ­£åœ¨æŸ¥æ‰¾æ¸¸æˆè·¯å¾„\n";
+	// èŽ·å– APPDATA çŽ¯å¢ƒå˜é‡
 	char* appdata = nullptr;
 	size_t len = 0;
 	errno_t err = _dupenv_s(&appdata, &len, "APPDATA");
@@ -16,7 +16,7 @@ bool FindGamePath() {
 		return false;
 	}
 
-	// µÝ¹éËÑË÷ËùÓÐ kr_starter_game.json ÎÄ¼þ
+	// é€’å½’æœç´¢æ‰€æœ‰ kr_starter_game.json æ–‡ä»¶
 	for (auto& p : std::filesystem::recursive_directory_iterator(base)) {
 		if (p.path().filename() == "kr_starter_game.json") {
 			try {
@@ -31,7 +31,7 @@ bool FindGamePath() {
 				}
 			}
 			catch (const std::exception& e) {
-				// json ½âÎö»òÎÄ¼þ¶ÁÈ¡Òì³££¬Ìø¹ý
+				// json è§£æžæˆ–æ–‡ä»¶è¯»å–å¼‚å¸¸ï¼Œè·³è¿‡
 				continue;
 			}
 		}
@@ -40,9 +40,9 @@ bool FindGamePath() {
 }
 
 std::string SelectGamePath() {
-	// Windows ÎÄ¼þ¼ÐÑ¡Ôñ¶Ô»°¿òÊµÏÖ
+	// Windows æ–‡ä»¶å¤¹é€‰æ‹©å¯¹è¯æ¡†å®žçŽ°
 	BROWSEINFO bi = { 0 };
-	bi.lpszTitle = L"ÇëÑ¡ÔñÓÎÏ·Ä¿Â¼";
+	bi.lpszTitle = L"è¯·é€‰æ‹©æ¸¸æˆç›®å½•";
 	bi.ulFlags = BIF_RETURNONLYFSDIRS | BIF_NEWDIALOGSTYLE;
 
 	LPITEMIDLIST pidl = SHBrowseForFolder(&bi);
@@ -55,32 +55,32 @@ std::string SelectGamePath() {
 	}
 	CoTaskMemFree(pidl);
 
-	// ×ª»» wchar_t* µ½ std::string (¼ÙÉèÂ·¾¶ÖÐÎÞÖÐÎÄ»òÄãÐèÒª¶îÍâ´¦Àí±àÂë)
+	// è½¬æ¢ wchar_t* åˆ° std::string (å‡è®¾è·¯å¾„ä¸­æ— ä¸­æ–‡æˆ–ä½ éœ€è¦é¢å¤–å¤„ç†ç¼–ç )
 	int size_needed = WideCharToMultiByte(CP_UTF8, 0, path, -1, NULL, 0, NULL, NULL);
 	std::string folder(size_needed, 0);
 	WideCharToMultiByte(CP_UTF8, 0, path, -1, &folder[0], size_needed, NULL, NULL);
-	folder.resize(size_needed - 1); // È¥µôÄ©Î²µÄ'\0'
+	folder.resize(size_needed - 1); // åŽ»æŽ‰æœ«å°¾çš„'\0'
 
 	return folder;
 }
 
 void FindGameLog() {
-	// ÇåÆÁ
+	// æ¸…å±
 	system("cls");
 
 	std::string log_path = utf8_to_gbk(config["path"].get<std::string>()) + "/Client/Saved/Logs/Client.log";
 
 	if (!std::filesystem::exists(log_path)) {
-		std::cout << "Î´ÕÒµ½logÎÄ¼þ\n";
+		std::cout << "æœªæ‰¾åˆ°logæ–‡ä»¶\n";
 		bool r = FindGamePath();
 		if (!r) {
-			std::cout << "ÕÒ²»µ½ÓÎÏ·Â·¾¶\n";
+			std::cout << "æ‰¾ä¸åˆ°æ¸¸æˆè·¯å¾„\n";
 			std::string game_path = SelectGamePath();
 			if (!std::filesystem::exists(game_path + "/Client/Saved/Logs/Client.log")) {
-				std::cout << "Ñ¡ÔñÂ·¾¶´íÎó" << std::endl;;
+				std::cout << "é€‰æ‹©è·¯å¾„é”™è¯¯" << std::endl;;
 				config["path"] = "";
 				WriteConfig();
-				std::cout << "°´ÈÎÒâ¼ü·µ»Ø" << std::endl;
+				std::cout << "æŒ‰ä»»æ„é”®è¿”å›ž" << std::endl;
 				system("pause");
 				return;
 			}
@@ -90,9 +90,9 @@ void FindGameLog() {
 			}
 		}
 		else {
-			std::cout << "³É¹¦²éÕÒµ½ÓÎÏ·Â·¾¶:" << utf8_to_gbk(config["path"]) << std::endl;
+			std::cout << "æˆåŠŸæŸ¥æ‰¾åˆ°æ¸¸æˆè·¯å¾„:" << utf8_to_gbk(config["path"]) << std::endl;
 		}
 	}
-	std::cout << "°´ÈÎÒâ¼ü·µ»Ø" << std::endl;
+	std::cout << "æŒ‰ä»»æ„é”®è¿”å›ž" << std::endl;
 	system("pause");
 }
