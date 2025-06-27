@@ -25,7 +25,7 @@ def export_to_excel():
         wb = Workbook()
         wb.remove(wb.active)
         for key in old_gacha_list[uid]:
-            for t in gacha_type["zh-cn"]:
+            for t in gacha_type["data"]:
                 if t["key"] == key:
                     ws = wb.create_sheet(title=t["name"])
                     break
