@@ -90,7 +90,7 @@ void change_active_uid() {
 	}
 	while (true) {
 		//«Â∆¡
-		std::cout << "\033c";
+		system("cls");
 		int count = 0;
 		for (std::string uid : uid_list) {
 			count++;
