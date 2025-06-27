@@ -1,0 +1,24 @@
+# Visual Studio build files
+*.obj
+*.pdb
+*.exe
+*.ilk
+*.aps
+*.bak
+*.user
+*.suo
+*.vcxproj.user
+*.7z
+*.log
+
+# Python cache
+__pycache__/
+*.pyc
+
+# VS build folders
+/x64/
+/Debug/
+/Release/
+
+# Your backup folder (if you make one)
+/backup/

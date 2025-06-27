@@ -70,6 +70,12 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <IncludePath>$(ProjectDir)\include;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <IncludePath>$(ProjectDir)\include;$(IncludePath)</IncludePath>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -129,45 +135,44 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="config.cpp" />
-    <ClCompile Include="data.cpp" />
-    <ClCompile Include="export.cpp" />
-    <ClCompile Include="gachatype.cpp" />
-    <ClCompile Include="getData.cpp" />
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="path.cpp" />
-    <ClCompile Include="show.cpp" />
-    <ClCompile Include="utils.cpp" />
-    <ClCompile Include="validate.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="config.h" />
-    <ClInclude Include="data.h" />
-    <ClInclude Include="export.h" />
-    <ClInclude Include="gachatype.h" />
-    <ClInclude Include="getData.h" />
-    <ClInclude Include="globals.h" />
-    <ClInclude Include="json.hpp" />
-    <ClInclude Include="path.h" />
-    <ClInclude Include="picosha2.h" />
-    <ClInclude Include="resource.h" />
-    <ClInclude Include="show.h" />
-    <ClInclude Include="utils.h" />
-    <ClInclude Include="validate.h" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="config.json" />
     <None Include="data\gacha_list.json" />
-    <None Include="export.py" />
     <None Include="GachaType.json" />
-    <None Include="request.py" />
+    <None Include="python\export.py" />
+    <None Include="python\request.py" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="..\..\..\Desktop\鸣潮记录导出python\favicon.ico" />
-    <Image Include="favicon.ico" />
+    <ClCompile Include="src\config.cpp" />
+    <ClCompile Include="src\data.cpp" />
+    <ClCompile Include="src\export.cpp" />
+    <ClCompile Include="src\gachatype.cpp" />
+    <ClCompile Include="src\getData.cpp" />
+    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\path.cpp" />
+    <ClCompile Include="src\show.cpp" />
+    <ClCompile Include="src\utils.cpp" />
+    <ClCompile Include="src\validate.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="Wuthering Waves Convene Export.rc" />
+    <ClInclude Include="include\config.h" />
+    <ClInclude Include="include\data.h" />
+    <ClInclude Include="include\export.h" />
+    <ClInclude Include="include\gachatype.h" />
+    <ClInclude Include="include\getData.h" />
+    <ClInclude Include="include\globals.h" />
+    <ClInclude Include="include\json.hpp" />
+    <ClInclude Include="include\path.h" />
+    <ClInclude Include="include\picosha2.h" />
+    <ClInclude Include="include\resource.h" />
+    <ClInclude Include="include\show.h" />
+    <ClInclude Include="include\utils.h" />
+    <ClInclude Include="include\validate.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="resource\favicon.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="resource\Wuthering Waves Convene Export.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

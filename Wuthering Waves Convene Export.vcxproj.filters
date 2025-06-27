@@ -39,79 +39,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="utils.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="config.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="export.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="validate.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="data.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="gachatype.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="path.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="getData.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="show.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="globals.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="utils.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="config.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="export.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="validate.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="data.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="gachatype.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="path.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="getData.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="show.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="json.hpp">
-      <Filter>头文件\外部依赖</Filter>
-    </ClInclude>
-    <ClInclude Include="picosha2.h">
-      <Filter>头文件\外部依赖</Filter>
-    </ClInclude>
-    <ClInclude Include="resource.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="config.json">
       <Filter>资源文件</Filter>
     </None>
@@ -121,23 +48,93 @@
     <None Include="data\gacha_list.json">
       <Filter>资源文件\data</Filter>
     </None>
-    <None Include="export.py">
+    <None Include="python\export.py">
       <Filter>头文件\python</Filter>
     </None>
-    <None Include="request.py">
+    <None Include="python\request.py">
       <Filter>头文件\python</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="..\..\..\Desktop\鸣潮记录导出python\favicon.ico">
-      <Filter>资源文件</Filter>
-    </Image>
-    <Image Include="favicon.ico">
+    <ClCompile Include="src\config.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\data.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\export.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\gachatype.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\getData.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\main.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\path.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\show.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utils.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\validate.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\json.hpp">
+      <Filter>头文件\外部依赖</Filter>
+    </ClInclude>
+    <ClInclude Include="include\picosha2.h">
+      <Filter>头文件\外部依赖</Filter>
+    </ClInclude>
+    <ClInclude Include="include\config.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="include\data.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="include\export.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gachatype.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="include\getData.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="include\globals.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="include\path.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="include\resource.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="include\show.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="include\utils.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="include\validate.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="resource\favicon.ico">
       <Filter>资源文件</Filter>
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="Wuthering Waves Convene Export.rc">
+    <ResourceCompile Include="resource\Wuthering Waves Convene Export.rc">
       <Filter>资源文件</Filter>
     </ResourceCompile>
   </ItemGroup>
