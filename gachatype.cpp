@@ -3,8 +3,8 @@
 void initGachaType() {
 	//读取文件，不存在或解析失败时，使用默认配置覆盖
 	json default_gacha_type = {
-		{"zh-cn", {
-			{ { "key", "1" }, { "name", gbk_to_utf8("角色活动唤取") } },
+		{"data", {
+			{ { "key", "1" }, { "name", gbk_to_utf8("角色活动唤取") } },//这里以后换成id
 			{ { "key", "2" }, { "name", gbk_to_utf8("武器活动唤取") } },
 			{ { "key", "3" }, { "name", gbk_to_utf8("角色常驻唤取") } },
 			{ { "key", "4" }, { "name", gbk_to_utf8("武器常驻唤取") } },
@@ -15,7 +15,7 @@ void initGachaType() {
 			{ { "key", "9" }, { "name", gbk_to_utf8("武器新旅唤取") } }
 		}}
 	};
-
+	//读取卡池配置文件
 	try {
 		gacha_type = ReadJsonFile("GachaType.json");
 	}
