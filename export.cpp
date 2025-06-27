@@ -24,12 +24,10 @@ void export_to_csv() {
 		for (auto& [key, items] : pools.items()) {
 			// 获取中文卡池名，默认使用 key
 			std::string pool_name = key;
-			if (gacha_type.contains("zh-cn") && gacha_type["zh-cn"].is_array()) {
-				for (const auto& t : gacha_type["zh-cn"]) {
-					if (t.contains("key") && t["key"] == key && t.contains("name")) {
-						pool_name = t["name"];
-						break;
-					}
+			for (const auto& t : gacha_type["data"]) {
+				if (t.contains("key") && t["key"] == key && t.contains("name")) {
+					pool_name = t["name"];
+					break;
 				}
 			}
 
@@ -64,7 +62,7 @@ void export_to_uigf3() {
 		json uigf3;
 		uigf3["info"] = {
 			{"uid", uid},
-			{"lang", "zh-cn"},
+			{"lang", config["language"]},
 			{"export_timestamp", get_timestamp()},
 			{"export_time", current_time_str()},
 			{"export_app", "test.exe"},
@@ -77,12 +75,11 @@ void export_to_uigf3() {
 		for (auto& [key, items] : pools.items()) {
 			// 找中文卡池名
 			std::string pool_name = key;
-			if (gacha_type.contains("zh-cn") && gacha_type["zh-cn"].is_array()) {
-				for (const auto& t : gacha_type["zh-cn"]) {
-					if (t.contains("key") && t["key"] == key && t.contains("name")) {
-						pool_name = t["name"];
-						break;
-					}
+
+			for (const auto& t : gacha_type["data"]) {
+				if (t.contains("key") && t["key"] == key && t.contains("name")) {
+					pool_name = t["name"];
+					break;
 				}
 			}
 
@@ -128,7 +125,7 @@ void export_to_uigf4() {
 		json uid_entry = {
 			{"uid", uid},
 			{"timezone", 8},
-			{"lang", "zh-cn"},
+			{"lang", config["language"]},
 			{"list", json::array()}
 		};
 
@@ -171,7 +168,7 @@ void export_data() {
 	makedirs("export");
 	while (true) {
 		//清屏
-		std::cout << "\033c";
+		system("cls");
 		std::cout << "1:导出为excel表格" << std::endl;
 		std::cout << "2:导出为csv文件" << std::endl;
 		std::cout << "3:导出为UIGF 3.0 格式" << std::endl;
