@@ -24,43 +24,40 @@ bool validate_datetime(const std::string& datetime) {
 }
 
 bool validate_GachaType(const json& data) {
-	std::vector<std::string> language_list = {
-		"de-de", "en-us", "es-es", "fr-fr", "id-id", "it-it",
-		"ja-jp", "ko-kr", "pt-pt", "ru-ru", "th-th", "tr-tr",
-		"vi-vn", "zh-cn", "zh-tw"
-	};
-	for (auto& [language, value] : data.items()) {
-		if ((std::find(language_list.begin(), language_list.end(), language)) == language_list.end()) {
-			std::cerr << "不支持的语言" << std::endl;
+	//判断是否存在data
+	if (!data.contains("data")) {
+		std::cerr << "卡池配置数据不存在" << std::endl;
+		return false;
+	}
+	//判断data是否是数组
+	if (!data["data"].is_array()) {
+		std::cerr << "卡池配置类型错误" << std::endl;
+		return false;
+	}
+
+	for (auto& item : data["data"]) {
+		if ((item.size() != 2) or (!item.contains("key")) or (!item.contains("name"))) {
+			std::cerr << "字段数量错误" << std::endl;
 			return false;
 		}
-		if (!value.is_array()) {
-			std::cerr << "类型错误" << std::endl;
+		if (!item["key"].is_string() or !item["name"].is_string()) {
+			std::cerr << "字段类型错误" << std::endl;
 			return false;
 		}
-		for (auto& item : data[language]) {
-			if ((item.size() != 2) or (!item.contains("key")) or (!item.contains("name"))) {
-				std::cerr << "字段数量错误" << std::endl;
-				return false;
-			}
-			if (!item["key"].is_string() or !item["name"].is_string()) {
-				std::cerr << "字段类型错误" << std::endl;
-				return false;
-			}
-			int number;
-			try {
-				number = std::stoi(item["key"].get<std::string>());
-			}
-			catch (...) {
-				std::cerr << "key的值不是数字字符串" << std::endl;
-				return false;
-			}
-			if (std::to_string(number) != item["key"].get<std::string>()) {
-				std::cerr << "key的值不是数字字符串" << std::endl;
-				return false;
-			}
+		int number;
+		try {
+			number = std::stoi(item["key"].get<std::string>());
+		}
+		catch (...) {
+			std::cerr << "key的值不是数字字符串" << std::endl;
+			return false;
+		}
+		if (std::to_string(number) != item["key"].get<std::string>()) {
+			std::cerr << "key的值不是数字字符串" << std::endl;
+			return false;
 		}
 	}
+
 	return true;
 }
 
@@ -111,7 +108,7 @@ json validate_data() {
 	}
 	//先将GachaType的所有key保存进一个vector方便判断
 	std::vector<std::string> gacha_type_list;
-	for (auto& k : gacha_type["zh-cn"]) {
+	for (auto& k : gacha_type["data"]) {
 		gacha_type_list.push_back(k["key"].get<std::string>());
 	}
 	//校验每一个uid后的卡池id是否合法，是否齐全，每一个卡池id后是否为列表
