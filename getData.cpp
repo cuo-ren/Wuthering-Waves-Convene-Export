@@ -110,11 +110,11 @@ void merge(const std::string target_uid, json new_gacha_list) {
 	if (std::find(uid_list.begin(), uid_list.end(), target_uid) == uid_list.end()) {
 		//如果是新用户，则创建
 		old_gacha_list[target_uid] = json::object();
-		for (auto& t : gacha_type["zh-cn"]) {
+		for (auto& t : gacha_type["data"]) {
 			old_gacha_list[target_uid][t["key"].get<std::string>()] = json::array();
 		}
 	}
-	for (auto& t : gacha_type["zh-cn"]) {
+	for (auto& t : gacha_type["data"]) {
 		std::string gacha_key = t["key"].get<std::string>();
 		if (new_gacha_list[target_uid][gacha_key].size() == 0) {
 			//如果新数据为空，则跳过本次合并
@@ -229,7 +229,7 @@ void merge(const std::string target_uid, json new_gacha_list) {
 
 void update_data() {
 	//清屏
-	std::cout << "\033c";
+	system("cls");
 	//检查游戏日志路径是否有效
 	if (!std::filesystem::exists(utf8_to_gbk(config["path"]) + "/Client/Saved/Logs/Client.log")) {
 		std::cout << "未找到日志文件，请先查找游戏位置" << std::endl;
@@ -245,7 +245,7 @@ void update_data() {
 		//新建uid字段
 		new_gacha_list[uid] = json::object();
 		std::cout << "尝试获取" << uid << "数据" << std::endl;
-		for (auto& t : gacha_type["zh-cn"]) {
+		for (auto& t : gacha_type["data"]) {
 			std::cout << "正在获取" << utf8_to_gbk(t["name"]) << "数据" << std::endl;
 			//这里的数据是utf-8，注意转化
 			json new_data = get_gacha_data(urls[uid]["resources_id"].get<std::string>(), t["key"].get<std::string>(), uid, urls[uid]["record_id"].get<std::string>(), urls[uid]["svr_id"].get<std::string>());
