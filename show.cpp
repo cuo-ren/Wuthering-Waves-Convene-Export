@@ -3,7 +3,7 @@
 int show_menu() {
 	while (true) {
 		//清屏
-		std::cout << "\033c";
+		system("cls");
 		std::cout << "1:查看当前数据" << std::endl;
 		std::cout << "2:更新数据" << std::endl;
 		std::cout << "3:导出数据" << std::endl;
@@ -34,7 +34,7 @@ int show_menu() {
 
 void show_gacha_detail() {
 	//清屏
-	std::cout << "\033c";
+	system("cls");
 	std::vector<std::string> uid_list;
 	for (auto& [uid, value] : old_gacha_list.items()) {
 		uid_list.push_back(uid);
@@ -63,7 +63,7 @@ void show_gacha_detail() {
 	for (auto& [key, list] : old_gacha_list[config["active_uid"].get<std::string>()].items()) {
 		std::vector<int> count_list;
 		if (old_gacha_list[config["active_uid"].get<std::string>()][key].size() != 0) {
-			for (auto& t : gacha_type["zh-cn"]) {
+			for (auto& t : gacha_type["data"]) {
 				if (t["key"] == key) {
 					std::cout << "=========================================" << utf8_to_gbk(t["name"]) << "=========================================" << std::endl;
 					break;
