@@ -12,12 +12,14 @@
 #include "path.h"
 #include "getData.h"
 #include "show.h"
+
 //初始化全局变量
 json config;
 json gacha_type;
 json old_gacha_list;
 
 int main() {
+	show_about();
 	initConfig();
 	initGachaType();
 	initData();

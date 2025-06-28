@@ -100,3 +100,21 @@ void show_gacha_detail() {
 	}
 	system("pause");
 }
+
+void show_about() {
+	std::cout << "使用须知：" << std::endl;
+	std::cout << "1 本程序开源地址 https://github.com/cuo-ren/Wuthering-Waves-Convene-Export 开源协议 GPL-3.0 license" << std::endl;
+	std::cout << "2 程序数据存储在data目录，请谨慎删除" << std::endl;
+	std::cout << "3 若认为数据出现异常，可以在data目录寻找最近次的备份，手动覆盖还原" << std::endl;
+	std::cout << "4 本程序为开源/学习用途。作者不对因使用本程序产生的后果如数据丢失、系统错误等承担责任" << std::endl << std::endl;
+
+	std::cout << "使用方法：" << std::endl;
+	std::cout << "1 选择查找游戏,并选择游戏目录" << std::endl;
+	std::cout << "2 登录游戏，点击历史记录" << std::endl;
+	std::cout << "3 选择更新数据，完成记录导出" << std::endl << std::endl;
+
+	std::cout << "继续表明您已阅读并了解上述内容" << std::endl << std::endl;
+
+	system("pause");
+	system("cls");
+}
