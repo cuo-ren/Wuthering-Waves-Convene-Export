@@ -10,6 +10,7 @@
 *.vcxproj.user
 *.7z
 *.log
+*.json
 
 # Python cache
 __pycache__/
@@ -17,9 +18,13 @@ __pycache__/
 
 # VS build folders
 /.vs/
+/data/
 /x64/
 /Debug/
 /Release/
+/Wutherin.6d0d4311/
+/python/export/
+/python/request/
 
 # Your backup folder (if you make one)
 /backup/
