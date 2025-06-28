@@ -16,6 +16,7 @@ __pycache__/
 *.pyc
 
 # VS build folders
+/.vs/
 /x64/
 /Debug/
 /Release/
