@@ -76,7 +76,8 @@ void FindGameLog() {
 		if (!r) {
 			std::cout << "找不到游戏路径\n";
 			std::string game_path = SelectGamePath();
-			if (!std::filesystem::exists(game_path + "/Client/Saved/Logs/Client.log")) {
+
+			if (!std::filesystem::exists(utf8_to_gbk(game_path) + utf8_to_gbk("/Client/Saved/Logs/Client.log"))) {
 				std::cout << "选择路径错误" << std::endl;;
 				config["path"] = "";
 				WriteConfig();
@@ -85,7 +86,8 @@ void FindGameLog() {
 				return;
 			}
 			else {
-				config["path"] = gbk_to_utf8(game_path);
+				std::cout<< "已设置路径:" << utf8_to_gbk(game_path);
+				config["path"] = game_path;
 				WriteConfig();
 			}
 		}
