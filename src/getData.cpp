@@ -1,4 +1,6 @@
 ﻿#include "getData.h"
+#pragma comment(lib,"libssl.lib")
+#pragma comment(lib,"libcrypto.lib")
 
 std::map<std::string, std::string> get_params(const std::string& url) {
 	std::map<std::string, std::string> params;
@@ -73,32 +75,42 @@ json find_apis() {
 }
 
 json get_gacha_data(std::string cardPoolId, std::string cardPoolType, std::string playerId, std::string recordId, std::string serverId) {
-	//调用python进行post请求
-	//运行python命令
-	std::string cmd = "./python/request/request.exe ";//"python request.py ";
-	//添加url参数
-	cmd += "--url https://gmserver-api.aki-game2.com/gacha/record/query ";
-	//添加post参数
-	cmd += "--type post ";
-	//添加headers参数
-	cmd += "--headers \"{\\\"user-agent\\\":\\\"Mozilla / 5.0 (Windows NT 10.0; Win64; x64) AppleWebKit / 537.36 (KHTML, like Gecko) Chrome / 133.0.0.0 Safari / 537.36 Edg / 133.0.0.0\\\"}\" ";
-	//构造参数列表
-	cmd = cmd + "--params \"cardPoolId=" + cardPoolId + "|str&cardPoolType=" + cardPoolType + "|int&languageCode=" + "zh-Hans" + "|str&playerId=" + playerId + "|str&recordId=" + recordId + "|str&serverId=" + serverId + "|str\"";
-	//python,启动！
-	std::string output = gbk_to_utf8(RunAndGetOutput(cmd));
-	if (output.find("SUCCESS") == std::string::npos) {
-		std::cerr << "网络异常" << std::endl;
-		json result = {
-			{"code",-2}
-		};
-		return result;
-	}
-	else {
-		json result = json::parse(output.substr(8));
-		return result;
-	}
 
-	return json::object();
+	httplib::Client cli("https://gmserver-api.aki-game2.com");
+	cli.set_read_timeout(10, 0); // 10 秒超时
+
+	// 构造请求头
+	httplib::Headers headers = {
+		{ "User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36 Edg/133.0.0.0" },
+		{ "Content-Type", "application/json" }
+	};
+
+	// 构造请求体（JSON）
+
+	json post_data = {
+		{"cardPoolId", cardPoolId},
+		{"cardPoolType", std::stoi(cardPoolType)},
+		{"languageCode", "zh-Hans"},
+		{"playerId", playerId},
+		{"recordId", recordId},
+		{"serverId", serverId}
+	};
+
+	// 发起 POST 请求
+	auto res = cli.Post("/gacha/record/query", headers, post_data.dump(), "application/json");
+
+	if (!res || res->status != 200) {
+		std::cerr << "网络异常，状态码：" << (res ? std::to_string(res->status) : "连接失败") << std::endl;
+		return { {"code", -2} };
+	}
+	try {
+		json result = json::parse(res->body);
+		return result;
+	}
+	catch (...) {
+		std::cerr << "响应解析失败！" << std::endl;
+		return { {"code", -3} };
+	}
 }
 
 void merge(const std::string target_uid, json new_gacha_list) {

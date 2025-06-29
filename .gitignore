@@ -11,6 +11,8 @@
 *.7z
 *.log
 *.json
+*.dll
+/python/request.py
 
 # Python cache
 __pycache__/

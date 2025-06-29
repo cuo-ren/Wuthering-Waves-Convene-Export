@@ -51,9 +51,6 @@
     <None Include="python\export.py">
       <Filter>头文件\python</Filter>
     </None>
-    <None Include="python\request.py">
-      <Filter>头文件\python</Filter>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\config.cpp">
@@ -125,6 +122,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="include\validate.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="include\httplib.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

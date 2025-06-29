@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include <string>
 #include <vector>
+#define _WINSOCKAPI_ 
 #include <Windows.h>
 #include <iostream>
 #include <chrono>

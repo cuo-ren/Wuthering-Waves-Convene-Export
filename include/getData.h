@@ -3,6 +3,8 @@
 #include "config.h"
 #include "utils.h"
 #include "data.h"
+#define CPPHTTPLIB_OPENSSL_SUPPORT
+#include "httplib.h"
 
 std::map<std::string, std::string> get_params(const std::string& url);
 json find_apis();

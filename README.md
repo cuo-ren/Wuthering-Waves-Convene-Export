@@ -55,6 +55,7 @@
 - **主要依赖库**：
   - [`nlohmann/json`](https://github.com/nlohmann/json)：用于 JSON 数据读写
   - [`picosha2`](https://github.com/okdshin/PicoSHA2)：用于生成记录指纹
+  - [`cpp-httplib`](https://github.com/yhirose/cpp-httplib)：用于网络请求
   - （计划）Qt：用于未来图形界面开发
 
 ## 📃 许可证
@@ -75,6 +76,7 @@
 ## 🙌 致谢
 - [nlohmann/json](https://github.com/nlohmann/json)
 - [picosha2](https://github.com/okdshin/PicoSHA2)
+- [`cpp-httplib`](https://github.com/yhirose/cpp-httplib)
 
 ## 📬 联系方式 / 问题反馈
 如果你在使用中遇到问题，欢迎通过 GitHub Issues 提出反馈或建议。
