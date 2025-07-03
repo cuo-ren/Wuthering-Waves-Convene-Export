@@ -185,3 +185,15 @@ std::string current_time_str() {
 bool compareByTime(const json& a, const json& b) {
 	return a["time"].get<std::string>() < b["time"].get<std::string>();
 }
+
+bool is_digit(const std::string& s) {
+	if (s.empty()) {
+		return true;
+	}
+	for (char i : s) {
+		if (i < '0' or i>'9') {
+			return false;
+		}
+	}
+	return true;
+}

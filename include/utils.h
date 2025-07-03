@@ -20,3 +20,4 @@ void WriteJsonFile(const std::string& path, const json& data);
 void makedirs(const std::string& path);
 std::string current_time_str();
 bool compareByTime(const json& a, const json& b);
+bool is_digit(const std::string&);

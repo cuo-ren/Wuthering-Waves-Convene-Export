@@ -44,16 +44,7 @@ bool validate_GachaType(const json& data) {
 			std::cerr << "字段类型错误" << std::endl;
 			return false;
 		}
-		int number;
-		try {
-			number = std::stoi(item["key"].get<std::string>());
-		}
-		catch (...) {
-			std::cerr << "key的值不是数字字符串" << std::endl;
-			return false;
-		}
-		if (std::to_string(number) != item["key"].get<std::string>()) {
-			std::cerr << "key的值不是数字字符串" << std::endl;
+		if (!is_digit(item["key"].get<std::string>())) {
 			return false;
 		}
 	}
@@ -80,22 +71,15 @@ json validate_data() {
 	};
 	//首先检测键是否为纯数字
 	for (auto& [uid, value] : old_gacha_list.items()) {
-		int number;
 		json error1 = {
 				{"code",1},
 				{"data",{{"uid",uid}}}
 		};
-		try {
-			number = std::stoi(uid);
-		}
-		catch (...) {
+		if (!is_digit(uid)) {
 			std::cerr << "UID错误,不是数字" << std::endl;
 			return error1;
 		}
-		if (std::to_string(number) != uid) {
-			std::cerr << "UID错误,不是数字" << std::endl;
-			return error1;
-		}
+
 		//校验uid后是否为字典
 		if (!value.is_object()) {
 			std::cerr << "类型错误，不是字典" << std::endl;
