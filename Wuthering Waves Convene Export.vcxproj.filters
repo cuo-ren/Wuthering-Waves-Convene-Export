@@ -83,6 +83,9 @@
     <ClCompile Include="src\validate.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="src\setting.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\json.hpp">
@@ -125,6 +128,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="include\httplib.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="include\setting.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

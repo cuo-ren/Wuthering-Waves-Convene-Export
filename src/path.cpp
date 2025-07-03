@@ -95,6 +95,9 @@ void FindGameLog() {
 			std::cout << "成功查找到游戏路径:" << utf8_to_gbk(config["path"]) << std::endl;
 		}
 	}
+	else {
+		std::cout << "当前游戏路径：" << utf8_to_gbk(config["path"]) << std::endl;
+	}
 	std::cout << "按任意键返回" << std::endl;
 	system("pause");
 }

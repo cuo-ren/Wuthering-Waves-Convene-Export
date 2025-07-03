@@ -1,5 +1,4 @@
 ﻿#include "config.h"
-#include "utils.h"
 
 void WriteConfig() {
 	WriteJsonFile("config.json", config);
@@ -12,6 +11,7 @@ void initConfig() {
 		{"language","zh-cn"},//程序使用语言，目前无作用
 		{"path",""},//游戏日志路径
 		{"active_uid", ""},//当前用户
+		{"skip", false},//跳过一次性卡池
 		{"hash",""}//数据文件hash值
 	};
 	try {
@@ -47,6 +47,11 @@ void initConfig() {
 		config["path"] = "";
 		WriteConfig();
 	}
+	if (!config.contains("skip")) {
+		std::cerr << "值skip不存在" << std::endl;
+		config["skip"] = false;
+		WriteConfig();
+	}
 	if (!config.contains("hash")) {
 		std::cerr << "值hash不存在" << std::endl;
 		config["hash"] = "";
@@ -70,9 +75,19 @@ void initConfig() {
 		config["active_uid"] = "";
 		WriteConfig();
 	}
+	if (!is_digit(config["active_uid"].get<std::string>())) {
+		std::cerr << "值active_uid不是数字字符串" << std::endl;
+		config["active_uid"] = "";
+		WriteConfig();
+	}
 	if (!config["path"].is_string()) {
 		std::cerr << "值path类型错误" << std::endl;
 		config["path"] = "";
+		WriteConfig();
+	}
+	if (!config["skip"].is_boolean()) {
+		std::cerr << "值skip类型错误" << std::endl;
+		config["skip"] = false;
 		WriteConfig();
 	}
 	if (!config["hash"].is_string()) {
@@ -81,45 +96,4 @@ void initConfig() {
 		WriteConfig();
 	}
 	return;
-}
-
-void change_active_uid() {
-	std::vector<std::string> uid_list;
-	for (auto& [uid, value] : old_gacha_list.items()) {
-		uid_list.push_back(uid);
-	}
-	while (true) {
-		//清屏
-		system("cls");
-		int count = 0;
-		for (std::string uid : uid_list) {
-			count++;
-			std::cout << count << ":" << uid << std::endl;
-		}
-		if (uid_list.size() == 0) {
-			std::cout << "暂无用户" << std::endl;
-			system("pause");
-			return;
-		}
-		std::string temp;
-		std::cin >> temp;
-		int choose;
-		try {
-			choose = std::stoi(temp);
-		}
-		catch (...) {
-			std::cout << "输入错误" << std::endl;
-			system("pause");
-			continue;
-		}
-
-		if (choose <= 0 or choose > uid_list.size()) {
-			std::cout << "输入错误" << std::endl;
-			system("pause");
-			continue;
-		}
-		config["active_uid"] = uid_list[choose - 1];
-		WriteConfig();
-		return;
-	}
 }

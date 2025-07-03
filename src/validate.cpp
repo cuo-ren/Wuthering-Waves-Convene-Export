@@ -36,11 +36,11 @@ bool validate_GachaType(const json& data) {
 	}
 
 	for (auto& item : data["data"]) {
-		if ((item.size() != 2) or (!item.contains("key")) or (!item.contains("name"))) {
+		if ((item.size() != 3) or (!item.contains("key")) or (!item.contains("name")) or (!item.contains("flag"))) {
 			std::cerr << "字段数量错误" << std::endl;
 			return false;
 		}
-		if (!item["key"].is_string() or !item["name"].is_string()) {
+		if (!item["key"].is_string() or !item["name"].is_string() or !item["flag"].is_boolean()) {
 			std::cerr << "字段类型错误" << std::endl;
 			return false;
 		}

@@ -7,9 +7,8 @@ int show_menu() {
 		std::cout << "1:查看当前数据" << std::endl;
 		std::cout << "2:更新数据" << std::endl;
 		std::cout << "3:导出数据" << std::endl;
-		std::cout << "4:切换用户" << std::endl;
-		std::cout << "5:查找游戏" << std::endl;
-		std::cout << "6:退出" << std::endl;
+		std::cout << "4:设置" << std::endl;
+		std::cout << "5:退出" << std::endl;
 		std::cout << "请选择操作:" << std::endl;
 		std::string temp;
 		std::cin >> temp;
@@ -23,7 +22,7 @@ int show_menu() {
 			continue;
 		}
 
-		if (choose <= 0 or choose >= 7) {
+		if (choose <= 0 or choose >= 6) {
 			std::cout << "输入错误" << std::endl;
 			system("pause");
 			continue;
@@ -117,4 +116,34 @@ void show_about() {
 
 	system("pause");
 	system("cls");
+}
+
+int show_setting() {
+	while (true) {
+		//清屏
+		system("cls");
+		std::cout << "1:切换用户" << std::endl;
+		std::cout << "2:查找游戏" << std::endl;
+		std::cout << "3:忽略一次性卡池" << std::endl;
+		std::cout << "4:返回" << std::endl;
+		std::cout << "请选择操作:" << std::endl;
+		std::string temp;
+		std::cin >> temp;
+		int choose;
+		try {
+			choose = std::stoi(temp);
+		}
+		catch (...) {
+			std::cout << "输入错误" << std::endl;
+			system("pause");
+			continue;
+		}
+
+		if (choose <= 0 or choose >= 5) {
+			std::cout << "输入错误" << std::endl;
+			system("pause");
+			continue;
+		}
+		return choose;
+	}
 }

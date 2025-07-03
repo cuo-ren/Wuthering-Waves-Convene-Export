@@ -74,7 +74,7 @@ json find_apis() {
 	return uid_url_map;
 }
 
-json get_gacha_data(std::string cardPoolId, std::string cardPoolType, std::string playerId, std::string recordId, std::string serverId) {
+json get_gacha_data(const std::string cardPoolId, const std::string cardPoolType, const std::string playerId, const std::string recordId, const std::string serverId){
 
 	httplib::Client cli("https://gmserver-api.aki-game2.com");
 	cli.set_read_timeout(10, 0); // 10 秒超时
@@ -248,29 +248,37 @@ void update_data() {
 		system("pause");
 		return;
 	}
+
 	//查找url
 	json urls = find_apis();
 	json new_gacha_list = json::object();
 	//对每一个url更新数据
+
 	for (auto& [uid, params] : urls.items()) {
-		bool flag = true;
 		//新建uid字段
 		new_gacha_list[uid] = json::object();
 		std::cout << "尝试获取" << uid << "数据" << std::endl;
+		//创建卡池列表
 		for (auto& t : gacha_type["data"]) {
+			new_gacha_list[uid][t["key"]] = json::array();
+		}
+
+		for (auto& t : gacha_type["data"]) {
+			//跳过卡池
+			if (!t["flag"].get<bool>() and config["skip"].get<bool>()) {
+				continue;
+			}
 			std::cout << "正在获取" << utf8_to_gbk(t["name"]) << "数据" << std::endl;
 			//这里的数据是utf-8，注意转化
-			json new_data = get_gacha_data(urls[uid]["resources_id"].get<std::string>(), t["key"].get<std::string>(), uid, urls[uid]["record_id"].get<std::string>(), urls[uid]["svr_id"].get<std::string>());
+			json new_data = get_gacha_data_retry(urls[uid]["resources_id"].get<std::string>(), t["key"].get<std::string>(), uid, urls[uid]["record_id"].get<std::string>(), urls[uid]["svr_id"].get<std::string>());
 			if (new_data["code"] != 0) {
 				std::cout << "uid: " << uid << " api已过期，请进入游戏刷新" << std::endl;
-				flag = false;
 				break;
 			}
 			//当数据获取成功时，切换用户
 			config["active_uid"] = uid;
 			WriteConfig();
-			//创建卡池列表
-			new_gacha_list[uid][t["key"]] = json::array();
+
 			//倒序遍历新数据
 			for (auto it = new_data["data"].rbegin(); it != new_data["data"].rend(); ++it) {
 				std::string time_str = "";
@@ -308,12 +316,23 @@ void update_data() {
 			}
 			Sleep(1000);
 		}
-		if (flag) {
-			merge(uid, new_gacha_list);
-			WriteData(old_gacha_list);
-		}
+		merge(uid, new_gacha_list);
+		WriteData(old_gacha_list);
 	}
 	std::cout << "数据更新完成" << std::endl;
 	system("pause");
 	return;
+}
+
+json get_gacha_data_retry(const std::string cardPoolId, const std::string cardPoolType, const std::string playerId, const std::string recordId, const std::string serverId, int max_retry) {
+	json result;
+	for (int attempt = 1; attempt <= max_retry; ++attempt) {
+		result = get_gacha_data(cardPoolId, cardPoolType, playerId, recordId, serverId);
+		if (result["code"] == 0) {
+			return result;
+		}
+		std::cerr << "请求失败（第 " << attempt << " 次），code: " << result["code"] << "总共：" << max_retry << "次" << std::endl;
+		Sleep(1000);
+	}
+	return result; // 最终失败，返回最后一次的结果
 }

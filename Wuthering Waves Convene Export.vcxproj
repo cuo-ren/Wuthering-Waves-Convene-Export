@@ -153,6 +153,7 @@
     <ClCompile Include="src\getData.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\path.cpp" />
+    <ClCompile Include="src\setting.cpp" />
     <ClCompile Include="src\show.cpp" />
     <ClCompile Include="src\utils.cpp" />
     <ClCompile Include="src\validate.cpp" />
@@ -169,6 +170,7 @@
     <ClInclude Include="include\path.h" />
     <ClInclude Include="include\picosha2.h" />
     <ClInclude Include="include\resource.h" />
+    <ClInclude Include="include\setting.h" />
     <ClInclude Include="include\show.h" />
     <ClInclude Include="include\utils.h" />
     <ClInclude Include="include\validate.h" />

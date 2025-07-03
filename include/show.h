@@ -6,3 +6,4 @@
 int show_menu();
 void show_gacha_detail();
 void show_about();
+int show_setting();

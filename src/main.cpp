@@ -12,6 +12,7 @@
 #include "path.h"
 #include "getData.h"
 #include "show.h"
+#include "setting.h"
 
 //初始化全局变量
 json config;
@@ -43,14 +44,10 @@ int main() {
 			export_data();
 		}
 		else if (choose == 4) {
-			//切换用户
-			change_active_uid();
+			//设置
+			setting();
 		}
 		else if (choose == 5) {
-			//查找游戏路径
-			FindGameLog();
-		}
-		else if (choose == 6) {
 			//退出程序
 			return 0;
 		}
