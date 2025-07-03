@@ -76,7 +76,7 @@
 ## 🙌 致谢
 - [nlohmann/json](https://github.com/nlohmann/json)
 - [picosha2](https://github.com/okdshin/PicoSHA2)
-- [`cpp-httplib`](https://github.com/yhirose/cpp-httplib)
+- [cpp-httplib](https://github.com/yhirose/cpp-httplib)
 
 ## 📬 联系方式 / 问题反馈
 如果你在使用中遇到问题，欢迎通过 GitHub Issues 提出反馈或建议。
