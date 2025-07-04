@@ -331,7 +331,7 @@ json get_gacha_data_retry(const std::string cardPoolId, const std::string cardPo
 		if (result["code"] == 0) {
 			return result;
 		}
-		std::cerr << "请求失败（第 " << attempt << " 次），code: " << result["code"] << "总共：" << max_retry << "次" << std::endl;
+		std::cerr << "请求失败（第 " << attempt << "/" << max_retry << " 次） " << "code:" << result["code"] << std::endl;
 		Sleep(1000);
 	}
 	return result; // 最终失败，返回最后一次的结果
