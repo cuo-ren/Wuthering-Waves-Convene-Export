@@ -45,7 +45,8 @@ json find_apis() {
 		std::cerr << "无法打开日志文件：" << log_path << std::endl;
 		return uid_url_map;
 	}
-
+	//清空上次保存的url
+	config["url"] = json::array();
 	std::string line;
 	while (std::getline(file, line)) {
 		std::smatch matches;
@@ -53,10 +54,10 @@ json find_apis() {
 		while (std::regex_search(search_start, line.cend(), matches, url_pattern)) {
 			std::string url = matches[0];
 			search_start = matches.suffix().first;
-
 			try {
 				std::map<std::string, std::string> d = get_params(utf8_to_gbk(url));
 				uid_url_map[d["player_id"]] = {
+					{"url", url},
 					{"svr_id", d["svr_id"]},
 					{"lang", d["lang"]},
 					{"svr_area", d["svr_area"]},
@@ -71,6 +72,10 @@ json find_apis() {
 			}
 		}
 	}
+	for (auto& [uid, m] : uid_url_map.items()) {
+		config["url"].push_back(m["url"]);
+	}
+	WriteConfig();
 	return uid_url_map;
 }
 

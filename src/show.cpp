@@ -125,7 +125,8 @@ int show_setting() {
 		std::cout << "1:切换用户" << std::endl;
 		std::cout << "2:查找游戏" << std::endl;
 		std::cout << "3:忽略一次性卡池" << std::endl;
-		std::cout << "4:返回" << std::endl;
+		std::cout << "4:查看历史记录url" << std::endl;
+		std::cout << "5:返回" << std::endl;
 		std::cout << "请选择操作:" << std::endl;
 		std::string temp;
 		std::cin >> temp;
@@ -139,7 +140,7 @@ int show_setting() {
 			continue;
 		}
 
-		if (choose <= 0 or choose >= 5) {
+		if (choose <= 0 or choose >= 6) {
 			std::cout << "输入错误" << std::endl;
 			system("pause");
 			continue;

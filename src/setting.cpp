@@ -16,6 +16,10 @@ void setting() {
 			change_skip();
 		}
 		else if (choose == 4) {
+			//查看历史记录url
+			print_url();
+		}
+		else if (choose == 5) {
 			//返回
 			return;
 		}
@@ -115,4 +119,13 @@ void change_active_uid() {
 		WriteConfig();
 		return;
 	}
+}
+
+void print_url() {
+	system("cls");
+	for (auto& url : config["url"]) {
+		std::cout << utf8_to_gbk(url) << std::endl;
+	}
+	system("pause");
+	return;
 }

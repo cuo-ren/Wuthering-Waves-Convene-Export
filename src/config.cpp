@@ -12,6 +12,7 @@ void initConfig() {
 		{"path",""},//游戏日志路径
 		{"active_uid", ""},//当前用户
 		{"skip", false},//跳过一次性卡池
+		{"url", json::array()},//历史记录url
 		{"hash",""}//数据文件hash值
 	};
 	try {
@@ -52,6 +53,11 @@ void initConfig() {
 		config["skip"] = false;
 		WriteConfig();
 	}
+	if (!config.contains("url")) {
+		std::cerr << "值url不存在" << std::endl;
+		config["url"] = json::array();
+		WriteConfig();
+	}
 	if (!config.contains("hash")) {
 		std::cerr << "值hash不存在" << std::endl;
 		config["hash"] = "";
@@ -89,6 +95,19 @@ void initConfig() {
 		std::cerr << "值skip类型错误" << std::endl;
 		config["skip"] = false;
 		WriteConfig();
+	}
+	if (!config["url"].is_array()) {
+		std::cerr << "值url类型错误" << std::endl;
+		config["url"] = json::array();
+		WriteConfig();
+	}
+	for (auto& url : config["url"]) {
+		if (!url.is_string()) {
+			std::cerr << "值url类型错误" << std::endl;
+			config["url"] = json::array();
+			WriteConfig();
+			break;
+		}
 	}
 	if (!config["hash"].is_string()) {
 		std::cerr << "值hash类型错误" << std::endl;

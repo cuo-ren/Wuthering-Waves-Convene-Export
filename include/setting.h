@@ -6,3 +6,4 @@
 void setting();
 void change_active_uid();
 void change_skip();
+void print_url();
