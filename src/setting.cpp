@@ -16,10 +16,14 @@ void setting() {
 			change_skip();
 		}
 		else if (choose == 4) {
+			//使用历史记录url更新
+			update_data(2);
+		}
+		else if (choose == 5) {
 			//查看历史记录url
 			print_url();
 		}
-		else if (choose == 5) {
+		else if (choose == 6) {
 			//返回
 			return;
 		}

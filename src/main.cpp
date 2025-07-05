@@ -37,7 +37,7 @@ int main() {
 		}
 		else if (choose == 2) {
 			//更新数据
-			update_data();
+			update_data(1);
 		}
 		else if (choose == 3) {
 			//导出数据

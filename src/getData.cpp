@@ -244,7 +244,8 @@ void merge(const std::string target_uid, json new_gacha_list) {
 	}
 }
 
-void update_data() {
+void update_data(int mode) {
+	//mode 1 使用日志文件 2 用户输入
 	//清屏
 	system("cls");
 	//检查游戏日志路径是否有效
@@ -253,9 +254,51 @@ void update_data() {
 		system("pause");
 		return;
 	}
+	json urls = json::object();
+	if (mode == 1) {
+		//使用日志文件
+		urls = find_apis();
+	}
+	else if (mode == 2) {
+		std::cout << "请输入url：" << std::endl;
+		std::string url;
+		std::cin >> url;
+		try {
+			std::map<std::string, std::string> params_dict = get_params(url);
+			//判断url是否有效
+			std::vector<std::string> required_keys = {
+				"svr_id",  "record_id", "resources_id",
+			};
+			for (auto& key : required_keys) {
+				if (params_dict.count(key) == 0) {
+					std::cerr << "url不完整或不正确，缺少参数: " << key << std::endl;
+					system("pause");
+					return;
+				}
+			}
 
-	//查找url
-	json urls = find_apis();
+			urls[gbk_to_utf8(params_dict["player_id"])] = {
+					{"url", gbk_to_utf8(url)},
+					{"svr_id", gbk_to_utf8(params_dict["svr_id"])},
+					{"lang", gbk_to_utf8(params_dict["lang"])},
+					{"svr_area", gbk_to_utf8(params_dict["svr_area"])},
+					{"record_id", gbk_to_utf8(params_dict["record_id"])},
+					{"resources_id", gbk_to_utf8(params_dict["resources_id"])},
+					{"platform", gbk_to_utf8(params_dict["platform"])}
+			};
+			config["url"] = json::array();
+			config["url"].push_back(urls[gbk_to_utf8(params_dict["player_id"])]["url"]);
+		}
+		catch (const std::exception& e) {
+			std::cerr << "解析url失败: " << e.what() << std::endl;
+			system("pause");
+			return;
+		}
+	}
+	else {
+		throw std::runtime_error("未定义的模式");
+		return;
+	}
 	json new_gacha_list = json::object();
 	//对每一个url更新数据
 
