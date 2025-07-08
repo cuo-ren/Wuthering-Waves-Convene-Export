@@ -197,3 +197,11 @@ bool is_digit(const std::string& s) {
 	}
 	return true;
 }
+
+std::string timestamp_to_str(int timestamp) {
+	std::time_t t = static_cast<std::time_t>(timestamp);  // 将 int 转为 time_t
+	std::tm* tm_ptr = std::localtime(&t);                 // 转为本地时间
+	std::ostringstream oss;
+	oss << std::put_time(tm_ptr, "%Y-%m-%d %H:%M:%S");    // 格式化输出
+	return oss.str();
+}

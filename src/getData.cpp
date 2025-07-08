@@ -79,7 +79,7 @@ json find_apis() {
 	return uid_url_map;
 }
 
-json get_gacha_data(const std::string cardPoolId, const std::string cardPoolType, const std::string playerId, const std::string recordId, const std::string serverId){
+json get_gacha_data(const std::string cardPoolId, const std::string cardPoolType, const std::string playerId, const std::string recordId, const std::string serverId, const std::string lang){
 
 	httplib::Client cli("https://gmserver-api.aki-game2.com");
 	cli.set_read_timeout(10, 0); // 10 秒超时
@@ -95,7 +95,7 @@ json get_gacha_data(const std::string cardPoolId, const std::string cardPoolType
 	json post_data = {
 		{"cardPoolId", cardPoolId},
 		{"cardPoolType", std::stoi(cardPoolType)},
-		{"languageCode", "zh-Hans"},
+		{"languageCode", lang},
 		{"playerId", playerId},
 		{"recordId", recordId},
 		{"serverId", serverId}
@@ -118,42 +118,61 @@ json get_gacha_data(const std::string cardPoolId, const std::string cardPoolType
 	}
 }
 
+json get_gacha_data_retry(const std::string cardPoolId, const std::string cardPoolType, const std::string playerId, const std::string recordId, const std::string serverId, const std::string lang, int max_retry) {
+	json result;
+	for (int attempt = 1; attempt <= max_retry; ++attempt) {
+		result = get_gacha_data(cardPoolId, cardPoolType, playerId, recordId, serverId, lang);
+		if (result["code"] == 0) {
+			return result;
+		}
+		std::cerr << "请求失败（第 " << attempt << "/" << max_retry << " 次） " << "code:" << result["code"] << std::endl;
+		Sleep(1000);
+	}
+	return result; // 最终失败，返回最后一次的结果
+}
+
 void merge(const std::string target_uid, json new_gacha_list) {
 	//建立uid列表，方便后续操作
 	std::vector<std::string> uid_list;
-	for (auto& [uid, value] : old_gacha_list.items()) {
+	for (auto& [uid, value] : gacha_list.items()) {
 		uid_list.push_back(uid);
 	}
 	if (std::find(uid_list.begin(), uid_list.end(), target_uid) == uid_list.end()) {
 		//如果是新用户，则创建
-		old_gacha_list[target_uid] = json::object();
+		gacha_list[target_uid] = json::object();
+		gacha_list[target_uid]["info"] = json::object();
+		gacha_list[target_uid]["data"] = json::object();
+		gacha_list[target_uid]["info"]["lang"] = new_gacha_list[target_uid]["info"]["lang"].get<std::string>();
 		for (auto& t : gacha_type["data"]) {
-			old_gacha_list[target_uid][t["key"].get<std::string>()] = json::array();
+			gacha_list[target_uid]["data"][t["key"].get<std::string>()] = json::array();
 		}
 	}
+	//更新时间
+	gacha_list[target_uid]["info"]["update_time"] = new_gacha_list[target_uid]["info"]["update_time"];
+
 	for (auto& t : gacha_type["data"]) {
 		std::string gacha_key = t["key"].get<std::string>();
-		if (new_gacha_list[target_uid][gacha_key].size() == 0) {
+		if (new_gacha_list[target_uid]["data"][gacha_key].size() == 0) {
 			//如果新数据为空，则跳过本次合并
 			continue;
 		}
-		if (old_gacha_list[target_uid][gacha_key].size() == 0) {
+		if (gacha_list[target_uid]["data"][gacha_key].size() == 0) {
 			//如果旧数据为空，则追加新数据
-			for (auto& item : new_gacha_list[target_uid][gacha_key]) {
-				old_gacha_list[target_uid][gacha_key].push_back(item);
+			for (auto& item : new_gacha_list[target_uid]["data"][gacha_key]) {
+				gacha_list[target_uid]["data"][gacha_key].push_back(item);
 			}
 			continue;
 		}
 		//提取旧数据最新的时间点
-		std::string last_date = old_gacha_list[target_uid][gacha_key].back()["time"].get<std::string>();
+		std::string last_date = gacha_list[target_uid]["data"][gacha_key].back()["time"].get<std::string>();
 		//提取新数据最老的时间点
-		std::string first_date = new_gacha_list[target_uid][gacha_key][0]["time"].get<std::string>();
+		std::string first_date = new_gacha_list[target_uid]["data"][gacha_key][0]["time"].get<std::string>();
 
 		if (last_date < first_date) {
 			//如果旧数据最新的时间点比新数据最老时间点老，则拼接新旧数据
 			//人话：旧数据  断档  新数据   合并数据 = 旧数据 + 新数据
-			for (auto& item : new_gacha_list[target_uid][gacha_key]) {
-				old_gacha_list[target_uid][gacha_key].push_back(item);
+			for (auto& item : new_gacha_list[target_uid]["data"][gacha_key]) {
+				gacha_list[target_uid]["data"][gacha_key].push_back(item);
 			}
 		}
 		else if (last_date > first_date) {
@@ -162,10 +181,10 @@ void merge(const std::string target_uid, json new_gacha_list) {
 			//          新数据
 			//合并数据 = 旧数据（未重叠的部分）+ 重叠部分 + 新数据（未重叠的部分）
 			//如果因人为或其他因素找不到重叠部分，则采用拼接，二分查找时间
-			int left = 0, right = new_gacha_list[target_uid][gacha_key].size() - 1;
+			int left = 0, right = new_gacha_list[target_uid]["data"][gacha_key].size() - 1;
 			while (left < right) {
 				int mid = (left + right) / 2;
-				std::string mid_date = new_gacha_list[target_uid][gacha_key][mid]["time"].get<std::string>();
+				std::string mid_date = new_gacha_list[target_uid]["data"][gacha_key][mid]["time"].get<std::string>();
 
 				if (mid_date < last_date) {
 					left = mid + 1;
@@ -175,21 +194,21 @@ void merge(const std::string target_uid, json new_gacha_list) {
 				}
 			}
 
-			if (new_gacha_list[target_uid][gacha_key][right]["time"].get<std::string>() != last_date) {
+			if (new_gacha_list[target_uid]["data"][gacha_key][right]["time"].get<std::string>() != last_date) {
 				std::cerr << "未找到对应时间，请检查数据是否被修改，可从备份文件中恢复数据" << std::endl;
 				std::cerr << "采用保守拼接更新数据，如数据无误，可以不理会此次报错" << std::endl;
 			}
 			else {
 				//删除旧数据last_time时间点的数据
-				for (int i = old_gacha_list[target_uid][gacha_key].size() - 1; i >= 0; i--) {
-					if (old_gacha_list[target_uid][gacha_key][i]["time"] == last_date) {
-						old_gacha_list[target_uid][gacha_key].erase(old_gacha_list[target_uid][gacha_key].begin() + i);
+				for (int i = gacha_list[target_uid]["data"][gacha_key].size() - 1; i >= 0; i--) {
+					if (gacha_list[target_uid]["data"][gacha_key][i]["time"] == last_date) {
+						gacha_list[target_uid]["data"][gacha_key].erase(gacha_list[target_uid]["data"][gacha_key].begin() + i);
 					}
 				}
 			}
 			//将新数据添加到旧数据末尾
-			for (int i = right; i < new_gacha_list[target_uid][gacha_key].size(); i++) {
-				old_gacha_list[target_uid][gacha_key].push_back(new_gacha_list[target_uid][gacha_key][i]);
+			for (int i = right; i < new_gacha_list[target_uid]["data"][gacha_key].size(); i++) {
+				gacha_list[target_uid]["data"][gacha_key].push_back(new_gacha_list[target_uid]["data"][gacha_key][i]);
 			}
 		}
 		else {
@@ -200,11 +219,11 @@ void merge(const std::string target_uid, json new_gacha_list) {
 			std::vector<json> temp_old;
 			std::vector<json> temp_new;
 			//将旧纪录等于last_time的记录单独提取出来并删除旧纪录的数据
-			for (int i = old_gacha_list[target_uid][gacha_key].size() - 1; i >= 0; i--) {
-				std::string temp_date = old_gacha_list[target_uid][gacha_key][i]["time"];
+			for (int i = gacha_list[target_uid]["data"][gacha_key].size() - 1; i >= 0; i--) {
+				std::string temp_date = gacha_list[target_uid]["data"][gacha_key][i]["time"];
 				if (last_date == temp_date) {
-					temp_old.push_back(old_gacha_list[target_uid][gacha_key][i]);
-					old_gacha_list[target_uid][gacha_key].erase(old_gacha_list[target_uid][gacha_key].begin() + i);
+					temp_old.push_back(gacha_list[target_uid]["data"][gacha_key][i]);
+					gacha_list[target_uid]["data"][gacha_key].erase(gacha_list[target_uid]["data"][gacha_key].begin() + i);
 				}
 				else {
 					break;
@@ -214,11 +233,11 @@ void merge(const std::string target_uid, json new_gacha_list) {
 			std::reverse(temp_old.begin(), temp_old.end());
 			//将新纪录等于last_time的记录单独提取出来并删除新纪录的数据
 
-			while (new_gacha_list[target_uid][gacha_key].size() != 0) {
-				std::string temp_date = new_gacha_list[target_uid][gacha_key][0]["time"];
+			while (new_gacha_list[target_uid]["data"][gacha_key].size() != 0) {
+				std::string temp_date = new_gacha_list[target_uid]["data"][gacha_key][0]["time"];
 				if (last_date == temp_date) {
-					temp_new.push_back(new_gacha_list[target_uid][gacha_key][0]);
-					new_gacha_list[target_uid][gacha_key].erase(new_gacha_list[target_uid][gacha_key].begin());
+					temp_new.push_back(new_gacha_list[target_uid]["data"][gacha_key][0]);
+					new_gacha_list[target_uid]["data"][gacha_key].erase(new_gacha_list[target_uid]["data"][gacha_key].begin());
 				}
 				else {
 					break;
@@ -232,13 +251,13 @@ void merge(const std::string target_uid, json new_gacha_list) {
 			}
 			//拼接数据
 			for (int i = 0; i < temp_old.size() - max_num; i++) {
-				old_gacha_list[target_uid][gacha_key].push_back(temp_old[i]);
+				gacha_list[target_uid]["data"][gacha_key].push_back(temp_old[i]);
 			}
 			for (int i = 0; i < temp_new.size(); i++) {
-				old_gacha_list[target_uid][gacha_key].push_back(temp_new[i]);
+				gacha_list[target_uid]["data"][gacha_key].push_back(temp_new[i]);
 			}
-			for (int i = 0; i < new_gacha_list[target_uid][gacha_key].size(); i++) {
-				old_gacha_list[target_uid][gacha_key].push_back(new_gacha_list[target_uid][gacha_key][i]);
+			for (int i = 0; i < new_gacha_list[target_uid]["data"][gacha_key].size(); i++) {
+				gacha_list[target_uid]["data"][gacha_key].push_back(new_gacha_list[target_uid]["data"][gacha_key][i]);
 			}
 		}
 	}
@@ -267,7 +286,7 @@ void update_data(int mode) {
 			std::map<std::string, std::string> params_dict = get_params(url);
 			//判断url是否有效
 			std::vector<std::string> required_keys = {
-				"svr_id",  "record_id", "resources_id",
+				"svr_id",  "record_id", "resources_id","lang","player_id"
 			};
 			for (auto& key : required_keys) {
 				if (params_dict.count(key) == 0) {
@@ -306,19 +325,30 @@ void update_data(int mode) {
 		//新建uid字段
 		new_gacha_list[uid] = json::object();
 		std::cout << "尝试获取" << uid << "数据" << std::endl;
+		//新建info
+		//这里要对语言代码做转化！！也许可以不做
+		new_gacha_list[uid]["info"] = json{ {"lang",urls[uid]["lang"].get<std::string>()} ,{"update_time",get_timestamp()}};
+		//检测旧数据的语言代码和当前的语言代码
+		if (gacha_list.contains(uid) and gacha_list[uid]["info"]["lang"].get<std::string>() != urls[uid]["lang"].get<std::string>()) {
+			std::cerr << "语言不一致，采用原语言" << std::endl;
+			urls[uid]["lang"] = gacha_list[uid]["info"]["lang"].get<std::string>();
+			new_gacha_list[uid]["info"]["lang"] = gacha_list[uid]["info"]["lang"].get<std::string>();
+		}
+		//新建data
+		new_gacha_list[uid]["data"] = json::object();
 		//创建卡池列表
-		for (auto& t : gacha_type["data"]) {
-			new_gacha_list[uid][t["key"]] = json::array();
+		for (auto& gacha_key : gacha_type["data"]) {
+			new_gacha_list[uid]["data"][gacha_key["key"]] = json::array();
 		}
 
-		for (auto& t : gacha_type["data"]) {
+		for (auto& gacha_key : gacha_type["data"]) {
 			//跳过卡池
-			if (!t["flag"].get<bool>() and config["skip"].get<bool>()) {
+			if (!gacha_key["flag"].get<bool>() and config["skip"].get<bool>()) {
 				continue;
 			}
-			std::cout << "正在获取" << utf8_to_gbk(t["name"]) << "数据" << std::endl;
+			std::cout << "正在获取" << utf8_to_gbk(gacha_key["name"]) << "数据" << std::endl;
 			//这里的数据是utf-8，注意转化
-			json new_data = get_gacha_data_retry(urls[uid]["resources_id"].get<std::string>(), t["key"].get<std::string>(), uid, urls[uid]["record_id"].get<std::string>(), urls[uid]["svr_id"].get<std::string>());
+			json new_data = get_gacha_data_retry(urls[uid]["resources_id"].get<std::string>(), gacha_key["key"].get<std::string>(), uid, urls[uid]["record_id"].get<std::string>(), urls[uid]["svr_id"].get<std::string>(),urls[uid]["lang"]);
 			if (new_data["code"] != 0) {
 				std::cout << "uid: " << uid << " api已过期，请进入游戏刷新" << std::endl;
 				break;
@@ -360,27 +390,14 @@ void update_data(int mode) {
 					{"qualityLevel",(*it)["qualityLevel"]},
 					{"time",time_str.substr(0,4) + '-' + time_str.substr(4,2) + '-' + time_str.substr(6,2) + ' ' + time_str.substr(8,2) + ':' + time_str.substr(10,2) + ':' + time_str.substr(12,2)}
 				};
-				new_gacha_list[uid][t["key"]].push_back(item);
+				new_gacha_list[uid]["data"][gacha_key["key"]].push_back(item);
 			}
 			Sleep(1000);
 		}
 		merge(uid, new_gacha_list);
-		WriteData(old_gacha_list);
+		WriteData(gacha_list);
 	}
 	std::cout << "数据更新完成" << std::endl;
 	system("pause");
 	return;
-}
-
-json get_gacha_data_retry(const std::string cardPoolId, const std::string cardPoolType, const std::string playerId, const std::string recordId, const std::string serverId, int max_retry) {
-	json result;
-	for (int attempt = 1; attempt <= max_retry; ++attempt) {
-		result = get_gacha_data(cardPoolId, cardPoolType, playerId, recordId, serverId);
-		if (result["code"] == 0) {
-			return result;
-		}
-		std::cerr << "请求失败（第 " << attempt << "/" << max_retry << " 次） " << "code:" << result["code"] << std::endl;
-		Sleep(1000);
-	}
-	return result; // 最终失败，返回最后一次的结果
 }

@@ -17,7 +17,8 @@
 //初始化全局变量
 json config;
 json gacha_type;
-json old_gacha_list;
+json gacha_list;
+json version = { {"name","Wuthering Waves Convene Export"},{"version","betav1.0"} };
 
 int main() {
 	show_about();

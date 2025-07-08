@@ -35,7 +35,7 @@ void show_gacha_detail() {
 	//清屏
 	system("cls");
 	std::vector<std::string> uid_list;
-	for (auto& [uid, value] : old_gacha_list.items()) {
+	for (auto& [uid, value] : gacha_list.items()) {
 		uid_list.push_back(uid);
 	}
 	//检查配置文件中活跃uid的合法性
@@ -58,10 +58,11 @@ void show_gacha_detail() {
 		system("pause");
 		return;
 	}
-	std::cout << "当前账号uid" << config["active_uid"].get<std::string>() << std::endl;
-	for (auto& [key, list] : old_gacha_list[config["active_uid"].get<std::string>()].items()) {
+	std::cout << "当前账号uid " << config["active_uid"].get<std::string>() << std::endl;
+	std::cout << "上次更新时间 " << timestamp_to_str(gacha_list[config["active_uid"].get<std::string>()]["info"]["update_time"]) << std::endl;
+	for (auto& [key, list] : gacha_list[config["active_uid"].get<std::string>()]["data"].items()) {
 		std::vector<int> count_list;
-		if (old_gacha_list[config["active_uid"].get<std::string>()][key].size() != 0) {
+		if (gacha_list[config["active_uid"].get<std::string>()]["data"][key].size() != 0) {
 			for (auto& t : gacha_type["data"]) {
 				if (t["key"] == key) {
 					std::cout << "=========================================" << utf8_to_gbk(t["name"]) << "=========================================" << std::endl;
@@ -69,7 +70,7 @@ void show_gacha_detail() {
 				}
 			}
 			int count = 0;
-			for (auto& item : old_gacha_list[config["active_uid"].get<std::string>()][key]) {
+			for (auto& item : gacha_list[config["active_uid"].get<std::string>()]["data"][key]) {
 				count++;
 				if (item["qualityLevel"] == 5) {
 					std::cout << utf8_to_gbk(item["name"]);

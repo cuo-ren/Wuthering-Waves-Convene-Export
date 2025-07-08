@@ -19,5 +19,6 @@ json ReadJsonFile(const std::string& path);
 void WriteJsonFile(const std::string& path, const json& data);
 void makedirs(const std::string& path);
 std::string current_time_str();
+std::string timestamp_to_str(int timestamp);
 bool compareByTime(const json& a, const json& b);
 bool is_digit(const std::string&);

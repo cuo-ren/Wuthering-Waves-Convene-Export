@@ -70,7 +70,7 @@ void change_skip() {
 void change_active_uid() {
 	//遍历数据文件中的uid，添加到uid_list
 	std::vector<std::string> uid_list;
-	for (auto& [uid, value] : old_gacha_list.items()) {
+	for (auto& [uid, value] : gacha_list.items()) {
 		uid_list.push_back(uid);
 	}
 	while (true) {

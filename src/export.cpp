@@ -4,7 +4,7 @@
 void export_to_csv() {
 	makedirs("./export/csv");
 
-	for (auto& [uid, pools] : old_gacha_list.items()) {
+	for (auto& [uid, values] : gacha_list.items()) {
 		std::time_t now = std::time(nullptr);
 		std::string filename = "./export/csv/鸣潮抽卡记录_" + uid + "_" + std::to_string(now) + ".csv";
 
@@ -21,7 +21,7 @@ void export_to_csv() {
 		// 写入表头
 		file << gbk_to_utf8("卡池,时间,名称,类型,星级,总抽数,保底内抽数\n");
 
-		for (auto& [key, items] : pools.items()) {
+		for (auto& [key, items] : values["data"].items()) {
 			// 获取中文卡池名，默认使用 key
 			std::string pool_name = key;
 			for (const auto& t : gacha_type["data"]) {
@@ -58,21 +58,21 @@ void export_to_csv() {
 void export_to_uigf3() {
 	makedirs("./export/UIGFv3");
 
-	for (auto& [uid, pools] : old_gacha_list.items()) {
+	for (auto& [uid, values] : gacha_list.items()) {
 		json uigf3;
 		uigf3["info"] = {
 			{"uid", uid},
-			{"lang", config["language"]},
+			{"lang", gacha_list[uid]["info"]["lang"]},
 			{"export_timestamp", get_timestamp()},
 			{"export_time", current_time_str()},
-			{"export_app", "test.exe"},
-			{"export_app_version", "beta v0.1"},
+			{"export_app", version["name"].get<std::string>() + ".exe"},
+			{"export_app_version", version["version"]},
 			{"uigf_version", "v3.0"},
-			{"region_time_zone", 8}
+			{"region_time_zone", 8}//这里暂时统一为8
 		};
 		uigf3["list"] = json::array();
 
-		for (auto& [key, items] : pools.items()) {
+		for (auto& [key, items] : values["data"].items()) {
 			// 找中文卡池名
 			std::string pool_name = key;
 
@@ -114,24 +114,24 @@ void export_to_uigf4() {
 	json export_data = {
 		{"info", {
 			{"export_timestamp", get_timestamp()},
-			{"export_app", "test.exe"},
-			{"export_app_version", "beta v0.1"},
+			{"export_app", version["name"].get<std::string>() + ".exe"},
+			{"export_app_version", version["version"]},
 			{"version", "v4.0"}
 		}},
 		{"aki", json::array()}
 	};
 
-	for (auto& [uid, pools] : old_gacha_list.items()) {
+	for (auto& [uid, values] : gacha_list.items()) {
 		json uid_entry = {
 			{"uid", uid},
-			{"timezone", 8},
-			{"lang", config["language"]},
+			{"timezone", 8},//这里暂时为8
+			{"lang", gacha_list[uid]["info"]["lang"]},
 			{"list", json::array()}
 		};
 
 		// 这里没用 record_id 和 counter，按你的 Python 逻辑，它们没实际作用，可以忽略
 
-		for (auto& [key, items] : pools.items()) {
+		for (auto& [key, items] : values["data"].items()) {
 			for (const auto& item : items) {
 				uid_entry["list"].push_back({
 					{"gacha_id", key},

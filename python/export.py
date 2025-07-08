@@ -9,7 +9,7 @@ import time
 
 def export_to_excel():
     os.makedirs("./export/excel", exist_ok=True)
-    for uid in old_gacha_list:
+    for uid in gacha_list:
         title_font = Font(name = "微软雅黑", bold=True, color = "757575")
         title_fill = PatternFill(fill_type="solid", fgColor="DBD7D3")
         content_fill = PatternFill(fill_type="solid", fgColor="EBEBEB")
@@ -24,7 +24,7 @@ def export_to_excel():
         )
         wb = Workbook()
         wb.remove(wb.active)
-        for key in old_gacha_list[uid]:
+        for key in gacha_list[uid]["data"]:
             for t in gacha_type["data"]:
                 if t["key"] == key:
                     ws = wb.create_sheet(title=t["name"])
@@ -36,7 +36,7 @@ def export_to_excel():
                 cell.border = thin_border
             total_count = 0
             count = 0
-            for item in old_gacha_list[uid][key]:
+            for item in gacha_list[uid]["data"][key]:
                 total_count += 1
                 count += 1
                 ws.append([item["time"],item["name"],item["type"],item["qualityLevel"],total_count,count])
@@ -73,6 +73,6 @@ with open("GachaType.json",mode="r",encoding="utf-8") as f:
      gacha_type = json.load(f)
 
 with open("./data/gacha_list.json",mode="r",encoding="utf-8") as f:
-     old_gacha_list = json.load(f)
+     gacha_list = json.load(f)
 
 export_to_excel()
