@@ -115,7 +115,13 @@
     "WrongPath": "选择路径错误",
     "FindPathSuccess": "成功查找到游戏路径:",
     "SetPath": "已设置路径:",
-    "NowPath": "当前游戏路径："
+    "NowPath": "当前游戏路径：",
+    "time": "时间",
+    "name": "名称",
+    "type": "类型",
+    "stars": "星级",
+    "TotalPulls": "总抽数",
+    "TotalPullsSince5": "保底内抽数"
   },
   "zh-Hant": {
     "show_about1": "使用須知：",
@@ -233,7 +239,13 @@
     "WrongPath": "選擇路徑錯誤",
     "FindPathSuccess": "成功查找到遊戲路徑:",
     "SetPath": "已設置路徑:",
-    "NowPath": "當前遊戲路徑："
+    "NowPath": "當前遊戲路徑：",
+    "time": "時間",
+    "name": "名稱",
+    "type": "類型",
+    "stars": "星級",
+    "TotalPulls": "總抽數",
+    "TotalPullsSince5": "保底內抽數"
   },
   "en": {
     "show_about1": "Usage Notice:",
@@ -351,7 +363,13 @@
     "WrongPath": "Incorrect path selected.",
     "FindPathSuccess": "Successfully found game path:",
     "SetPath": "Path set to:",
-    "NowPath": "Current game path:"
+    "NowPath": "Current game path:",
+    "time": "Time",
+    "name": "Name",
+    "type": "Type",
+    "stars": "Stars",
+    "TotalPulls": "Total Pulls",
+    "TotalPullsSince5": "Pulls Since Last 5-star"
   },
   "ja": {},
   "ko": {},

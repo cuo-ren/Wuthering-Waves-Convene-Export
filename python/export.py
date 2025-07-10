@@ -27,9 +27,9 @@ def export_to_excel():
         for key in gacha_list[uid]["data"]:
             for t in gacha_type["data"]:
                 if t["key"] == key:
-                    ws = wb.create_sheet(title=t["name"])
+                    ws = wb.create_sheet(title=language[config["language"]][t["name"]])
                     break
-            ws.append(["时间","名称","类型","星级","总抽数","保底内抽数"])
+            ws.append([language[config["language"]]["time"],language[config["language"]]["name"],language[config["language"]]["type"],language[config["language"]]["stars"],language[config["language"]]["TotalPulls"],language[config["language"]]["TotalPullsSince5"]])
             for cell in ws[1]:
                 cell.font = title_font
                 cell.fill = title_fill
@@ -67,7 +67,15 @@ def export_to_excel():
                 if col_letter == "F":
                     ws.column_dimensions[col_letter].width = 10.91
 
-        wb.save(f"./export/excel/鸣潮抽卡记录_{uid}_{int(time.time())}.xlsx")
+        wb.save(f"./export/excel/{language[config["language"]]["csvFilename"]}_{uid}_{int(time.time())}.xlsx")
+
+
+
+with open("language.json",mode="r",encoding="utf-8") as f:
+    language = json.load(f)
+
+with open("config.json",mode="r",encoding="utf-8") as f:
+    config = json.load(f)
 
 with open("GachaType.json",mode="r",encoding="utf-8") as f:
      gacha_type = json.load(f)
