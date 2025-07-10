@@ -51,6 +51,9 @@
     <None Include="python\export.py">
       <Filter>头文件\python</Filter>
     </None>
+    <None Include="language.json">
+      <Filter>资源文件</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\config.cpp">
@@ -84,6 +87,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="src\setting.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\language.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
@@ -131,6 +137,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="include\setting.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="include\language.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

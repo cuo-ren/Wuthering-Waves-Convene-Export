@@ -143,6 +143,7 @@
     <None Include="config.json" />
     <None Include="data\gacha_list.json" />
     <None Include="GachaType.json" />
+    <None Include="language.json" />
     <None Include="python\export.py" />
   </ItemGroup>
   <ItemGroup>
@@ -151,6 +152,7 @@
     <ClCompile Include="src\export.cpp" />
     <ClCompile Include="src\gachatype.cpp" />
     <ClCompile Include="src\getData.cpp" />
+    <ClCompile Include="src\language.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\path.cpp" />
     <ClCompile Include="src\setting.cpp" />
@@ -167,6 +169,7 @@
     <ClInclude Include="include\globals.h" />
     <ClInclude Include="include\httplib.h" />
     <ClInclude Include="include\json.hpp" />
+    <ClInclude Include="include\language.h" />
     <ClInclude Include="include\path.h" />
     <ClInclude Include="include\picosha2.h" />
     <ClInclude Include="include\resource.h" />

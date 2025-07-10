@@ -89,7 +89,11 @@ std::string sha256_file_streaming(const std::string& filepath) {
 	return picosha2::bytes_to_hex_string(hash.begin(), hash.end());
 }
 
-std::string gbk_to_utf8(const std::string& gbk) {
+std::string local_to_utf8(const std::string& gbk) {
+	UINT acp = GetACP();
+	if (acp == CP_UTF8) {
+		return gbk;
+	}
 	int wide_len = MultiByteToWideChar(CP_ACP, 0, gbk.c_str(), -1, nullptr, 0);
 	std::wstring wide_str(wide_len, 0);
 	MultiByteToWideChar(CP_ACP, 0, gbk.c_str(), -1, &wide_str[0], wide_len);
@@ -101,7 +105,12 @@ std::string gbk_to_utf8(const std::string& gbk) {
 	return utf8_str;
 }
 
-std::string utf8_to_gbk(const std::string& utf8) {
+std::string utf8_to_local(const std::string& utf8) {
+	UINT acp = GetACP();
+	if (acp == CP_UTF8) {
+		// 当前系统 ACP 是 UTF-8，说明 utf8 本身就是目标编码
+		return utf8;  // 无需转换
+	}
 	// 第一步：UTF-8 转宽字符（UTF-16）
 	int wide_len = MultiByteToWideChar(CP_UTF8, 0, utf8.c_str(), -1, nullptr, 0);
 	if (wide_len <= 0) return "";

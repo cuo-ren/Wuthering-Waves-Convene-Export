@@ -6,11 +6,11 @@ void export_to_csv() {
 
 	for (auto& [uid, values] : gacha_list.items()) {
 		std::time_t now = std::time(nullptr);
-		std::string filename = "./export/csv/鸣潮抽卡记录_" + uid + "_" + std::to_string(now) + ".csv";
+		std::string filename = "./export/csv/"+ utf8_to_local(language[used_lang]["csvFilename"].get<std::string>())+"_" + uid + "_" + std::to_string(now) + ".csv";
 
 		std::ofstream file(filename, std::ios::out);
 		if (!file.is_open()) {
-			std::cerr << "无法打开文件: " << filename << std::endl;
+			std::cerr << utf8_to_local(language[used_lang]["OpenFileFail"].get<std::string>()) << filename << std::endl;
 			continue;
 		}
 
@@ -19,7 +19,7 @@ void export_to_csv() {
 		file.write(reinterpret_cast<const char*>(bom), sizeof(bom));
 
 		// 写入表头
-		file << gbk_to_utf8("卡池,时间,名称,类型,星级,总抽数,保底内抽数\n");
+		file << language[used_lang]["FormHeader"].get<std::string>();
 
 		for (auto& [key, items] : values["data"].items()) {
 			// 获取中文卡池名，默认使用 key
@@ -101,7 +101,7 @@ void export_to_uigf3() {
 		std::string filename = "./export/UIGFv3/UIGFv3_" + uid + "_" + std::to_string(uigf3["info"]["export_timestamp"].get<int>()) + ".json";
 		std::ofstream ofs(filename);
 		if (!ofs.is_open()) {
-			std::cerr << "无法打开文件: " << filename << std::endl;
+			std::cerr << utf8_to_local(language[used_lang]["OpenFileFail"].get<std::string>()) << filename << std::endl;
 			continue;
 		}
 		ofs << uigf3.dump(2);
@@ -152,7 +152,7 @@ void export_to_uigf4() {
 		std::string filename = "./export/UIGFv4/UIGFv4_" + uid + "_" + std::to_string(export_data["info"]["export_timestamp"].get<int>()) + ".json";
 		std::ofstream ofs(filename);
 		if (!ofs.is_open()) {
-			std::cerr << "无法打开文件: " << filename << std::endl;
+			std::cerr << utf8_to_local(language[used_lang]["OpenFileFail"].get<std::string>()) << filename << std::endl;
 			continue;
 		}
 		ofs << export_data.dump(2);
@@ -166,51 +166,26 @@ void export_to_excel() {
 
 void export_data() {
 	makedirs("export");
-	while (true) {
-		//清屏
-		system("cls");
-		std::cout << "1:导出为excel表格" << std::endl;
-		std::cout << "2:导出为csv文件" << std::endl;
-		std::cout << "3:导出为UIGF 3.0 格式" << std::endl;
-		std::cout << "4:导出为UIGF 4.0 格式" << std::endl;
-		std::cout << "5:返回" << std::endl;
-		std::cout << "请选择导出的格式:" << std::endl;
-		std::string temp;
-		std::cin >> temp;
-		int choose;
-		try {
-			choose = std::stoi(temp);
-		}
-		catch (...) {
-			std::cout << "输入错误" << std::endl;
-			system("pause");
-			continue;
-		}
-
-		if (choose <= 0 or choose >= 6) {
-			std::cout << "输入错误" << std::endl;
-			system("pause");
-			continue;
-		}
-		if (choose == 1) {
-			export_to_excel();
-		}
-		else if (choose == 2) {
-			export_to_csv();
-		}
-		else if (choose == 3) {
-			//导出数据
-			export_to_uigf3();
-		}
-		else if (choose == 4) {
-			export_to_uigf4();
-		}
-		else if (choose == 5) {
-			return;
-		}
-		std::cout << "导出完成" << std::endl;
-		system("pause");
+	int choose = show_export_menu();
+	if (choose == 1) {
+		export_to_excel();
+	}
+	else if (choose == 2) {
+		export_to_csv();
+	}
+	else if (choose == 3) {
+		//导出数据
+		export_to_uigf3();
+	}
+	else if (choose == 4) {
+		export_to_uigf4();
+	}
+	else if (choose == 5) {
 		return;
 	}
+	std::cout << utf8_to_local(language[used_lang]["export_complete"].get<std::string>()) << std::endl;
+	system("pause");
+	return;
+
 }
 

@@ -13,21 +13,27 @@
 #include "getData.h"
 #include "show.h"
 #include "setting.h"
+#include "language.h"
 
 //初始化全局变量
 json config;
 json gacha_type;
 json gacha_list;
+json language;
+std::string used_lang = "";
+std::vector<std::string> support_languages = { "zh-Hans","zh-Hant" ,"en"};
 json version = { {"name","Wuthering Waves Convene Export"},{"version","betav1.0"} };
 
 int main() {
-	show_about();
+	initLanguage();
 	initConfig();
+	show_about();
 	initGachaType();
 	initData();
 
-	std::cout << "程序初始化完成，按任意键进入程序" << std::endl;
+	std::cout << utf8_to_local(language[used_lang]["initialization_completed"].get<std::string>()) << std::endl;
 	system("pause");
+
 	//进入主程序循环
 	while (true) {
 		int choose;

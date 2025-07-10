@@ -38,11 +38,11 @@ json find_apis() {
 	json uid_url_map = json::object();
 
 	std::regex url_pattern(R"(https://aki-gm-resources\.aki-game\.com/aki/gacha/index\.html#/record\?[^"\\ ]+)");
-	std::string log_path = utf8_to_gbk(config["path"].get<std::string>()) + "/Client/Saved/Logs/Client.log";
+	std::string log_path = utf8_to_local(config["path"].get<std::string>()) + "/Client/Saved/Logs/Client.log";
 
 	std::ifstream file(log_path);
 	if (!file.is_open()) {
-		std::cerr << "无法打开日志文件：" << log_path << std::endl;
+		std::cerr << utf8_to_local(language[used_lang]["OpenLogFail"].get<std::string>()) << log_path << std::endl;
 		return uid_url_map;
 	}
 	//清空上次保存的url
@@ -55,7 +55,7 @@ json find_apis() {
 			std::string url = matches[0];
 			search_start = matches.suffix().first;
 			try {
-				std::map<std::string, std::string> d = get_params(utf8_to_gbk(url));
+				std::map<std::string, std::string> d = get_params(utf8_to_local(url));
 				uid_url_map[d["player_id"]] = {
 					{"url", url},
 					{"svr_id", d["svr_id"]},
@@ -67,7 +67,7 @@ json find_apis() {
 				};
 			}
 			catch (const std::exception& e) {
-				std::cerr << "get_params 解析失败: " << e.what() << std::endl;
+				std::cerr << utf8_to_local(language[used_lang]["ParseParamsFail"].get<std::string>()) << e.what() << std::endl;
 				continue;
 			}
 		}
@@ -105,7 +105,7 @@ json get_gacha_data(const std::string cardPoolId, const std::string cardPoolType
 	auto res = cli.Post("/gacha/record/query", headers, post_data.dump(), "application/json");
 
 	if (!res || res->status != 200) {
-		std::cerr << "网络异常，状态码：" << (res ? std::to_string(res->status) : "连接失败") << std::endl;
+		std::cerr << utf8_to_local(language[used_lang]["NetworkError"].get<std::string>()) << (res ? std::to_string(res->status) : utf8_to_local(language[used_lang]["ConnectFail"].get<std::string>())) << std::endl;
 		return { {"code", -2} };
 	}
 	try {
@@ -113,7 +113,7 @@ json get_gacha_data(const std::string cardPoolId, const std::string cardPoolType
 		return result;
 	}
 	catch (...) {
-		std::cerr << "响应解析失败！" << std::endl;
+		std::cerr << utf8_to_local(language[used_lang]["LoadResponseFail"].get<std::string>()) << std::endl;
 		return { {"code", -3} };
 	}
 }
@@ -125,7 +125,7 @@ json get_gacha_data_retry(const std::string cardPoolId, const std::string cardPo
 		if (result["code"] == 0) {
 			return result;
 		}
-		std::cerr << "请求失败（第 " << attempt << "/" << max_retry << " 次） " << "code:" << result["code"] << std::endl;
+		std::cerr << utf8_to_local(language[used_lang]["RequestFail1"].get<std::string>()) << attempt << "/" << max_retry << utf8_to_local(language[used_lang]["RequestFail2"].get<std::string>()) << "code:" << result["code"] << std::endl;
 		Sleep(1000);
 	}
 	return result; // 最终失败，返回最后一次的结果
@@ -195,8 +195,8 @@ void merge(const std::string target_uid, json new_gacha_list) {
 			}
 
 			if (new_gacha_list[target_uid]["data"][gacha_key][right]["time"].get<std::string>() != last_date) {
-				std::cerr << "未找到对应时间，请检查数据是否被修改，可从备份文件中恢复数据" << std::endl;
-				std::cerr << "采用保守拼接更新数据，如数据无误，可以不理会此次报错" << std::endl;
+				std::cerr << utf8_to_local(language[used_lang]["MergeWaring1"].get<std::string>()) << std::endl;
+				std::cerr << utf8_to_local(language[used_lang]["MergeWaring2"].get<std::string>()) << std::endl;
 			}
 			else {
 				//删除旧数据last_time时间点的数据
@@ -268,8 +268,8 @@ void update_data(int mode) {
 	//清屏
 	system("cls");
 	//检查游戏日志路径是否有效
-	if (!std::filesystem::exists(utf8_to_gbk(config["path"]) + "/Client/Saved/Logs/Client.log")) {
-		std::cout << "未找到日志文件，请先查找游戏位置" << std::endl;
+	if (!std::filesystem::exists(utf8_to_local(config["path"]) + "/Client/Saved/Logs/Client.log")) {
+		std::cout << utf8_to_local(language[used_lang]["LogFileNotFound"].get<std::string>()) << std::endl;
 		system("pause");
 		return;
 	}
@@ -279,7 +279,7 @@ void update_data(int mode) {
 		urls = find_apis();
 	}
 	else if (mode == 2) {
-		std::cout << "请输入url：" << std::endl;
+		std::cout << utf8_to_local(language[used_lang]["Input_url"].get<std::string>()) << std::endl;
 		std::string url;
 		std::cin >> url;
 		try {
@@ -290,26 +290,26 @@ void update_data(int mode) {
 			};
 			for (auto& key : required_keys) {
 				if (params_dict.count(key) == 0) {
-					std::cerr << "url不完整或不正确，缺少参数: " << key << std::endl;
+					std::cerr << utf8_to_local(language[used_lang]["UrlError"].get<std::string>()) << key << std::endl;
 					system("pause");
 					return;
 				}
 			}
 
-			urls[gbk_to_utf8(params_dict["player_id"])] = {
-					{"url", gbk_to_utf8(url)},
-					{"svr_id", gbk_to_utf8(params_dict["svr_id"])},
-					{"lang", gbk_to_utf8(params_dict["lang"])},
-					{"svr_area", gbk_to_utf8(params_dict["svr_area"])},
-					{"record_id", gbk_to_utf8(params_dict["record_id"])},
-					{"resources_id", gbk_to_utf8(params_dict["resources_id"])},
-					{"platform", gbk_to_utf8(params_dict["platform"])}
+			urls[local_to_utf8(params_dict["player_id"])] = {
+					{"url", local_to_utf8(url)},
+					{"svr_id", local_to_utf8(params_dict["svr_id"])},
+					{"lang", local_to_utf8(params_dict["lang"])},
+					{"svr_area", local_to_utf8(params_dict["svr_area"])},
+					{"record_id", local_to_utf8(params_dict["record_id"])},
+					{"resources_id", local_to_utf8(params_dict["resources_id"])},
+					{"platform", local_to_utf8(params_dict["platform"])}
 			};
 			config["url"] = json::array();
-			config["url"].push_back(urls[gbk_to_utf8(params_dict["player_id"])]["url"]);
+			config["url"].push_back(urls[local_to_utf8(params_dict["player_id"])]["url"]);
 		}
 		catch (const std::exception& e) {
-			std::cerr << "解析url失败: " << e.what() << std::endl;
+			std::cerr << utf8_to_local(language[used_lang]["UrlParseError"].get<std::string>()) << e.what() << std::endl;
 			system("pause");
 			return;
 		}
@@ -324,16 +324,17 @@ void update_data(int mode) {
 	for (auto& [uid, params] : urls.items()) {
 		//新建uid字段
 		new_gacha_list[uid] = json::object();
-		std::cout << "尝试获取" << uid << "数据" << std::endl;
+		std::cout << utf8_to_local(language[used_lang]["Fetching1"].get<std::string>()) << uid << utf8_to_local(language[used_lang]["Fetching2"].get<std::string>()) << std::endl;
+
 		//新建info
-		//这里要对语言代码做转化！！也许可以不做
 		new_gacha_list[uid]["info"] = json{ {"lang",urls[uid]["lang"].get<std::string>()} ,{"update_time",get_timestamp()}};
 		//检测旧数据的语言代码和当前的语言代码
 		if (gacha_list.contains(uid) and gacha_list[uid]["info"]["lang"].get<std::string>() != urls[uid]["lang"].get<std::string>()) {
-			std::cerr << "语言不一致，采用原语言" << std::endl;
+			std::cerr << utf8_to_local(language[used_lang]["LanguageWaring"].get<std::string>()) << std::endl;
 			urls[uid]["lang"] = gacha_list[uid]["info"]["lang"].get<std::string>();
 			new_gacha_list[uid]["info"]["lang"] = gacha_list[uid]["info"]["lang"].get<std::string>();
 		}
+
 		//新建data
 		new_gacha_list[uid]["data"] = json::object();
 		//创建卡池列表
@@ -346,11 +347,11 @@ void update_data(int mode) {
 			if (!gacha_key["flag"].get<bool>() and config["skip"].get<bool>()) {
 				continue;
 			}
-			std::cout << "正在获取" << utf8_to_gbk(gacha_key["name"]) << "数据" << std::endl;
+			std::cout << utf8_to_local(language[used_lang]["FetchingData1"].get<std::string>()) << utf8_to_local(language[used_lang][gacha_key["name"]]) << utf8_to_local(language[used_lang]["FetchingData2"].get<std::string>()) << std::endl;
 			//这里的数据是utf-8，注意转化
 			json new_data = get_gacha_data_retry(urls[uid]["resources_id"].get<std::string>(), gacha_key["key"].get<std::string>(), uid, urls[uid]["record_id"].get<std::string>(), urls[uid]["svr_id"].get<std::string>(),urls[uid]["lang"]);
 			if (new_data["code"] != 0) {
-				std::cout << "uid: " << uid << " api已过期，请进入游戏刷新" << std::endl;
+				std::cout << "uid: " << uid << utf8_to_local(language[used_lang]["ExpiredAPIWarning"].get<std::string>()) << std::endl;
 				break;
 			}
 			//当数据获取成功时，切换用户
@@ -360,7 +361,7 @@ void update_data(int mode) {
 			//倒序遍历新数据
 			for (auto it = new_data["data"].rbegin(); it != new_data["data"].rend(); ++it) {
 				std::string time_str = "";
-				for (char c : utf8_to_gbk((*it)["time"].get<std::string>())) {
+				for (char c : utf8_to_local((*it)["time"].get<std::string>())) {
 					try {
 						std::string temp = "";
 						temp += c;
@@ -397,7 +398,7 @@ void update_data(int mode) {
 		merge(uid, new_gacha_list);
 		WriteData(gacha_list);
 	}
-	std::cout << "数据更新完成" << std::endl;
+	std::cout << utf8_to_local(language[used_lang]["DataUpdateComplete"].get<std::string>()) << std::endl;
 	system("pause");
 	return;
 }

@@ -1,6 +1,7 @@
 ﻿#include "data.h"
 
 void initData() {
+	
 	json default_data = json::object();
 	//确保data目录存在
 	makedirs("data");
@@ -15,27 +16,27 @@ void initData() {
 		gacha_list = ReadJsonFile("./data/gacha_list.json");
 	}
 	catch (const json::parse_error& e) {
-		std::cerr << "json解析失败，正在创建" << std::endl;
+		std::cerr << utf8_to_local(language[used_lang]["json_load_failed"].get<std::string>()) << std::endl;
 		gacha_list = default_data;
 		WriteJsonFile("./data/gacha_list.json", default_data);
 	}
 	catch (...) {
-		std::cerr << "未知错误" << std::endl;
+		std::cerr << utf8_to_local(language[used_lang]["unknown_failed"].get<std::string>()) << std::endl;
 		gacha_list = default_data;
 	}
 	//比对hash，若不一致，则检测文件是否合法
-	if (sha256_file_streaming("./data/gacha_list.json") == config["hash"].get<std::string>()) {
-		std::cout << "文件校验通过" << std::endl;
+	if (sha256_file_streaming("./data/gacha_list.json") + sha256_file_streaming("./GachaType.json") == config["hash"].get<std::string>()) {
+		std::cout << utf8_to_local(language[used_lang]["verify_success"].get<std::string>()) << std::endl;
 	}
 	else {
-		std::cout << "hash比对未通过，正在校验数据合法性" << std::endl;
+		std::cout << utf8_to_local(language[used_lang]["verify_failed"].get<std::string>()) << std::endl;
 		int count = 0;
 		while (true) {
 			count++;
 			json validate_result = validate_data();
 			if (validate_result["code"] == 0) {
-				std::cout << "文件校验通过" << std::endl;
-				config["hash"] = sha256_file_streaming("./data/gacha_list.json");
+				std::cout << utf8_to_local(language[used_lang]["verify_success"].get<std::string>()) << std::endl;
+				config["hash"] = sha256_file_streaming("./data/gacha_list.json") + sha256_file_streaming("./GachaType.json");
 				WriteConfig();
 				break;
 			}
@@ -112,7 +113,7 @@ void WriteData(const json& data) {
 	}
 	WriteJsonFile("./data/gacha_list.json", gacha_list);
 	//更新配置的hash值
-	config["hash"] = sha256_file_streaming("./data/gacha_list.json");
+	config["hash"] = sha256_file_streaming("./data/gacha_list.json") + sha256_file_streaming("./GachaType.json");
 	WriteConfig();
 	trim_backup_files("./data", 9);
 }

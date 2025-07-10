@@ -35,10 +35,10 @@ void change_skip() {
 		//清屏
 		system("cls");
 		//打印当前设置
-		std::cout << "当前设置：" << (config["skip"].get<bool>() ? "是" : "否") << std::endl;
-		std::cout << "1：是" << std::endl;
-		std::cout << "2：否" << std::endl;
-		std::cout << "3：返回" << std::endl;
+		std::cout << utf8_to_local(language[used_lang]["now_setting"]) << (config["skip"].get<bool>() ? utf8_to_local(language[used_lang]["yes"]) : utf8_to_local(language[used_lang]["no"])) << std::endl;
+		std::cout << "1：" + utf8_to_local(language[used_lang]["yes"]) << std::endl;
+		std::cout << "2：" + utf8_to_local(language[used_lang]["no"]) << std::endl;
+		std::cout << "3：" + utf8_to_local(language[used_lang]["back"]) << std::endl;
 
 		std::string temp;
 		std::cin >> temp;
@@ -47,7 +47,7 @@ void change_skip() {
 			choose = std::stoi(temp);
 		}
 		catch (...) {
-			std::cout << "输入错误" << std::endl;
+			std::cout << utf8_to_local(language[used_lang]["wrong_input"].get<std::string>()) << std::endl;
 			system("pause");
 			continue;
 		}
@@ -57,7 +57,7 @@ void change_skip() {
 		}
 
 		if (choose <= 0 or choose > 3) {
-			std::cout << "输入错误" << std::endl;
+			std::cout << utf8_to_local(language[used_lang]["wrong_input"].get<std::string>()) << std::endl;
 			system("pause");
 			continue;
 		}
@@ -78,10 +78,10 @@ void change_active_uid() {
 		system("cls");
 		//打印当前设置
 		if (config["active_uid"].get<std::string>().empty()) {
-			std::cout << "当前未选择用户" << std::endl;
+			std::cout << utf8_to_local(language[used_lang]["NoChoosenUser"].get<std::string>()) << std::endl;
 		}
 		else {
-			std::cout << "当前用户：" << config["active_uid"].get<std::string>() << std::endl;
+			std::cout << utf8_to_local(language[used_lang]["ActiveUser"].get<std::string>()) << config["active_uid"].get<std::string>() << std::endl;
 		}
 		//打印选择列表
 		int count = 0;
@@ -90,13 +90,13 @@ void change_active_uid() {
 			std::cout << count << ":" << uid << std::endl;
 		}
 		if (uid_list.size() == 0) {
-			std::cout << "暂无用户" << std::endl;
+			std::cout << utf8_to_local(language[used_lang]["NoUser"].get<std::string>()) << std::endl;
 			system("pause");
 			return;
 		}
 		//打印返回
 		count++;
-		std::cout << count << "返回" << std::endl;
+		std::cout << count << utf8_to_local(language[used_lang]["back"].get<std::string>()) << std::endl;
 		
 		std::string temp;
 		std::cin >> temp;
@@ -105,7 +105,7 @@ void change_active_uid() {
 			choose = std::stoi(temp);
 		}
 		catch (...) {
-			std::cout << "输入错误" << std::endl;
+			std::cout << utf8_to_local(language[used_lang]["wrong_input"].get<std::string>()) << std::endl;
 			system("pause");
 			continue;
 		}
@@ -115,7 +115,7 @@ void change_active_uid() {
 		}
 
 		if (choose <= 0 or choose > uid_list.size() + 1) {
-			std::cout << "输入错误" << std::endl;
+			std::cout << utf8_to_local(language[used_lang]["wrong_input"].get<std::string>()) << std::endl;
 			system("pause");
 			continue;
 		}
@@ -128,7 +128,7 @@ void change_active_uid() {
 void print_url() {
 	system("cls");
 	for (auto& url : config["url"]) {
-		std::cout << utf8_to_gbk(url) << std::endl;
+		std::cout << utf8_to_local(url) << std::endl;
 	}
 	system("pause");
 	return;

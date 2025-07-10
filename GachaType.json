@@ -3,47 +3,47 @@
     {
       "flag": true,
       "key": "1",
-      "name": "角色活动唤取"
+      "name": "Featured Resonator Convene"
     },
     {
       "flag": true,
       "key": "2",
-      "name": "武器活动唤取"
+      "name": "Featured Weapon Convene"
     },
     {
       "flag": true,
       "key": "3",
-      "name": "角色常驻唤取"
+      "name": "Standard Resonator Convene"
     },
     {
       "flag": true,
       "key": "4",
-      "name": "武器常驻唤取"
+      "name": "Standard Weapon Convene"
     },
     {
       "flag": false,
       "key": "5",
-      "name": "新手唤取"
+      "name": "Beginner Convene"
     },
     {
       "flag": false,
       "key": "6",
-      "name": "新手自选唤取"
+      "name": "Beginner's Choice Convene"
     },
     {
       "flag": false,
       "key": "7",
-      "name": "新手自选唤取(感恩定向唤取)"
+      "name": "Beginner's Choice Convene(Giveback Custom Convene)"
     },
     {
       "flag": false,
       "key": "8",
-      "name": "角色新旅唤取"
+      "name": "New Voyage Resonator Convene"
     },
     {
       "flag": false,
       "key": "9",
-      "name": "武器新旅唤取"
+      "name": "New Voyage Weapon Convene"
     }
   ]
 }

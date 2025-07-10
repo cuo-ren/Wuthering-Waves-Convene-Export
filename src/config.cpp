@@ -8,7 +8,7 @@ void WriteConfig() {
 void initConfig() {
 	//读取文件，不存在或解析失败时，使用默认配置覆盖
 	json default_config = {
-		{"language","zh-cn"},//程序使用语言，目前无作用
+		{"language","zh-Hans"},//程序使用语言，目前无作用
 		{"path",""},//游戏日志路径
 		{"active_uid", ""},//当前用户
 		{"skip", false},//跳过一次性卡池
@@ -35,7 +35,7 @@ void initConfig() {
 	//校验关键配置是否存在
 	if (!config.contains("language")) {
 		std::cerr << "值language不存在" << std::endl;
-		config["language"] = "zh-cn";
+		config["language"] = "zh-Hans";
 		WriteConfig();
 	}
 	if (!config.contains("active_uid")) {
@@ -67,13 +67,13 @@ void initConfig() {
 	//对键的值类型进行判断
 	if (!config["language"].is_string()) {
 		std::cerr << "值language类型错误" << std::endl;
-		config["language"] = "zh-cn";
+		config["language"] = "zh-Hans";
 		WriteConfig();
 	}
-	std::vector<std::string> support_languages = { "de-de", "en-us", "es-es", "fr-fr", "id-id", "it-it", "ja-jp", "ko-kr", "pt-pt", "ru-ru", "th-th", "tr-tr", "vi-vn", "zh-cn", "zh-tw" };
+	
 	if (std::find(support_languages.begin(), support_languages.end(), config["language"].get<std::string>()) == support_languages.end()) {
 		std::cerr << "未知的language代码" << std::endl;
-		config["language"] = "zh-cn";
+		config["language"] = "zh-Hans";
 		WriteConfig();
 	}
 	if (!config["active_uid"].is_string()) {
@@ -114,5 +114,6 @@ void initConfig() {
 		config["hash"] = "";
 		WriteConfig();
 	}
+	used_lang = config["language"].get<std::string>();
 	return;
 }

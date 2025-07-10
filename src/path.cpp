@@ -1,7 +1,7 @@
 ﻿#include "path.h"
 
 bool FindGamePath() {
-	std::cout << "正在查找游戏路径\n";
+	std::cout << utf8_to_local(language[used_lang]["FindGame"]) << std::endl;
 	// 获取 APPDATA 环境变量
 	char* appdata = nullptr;
 	size_t len = 0;
@@ -68,36 +68,36 @@ void FindGameLog() {
 	// 清屏
 	system("cls");
 
-	std::string log_path = utf8_to_gbk(config["path"].get<std::string>()) + "/Client/Saved/Logs/Client.log";
+	std::string log_path = utf8_to_local(config["path"].get<std::string>()) + "/Client/Saved/Logs/Client.log";
 
 	if (!std::filesystem::exists(log_path)) {
-		std::cout << "未找到log文件\n";
+		std::cout << utf8_to_local(language[used_lang]["LogNotFound"]) << std::endl;
 		bool r = FindGamePath();
 		if (!r) {
-			std::cout << "找不到游戏路径\n";
+			std::cout << utf8_to_local(language[used_lang]["GameNotFound"]) << std::endl;
 			std::string game_path = SelectGamePath();
 
-			if (!std::filesystem::exists(utf8_to_gbk(game_path) + utf8_to_gbk("/Client/Saved/Logs/Client.log"))) {
-				std::cout << "选择路径错误" << std::endl;;
+			if (!std::filesystem::exists(utf8_to_local(game_path) + utf8_to_local("/Client/Saved/Logs/Client.log"))) {
+				std::cout << utf8_to_local(language[used_lang]["WrongPath"]) << std::endl;;
 				config["path"] = "";
 				WriteConfig();
-				std::cout << "按任意键返回" << std::endl;
+				//std::cout << "按任意键返回" << std::endl;
 				system("pause");
 				return;
 			}
 			else {
-				std::cout<< "已设置路径:" << utf8_to_gbk(game_path);
+				std::cout<< utf8_to_local(language[used_lang]["SetPath"]) << utf8_to_local(game_path);
 				config["path"] = game_path;
 				WriteConfig();
 			}
 		}
 		else {
-			std::cout << "成功查找到游戏路径:" << utf8_to_gbk(config["path"]) << std::endl;
+			std::cout << utf8_to_local(language[used_lang]["FindPathSuccess"]) << utf8_to_local(config["path"]) << std::endl;
 		}
 	}
 	else {
-		std::cout << "当前游戏路径：" << utf8_to_gbk(config["path"]) << std::endl;
+		std::cout << utf8_to_local(language[used_lang]["NowPath"]) << utf8_to_local(config["path"]) << std::endl;
 	}
-	std::cout << "按任意键返回" << std::endl;
+	//std::cout << "按任意键返回" << std::endl;
 	system("pause");
 }

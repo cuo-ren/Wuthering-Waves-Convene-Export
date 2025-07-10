@@ -13,8 +13,8 @@
 std::string RunAndGetOutput(const std::string& exePath);
 std::int64_t get_timestamp();
 std::string sha256_file_streaming(const std::string& filepath);
-std::string gbk_to_utf8(const std::string& gbk);
-std::string utf8_to_gbk(const std::string& utf8);
+std::string local_to_utf8(const std::string& gbk);
+std::string utf8_to_local(const std::string& utf8);
 json ReadJsonFile(const std::string& path);
 void WriteJsonFile(const std::string& path, const json& data);
 void makedirs(const std::string& path);
