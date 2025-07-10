@@ -26,7 +26,7 @@ void export_to_csv() {
 			std::string pool_name = key;
 			for (const auto& t : gacha_type["data"]) {
 				if (t.contains("key") && t["key"] == key && t.contains("name")) {
-					pool_name = t["name"];
+					pool_name = language[used_lang][t["name"]].get<std::string>();
 					break;
 				}
 			}
