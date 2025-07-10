@@ -24,6 +24,9 @@ void setting() {
 			print_url();
 		}
 		else if (choose == 6) {
+			change_language();
+		}
+		else if (choose == 7) {
 			//返回
 			return;
 		}
@@ -120,6 +123,48 @@ void change_active_uid() {
 			continue;
 		}
 		config["active_uid"] = uid_list[choose - 1];
+		WriteConfig();
+		return;
+	}
+}
+
+void change_language() {
+	while (true) {
+		//清屏
+		system("cls");
+		//打印当前设置
+		std::cout << utf8_to_local(language[used_lang]["now_language"]) << utf8_to_local(language[used_lang][used_lang]) << std::endl;
+		int count = 0;
+		for (auto l : support_languages) {
+			count++;
+			std::cout << count << ": " << utf8_to_local(language[used_lang][l]) << std::endl;
+		}
+		count++;
+		std::cout << count << ": " << utf8_to_local(language[used_lang]["back"]) << std::endl;
+
+		std::string temp;
+		std::cin >> temp;
+		int choose;
+		try {
+			choose = std::stoi(temp);
+		}
+		catch (...) {
+			std::cout << utf8_to_local(language[used_lang]["wrong_input"].get<std::string>()) << std::endl;
+			system("pause");
+			continue;
+		}
+
+		if (choose == count) {
+			return;
+		}
+
+		if (choose <= 0 or choose > support_languages.size()) {
+			std::cout << utf8_to_local(language[used_lang]["wrong_input"].get<std::string>()) << std::endl;
+			system("pause");
+			continue;
+		}
+		config["language"] = support_languages[choose - 1];
+		used_lang = support_languages[choose - 1];
 		WriteConfig();
 		return;
 	}
