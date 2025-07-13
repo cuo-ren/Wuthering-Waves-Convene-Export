@@ -162,6 +162,7 @@ int show_setting() {
 		std::cout << utf8_to_local(language[used_lang]["show_setting5"].get<std::string>()) << std::endl;
 		std::cout << utf8_to_local(language[used_lang]["show_setting6"].get<std::string>()) << std::endl;
 		std::cout << utf8_to_local(language[used_lang]["show_setting7"].get<std::string>()) << std::endl;
+		std::cout << utf8_to_local(language[used_lang]["show_setting8"].get<std::string>()) << std::endl;
 		std::cout << utf8_to_local(language[used_lang]["select"].get<std::string>()) << std::endl;
 		std::string temp;
 		std::cin >> temp;
@@ -175,7 +176,7 @@ int show_setting() {
 			continue;
 		}
 
-		if (choose <= 0 or choose >= 8) {
+		if (choose <= 0 or choose >= 9) {
 			std::cout << utf8_to_local(language[used_lang]["wrong_input"].get<std::string>()) << std::endl;
 			system("pause");
 			continue;

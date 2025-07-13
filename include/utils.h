@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 #define _WINSOCKAPI_ 
+#define NOMINMAX
 #include <Windows.h>
 #include <iostream>
 #include <chrono>

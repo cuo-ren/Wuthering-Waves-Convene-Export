@@ -244,7 +244,154 @@ void merge(const std::string target_uid, json new_gacha_list) {
 				}
 			}
 			//寻找最长公共前后缀的长度
-			for (int i = 1; i <= min(temp_old.size(), temp_new.size()); i++) {
+			for (int i = 1; i <= std::min(temp_old.size(), temp_new.size()); i++) {
+				if (std::vector<json>(temp_old.end() - i, temp_old.end()) == std::vector<json>(temp_new.begin(), temp_new.begin() + i)) {
+					max_num = i;
+				}
+			}
+			//拼接数据
+			for (int i = 0; i < temp_old.size() - max_num; i++) {
+				gacha_list[target_uid]["data"][gacha_key].push_back(temp_old[i]);
+			}
+			for (int i = 0; i < temp_new.size(); i++) {
+				gacha_list[target_uid]["data"][gacha_key].push_back(temp_new[i]);
+			}
+			for (int i = 0; i < new_gacha_list[target_uid]["data"][gacha_key].size(); i++) {
+				gacha_list[target_uid]["data"][gacha_key].push_back(new_gacha_list[target_uid]["data"][gacha_key][i]);
+			}
+		}
+	}
+}
+
+void fix_merge(const std::string target_uid, json new_gacha_list) {
+	//建立uid列表，方便后续操作
+	std::vector<std::string> uid_list;
+	for (auto& [uid, value] : gacha_list.items()) {
+		uid_list.push_back(uid);
+	}
+	if (std::find(uid_list.begin(), uid_list.end(), target_uid) == uid_list.end()) {
+		//如果是新用户，则创建
+		gacha_list[target_uid] = json::object();
+		gacha_list[target_uid]["info"] = json::object();
+		gacha_list[target_uid]["data"] = json::object();
+		gacha_list[target_uid]["info"]["lang"] = new_gacha_list[target_uid]["info"]["lang"].get<std::string>();
+		for (auto& t : gacha_type["data"]) {
+			gacha_list[target_uid]["data"][t["key"].get<std::string>()] = json::array();
+		}
+	}
+	//更新时间
+	gacha_list[target_uid]["info"]["update_time"] = new_gacha_list[target_uid]["info"]["update_time"];
+
+	for (auto& t : gacha_type["data"]) {
+		std::string gacha_key = t["key"].get<std::string>();
+		if (new_gacha_list[target_uid]["data"][gacha_key].size() == 0) {
+			//如果新数据为空，则跳过本次合并
+			continue;
+		}
+		if (gacha_list[target_uid]["data"][gacha_key].size() == 0) {
+			//如果旧数据为空，则追加新数据
+			for (auto& item : new_gacha_list[target_uid]["data"][gacha_key]) {
+				gacha_list[target_uid]["data"][gacha_key].push_back(item);
+			}
+			continue;
+		}
+		//提取旧数据最新的时间点
+		std::string last_date = gacha_list[target_uid]["data"][gacha_key].back()["time"].get<std::string>();
+		//提取新数据最老的时间点
+		std::string first_date = new_gacha_list[target_uid]["data"][gacha_key][0]["time"].get<std::string>();
+
+		if (last_date < first_date) {
+			//如果旧数据最新的时间点比新数据最老时间点老，则拼接新旧数据
+			//人话：旧数据  断档  新数据   合并数据 = 旧数据 + 新数据
+			for (auto& item : new_gacha_list[target_uid]["data"][gacha_key]) {
+				gacha_list[target_uid]["data"][gacha_key].push_back(item);
+			}
+		}
+		else if (last_date > first_date) {
+			// 删除旧数据中 first_date 之后的记录（不包括 first_date 本身）
+			auto& old_data = gacha_list[target_uid]["data"][gacha_key];
+			for (int i = old_data.size() - 1; i >= 0; --i) {
+				std::string t = old_data[i]["time"].get<std::string>();
+				if (t > first_date) {
+					old_data.erase(old_data.begin() + i);
+				}
+			}
+
+			// 提取旧数据中 time == first_date 的记录
+			std::vector<json> temp_old;
+			for (int i = old_data.size() - 1; i >= 0; --i) {
+				if (old_data[i]["time"] == first_date) {
+					temp_old.push_back(old_data[i]);
+					old_data.erase(old_data.begin() + i);
+				}
+				else {
+					break;  // 因为记录是按时间顺序排列的
+				}
+			}
+			std::reverse(temp_old.begin(), temp_old.end());
+
+			// 提取新数据中 time == first_date 的记录
+			auto& new_data = new_gacha_list[target_uid]["data"][gacha_key];
+			std::vector<json> temp_new;
+			while (!new_data.empty() && new_data[0]["time"] == first_date) {
+				temp_new.push_back(new_data[0]);
+				new_data.erase(new_data.begin());
+			}
+
+			// 寻找最长公共前后缀
+			int max_num = 0;
+			for (int i = 1; i <= std::min(temp_old.size(), temp_new.size()); ++i) {
+				if (std::vector<json>(temp_old.end() - i, temp_old.end()) ==
+					std::vector<json>(temp_new.begin(), temp_new.begin() + i)) {
+					max_num = i;
+				}
+			}
+
+			// 拼接：保留旧数据中非公共部分 + 新数据全部（含first_date之后）
+			for (int i = 0; i < temp_old.size() - max_num; ++i) {
+				old_data.push_back(temp_old[i]);
+			}
+			for (const auto& item : temp_new) {
+				old_data.push_back(item);
+			}
+			for (const auto& item : new_data) {
+				old_data.push_back(item);
+			}
+		}
+		else {
+			//这里是旧数据最新时间和新数据最老时间相等的情况，寻找相等时间记录的最大公共前后缀并拼接
+			//人话：理论上之间拼接就行，但为了避免十连抽时间一致，而旧数据缺失部分数据或新数据缺失数据所有要处理
+			//通过最大公共前后缀的长度确定重叠部分数据，其余处理和上一种情况相同
+			int max_num = 0;
+			std::vector<json> temp_old;
+			std::vector<json> temp_new;
+			//将旧纪录等于last_time的记录单独提取出来并删除旧纪录的数据
+			for (int i = gacha_list[target_uid]["data"][gacha_key].size() - 1; i >= 0; i--) {
+				std::string temp_date = gacha_list[target_uid]["data"][gacha_key][i]["time"];
+				if (last_date == temp_date) {
+					temp_old.push_back(gacha_list[target_uid]["data"][gacha_key][i]);
+					gacha_list[target_uid]["data"][gacha_key].erase(gacha_list[target_uid]["data"][gacha_key].begin() + i);
+				}
+				else {
+					break;
+				}
+			}
+			//反转列表
+			std::reverse(temp_old.begin(), temp_old.end());
+			//将新纪录等于last_time的记录单独提取出来并删除新纪录的数据
+
+			while (new_gacha_list[target_uid]["data"][gacha_key].size() != 0) {
+				std::string temp_date = new_gacha_list[target_uid]["data"][gacha_key][0]["time"];
+				if (last_date == temp_date) {
+					temp_new.push_back(new_gacha_list[target_uid]["data"][gacha_key][0]);
+					new_gacha_list[target_uid]["data"][gacha_key].erase(new_gacha_list[target_uid]["data"][gacha_key].begin());
+				}
+				else {
+					break;
+				}
+			}
+			//寻找最长公共前后缀的长度
+			for (int i = 1; i <= std::min(temp_old.size(), temp_new.size()); i++) {
 				if (std::vector<json>(temp_old.end() - i, temp_old.end()) == std::vector<json>(temp_new.begin(), temp_new.begin() + i)) {
 					max_num = i;
 				}
@@ -307,6 +454,7 @@ void update_data(int mode) {
 			};
 			config["url"] = json::array();
 			config["url"].push_back(urls[local_to_utf8(params_dict["player_id"])]["url"]);
+			WriteConfig();
 		}
 		catch (const std::exception& e) {
 			std::cerr << utf8_to_local(language[used_lang]["UrlParseError"].get<std::string>()) << e.what() << std::endl;
@@ -395,7 +543,14 @@ void update_data(int mode) {
 			}
 			Sleep(1000);
 		}
-		merge(uid, new_gacha_list);
+		if (!config["fix"]) {
+			merge(uid, new_gacha_list);
+		}
+		else {
+			fix_merge(uid, new_gacha_list);
+			config["fix"] = false;
+			WriteConfig();
+		}
 		WriteData(gacha_list);
 	}
 	std::cout << utf8_to_local(language[used_lang]["DataUpdateComplete"].get<std::string>()) << std::endl;

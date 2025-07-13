@@ -24,9 +24,13 @@ void setting() {
 			print_url();
 		}
 		else if (choose == 6) {
+			//更换语言
 			change_language();
 		}
 		else if (choose == 7) {
+			fix();
+		}
+		else if (choose == 8) {
 			//返回
 			return;
 		}
@@ -165,6 +169,49 @@ void change_language() {
 		}
 		config["language"] = support_languages[choose - 1];
 		used_lang = support_languages[choose - 1];
+		WriteConfig();
+		return;
+	}
+}
+
+void fix() {
+	
+	while (true) {
+		//清屏
+		system("cls");
+		//打印当前设置
+		std::cout << utf8_to_local(language[used_lang]["fix_warning"]) << std::endl;
+		std::cout << "1：" + utf8_to_local(language[used_lang]["yes"]) << std::endl;
+		std::cout << "2：" + utf8_to_local(language[used_lang]["no"]) << std::endl;
+		std::cout << "3：" + utf8_to_local(language[used_lang]["back"]) << std::endl;
+
+		std::string temp;
+		std::cin >> temp;
+		int choose;
+		try {
+			choose = std::stoi(temp);
+		}
+		catch (...) {
+			std::cout << utf8_to_local(language[used_lang]["wrong_input"].get<std::string>()) << std::endl;
+			system("pause");
+			continue;
+		}
+
+		if (choose == 3) {
+			return;
+		}
+
+		if (choose <= 0 or choose > 3) {
+			std::cout << utf8_to_local(language[used_lang]["wrong_input"].get<std::string>()) << std::endl;
+			system("pause");
+			continue;
+		}
+		if (choose == 1) {
+			config["fix"] = true;
+		}
+		else if (choose == 2) {
+			config["fix"] = false;
+		}
 		WriteConfig();
 		return;
 	}

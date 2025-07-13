@@ -8,11 +8,12 @@ void WriteConfig() {
 void initConfig() {
 	//读取文件，不存在或解析失败时，使用默认配置覆盖
 	json default_config = {
-		{"language","zh-Hans"},//程序使用语言，目前无作用
+		{"language","zh-Hans"},//程序使用语言
 		{"path",""},//游戏日志路径
 		{"active_uid", ""},//当前用户
 		{"skip", false},//跳过一次性卡池
 		{"url", json::array()},//历史记录url
+		{"fix", false},//修复记录
 		{"hash",""}//数据文件hash值
 	};
 	try {
@@ -56,6 +57,11 @@ void initConfig() {
 	if (!config.contains("url")) {
 		std::cerr << "值url不存在" << std::endl;
 		config["url"] = json::array();
+		WriteConfig();
+	}
+	if (!config.contains("fix")) {
+		std::cerr << "值fix不存在" << std::endl;
+		config["fix"] = false;
 		WriteConfig();
 	}
 	if (!config.contains("hash")) {
@@ -108,6 +114,11 @@ void initConfig() {
 			WriteConfig();
 			break;
 		}
+	}
+	if (!config["fix"].is_boolean()) {
+		std::cerr << "值fix类型错误" << std::endl;
+		config["fix"] = false;
+		WriteConfig();
 	}
 	if (!config["hash"].is_string()) {
 		std::cerr << "值hash类型错误" << std::endl;
