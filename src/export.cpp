@@ -159,9 +159,163 @@ void export_to_uigf4() {
 	}
 }
 
+ExcelStyles create_styles(XLDocument& doc) {
+	auto& styles = doc.styles();
+	auto& fonts = styles.fonts();
+	auto& fills = styles.fills();
+	auto& borders = styles.borders();
+	auto& cellFormats = styles.cellFormats();
+
+	// 通用边框（细线 C4C2BF）
+	XLStyleIndex border = borders.create();
+	borders[border].setTop(XLLineStyleThin, XLColor("FFC4C2BF"));
+	borders[border].setBottom(XLLineStyleThin, XLColor("FFC4C2BF"));
+	borders[border].setLeft(XLLineStyleThin, XLColor("FFC4C2BF"));
+	borders[border].setRight(XLLineStyleThin, XLColor("FFC4C2BF"));
+
+	// 标题样式
+	XLStyleIndex titleFont = fonts.create();
+	fonts[titleFont].setFontName("Microsoft YaHei");
+	fonts[titleFont].setBold(true);
+	fonts[titleFont].setFontColor(XLColor("FF757575"));
+
+	XLStyleIndex titleFill = fills.create();
+	fills[titleFill].setPatternType(XLPatternSolid);
+	fills[titleFill].setColor(XLColor("FFDBD7D3"));
+
+	XLStyleIndex titleStyle = cellFormats.create();
+	cellFormats[titleStyle].setFontIndex(titleFont);
+	cellFormats[titleStyle].setFillIndex(titleFill);
+	cellFormats[titleStyle].setBorderIndex(border);
+
+	// 3星样式（黑字）
+	XLStyleIndex star3Font = fonts.create();
+	fonts[star3Font].setFontName("Microsoft YaHei");
+	fonts[star3Font].setFontColor(XLColor("FF8E8E8E"));
+
+	XLStyleIndex contentFill = fills.create();
+	fills[contentFill].setPatternType(XLPatternSolid);
+	fills[contentFill].setColor(XLColor("FFEBEBEB"));
+
+	XLStyleIndex star3Style = cellFormats.create();
+	cellFormats[star3Style].setFontIndex(star3Font);
+	cellFormats[star3Style].setFillIndex(contentFill);
+	cellFormats[star3Style].setBorderIndex(border);
+
+	// 4星样式（紫色）
+	XLStyleIndex star4Font = fonts.create();
+	fonts[star4Font].setFontName("Microsoft YaHei");
+	fonts[star4Font].setBold(true);
+	fonts[star4Font].setFontColor(XLColor("FFA256E1"));
+
+	XLStyleIndex star4Style = cellFormats.create();
+	cellFormats[star4Style].setFontIndex(star4Font);
+	cellFormats[star4Style].setFillIndex(contentFill);
+	cellFormats[star4Style].setBorderIndex(border);
+
+	// 5星样式（金色）
+	XLStyleIndex star5Font = fonts.create();
+	fonts[star5Font].setFontName("Microsoft YaHei");
+	fonts[star5Font].setBold(true);
+	fonts[star5Font].setFontColor(XLColor("FFBD6932"));
+
+	XLStyleIndex star5Style = cellFormats.create();
+	cellFormats[star5Style].setFontIndex(star5Font);
+	cellFormats[star5Style].setFillIndex(contentFill);
+	cellFormats[star5Style].setBorderIndex(border);
+
+	return { titleStyle, star3Style, star4Style, star5Style };
+}
+
 void export_to_excel() {
-	RunAndGetOutput("./python/export/export.exe");//"python export.py");
-	return;
+	makedirs("./export/excel");
+
+	for (auto& [uid, values] : gacha_list.items()) {
+		XLDocument doc;
+		doc.create("./export/excel/" + language[config["language"]]["csvFilename"].get<std::string>() + "_" + uid + "_" + std::to_string(get_timestamp()) + ".xlsx", XLForceOverwrite);
+		ExcelStyles styles = create_styles(doc); // 初始化样式
+
+		for (auto& [key, items] : values["data"].items()) {
+			// 获取中文卡池名，默认使用 key
+			std::string pool_name = key;
+			for (const auto& t : gacha_type["data"]) {
+				if (t.contains("key") && t["key"] == key && t.contains("name")) {
+					pool_name = language[used_lang][t["name"]].get<std::string>();
+					break;
+				}
+			}
+			
+			try {
+				doc.workbook().addWorksheet(pool_name);
+			}
+			catch (const std::exception& e) {
+				std::cout << e.what() << std::endl;
+			}
+			XLWorksheet ws = doc.workbook().worksheet(pool_name);
+			// 创建表头
+			std::vector<std::string> headers = {
+				language[used_lang]["time"].get<std::string>(),
+				language[used_lang]["name"].get<std::string>(),
+				language[used_lang]["type"].get<std::string>(),
+				language[used_lang]["stars"].get<std::string>(),
+				language[used_lang]["TotalPulls"].get<std::string>(),
+				language[used_lang]["TotalPullsSince5"].get<std::string>()
+			};
+			// 设置表头
+			for (size_t i = 0; i < headers.size(); ++i) {
+				auto cell = ws.cell(XLCellReference(1, i + 1));
+				cell.value() = headers[i];
+				cell.setCellFormat(styles.titleStyle);
+			}
+
+			// 设置内容样式
+			int total_count = 0;
+			int since5 = 0;
+			for (auto& item : items) {
+				total_count += 1;
+				since5 += 1;
+				int row = total_count + 1;
+
+				ws.cell(row, 1).value() = item["time"].get<std::string>();
+				ws.cell(row, 2).value() = item["name"].get<std::string>();
+				ws.cell(row, 3).value() = item["type"].get<std::string>();
+				ws.cell(row, 4).value() = item["qualityLevel"].get<int>();
+				ws.cell(row, 5).value() = total_count;
+				ws.cell(row, 6).value() = since5;
+
+				// 设置样式
+				XLStyleIndex style;
+				if (item["qualityLevel"] == 5) {
+					style = styles.star5Style;
+					since5 = 0;
+				}
+				else if (item["qualityLevel"] == 4) {
+					style = styles.star4Style;
+				}
+				else {
+					style = styles.star3Style;
+				}
+				for (int col = 1; col <= 6; ++col) {
+					ws.cell(row, col).setCellFormat(style);
+				}
+			}
+			// 设置列宽
+			std::unordered_map<std::string, double> column_widths = {
+				{ "A", 25 },
+				{ "B", 20 },
+				{ "F", 15 }
+			};
+			for (const auto& [col_letter, width] : column_widths) {
+				uint16_t col_index = XLCellReference::columnAsNumber(col_letter);
+				ws.column(col_index).setWidth(width);
+			}
+			doc.save();
+		}
+		// 删除默认工作表
+		doc.workbook().deleteSheet("Sheet1");
+		doc.save();
+		doc.close();
+	}
 }
 
 void export_data() {
@@ -186,6 +340,5 @@ void export_data() {
 	std::cout << utf8_to_local(language[used_lang]["export_complete"].get<std::string>()) << std::endl;
 	system("pause");
 	return;
-
 }
 

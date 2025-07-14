@@ -19,9 +19,6 @@
     <Filter Include="资源文件\export">
       <UniqueIdentifier>{7c5f8d30-90af-45ab-9cff-a3e465f8f098}</UniqueIdentifier>
     </Filter>
-    <Filter Include="头文件\python">
-      <UniqueIdentifier>{4ac2ce23-2bf6-4fdc-bceb-ba8ec43d1218}</UniqueIdentifier>
-    </Filter>
     <Filter Include="资源文件\export\csv">
       <UniqueIdentifier>{00c1fd64-c62b-47c0-85a9-e85a63b33b77}</UniqueIdentifier>
     </Filter>
@@ -47,9 +44,6 @@
     </None>
     <None Include="data\gacha_list.json">
       <Filter>资源文件\data</Filter>
-    </None>
-    <None Include="python\export.py">
-      <Filter>头文件\python</Filter>
     </None>
     <None Include="language.json">
       <Filter>资源文件</Filter>

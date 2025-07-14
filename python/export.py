@@ -69,8 +69,6 @@ def export_to_excel():
 
         wb.save(f"./export/excel/{language[config["language"]]["csvFilename"]}_{uid}_{int(time.time())}.xlsx")
 
-
-
 with open("language.json",mode="r",encoding="utf-8") as f:
     language = json.load(f)
 

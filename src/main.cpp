@@ -22,7 +22,7 @@ json gacha_list;
 json language;
 std::string used_lang = "";
 std::vector<std::string> support_languages = { "zh-Hans","zh-Hant" ,"en"};
-json version = { {"name","Wuthering Waves Convene Export"},{"version","betav1.0"} };
+json version = { {"name","Wuthering Waves Convene Export"},{"version","betav3.0"} };
 
 int main() {
 	initLanguage();
