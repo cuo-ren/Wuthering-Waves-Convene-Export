@@ -71,12 +71,12 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>C:\Program Files\OpenSSL-Win64\include;$(ProjectDir)\include;E:\Documents\GitHub\Wuthering-Waves-Convene-Export\lib\OpenXLSX\MDd\OpenXLSX;$(IncludePath)</IncludePath>
-    <LibraryPath>E:\Documents\GitHub\Wuthering-Waves-Convene-Export\lib\OpenXLSX\MDd;C:\Program Files\OpenSSL-Win64\lib\VC\x64\MDd;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(ProjectDir)\lib\OpenSSL\include;$(ProjectDir)\include;$(ProjectDir)\lib\OpenXLSX\MDd\OpenXLSX;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)\lib\OpenXLSX\MDd;$(ProjectDir)\lib\OpenSSL\MDd;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>C:\Program Files\OpenSSL-Win64\include;$(ProjectDir)\include;E:\Documents\GitHub\Wuthering-Waves-Convene-Export\lib\OpenXLSX\MD\OpenXLSX;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Program Files\OpenSSL-Win64\lib\VC\x64\MD;E:\Documents\GitHub\Wuthering-Waves-Convene-Export\lib\OpenXLSX\MD;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(ProjectDir)\lib\OpenSSL\include;$(ProjectDir)\include;$(ProjectDir)\lib\OpenXLSX\MD\OpenXLSX;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)\lib\OpenSSL\MD;$(ProjectDir)\lib\OpenXLSX\MD;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
