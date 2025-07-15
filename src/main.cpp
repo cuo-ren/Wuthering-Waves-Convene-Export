@@ -14,6 +14,7 @@
 #include "show.h"
 #include "setting.h"
 #include "language.h"
+#include "import.h"
 
 //初始化全局变量
 json config;
@@ -22,7 +23,10 @@ json gacha_list;
 json language;
 std::string used_lang = "";
 std::vector<std::string> support_languages = { "zh-Hans","zh-Hant" ,"en"};
-json version = { {"name","Wuthering Waves Convene Export"},{"version","betav3.0"} };
+json version = { 
+	{"name","Wuthering Waves Convene Export"},
+	{"version","betav3.0"} 
+};
 
 int main() {
 	initLanguage();
@@ -33,7 +37,7 @@ int main() {
 
 	std::cout << utf8_to_local(language[used_lang]["initialization_completed"].get<std::string>()) << std::endl;
 	system("pause");
-
+	import_uigf();
 	//进入主程序循环
 	while (true) {
 		int choose;

@@ -57,8 +57,8 @@ void initData() {
 				gacha_list[validate_result["data"]["uid"].get<std::string>()]["info"] = json::object();
 			}
 			else if (validate_result["code"] == 5) {
-				//重置info 语言默认为简体中文，时间默认为0
-				gacha_list[validate_result["data"]["uid"].get<std::string>()]["info"] = json{ {"lang","zh-Hans"},{"update_time",0} };
+				//重置info 语言默认为简体中文，时间默认为0，时区默认8
+				gacha_list[validate_result["data"]["uid"].get<std::string>()]["info"] = json{ {"lang","zh-Hans"},{"update_time",0},{"timezone",8}};
 			}
 			else if (validate_result["code"] == 6) {
 				//重置update_time
@@ -67,6 +67,10 @@ void initData() {
 			else if (validate_result["code"] == 7 or validate_result["code"] == 8) {
 				//重置lang
 				gacha_list[validate_result["data"]["uid"].get<std::string>()]["info"]["lang"] = "zh-Hans";
+			}
+			else if (validate_result["code"] == 20) {
+				//重置timezone
+				gacha_list[validate_result["data"]["uid"].get<std::string>()]["info"]["timezone"] = 8;
 			}
 			else if (validate_result["code"] == 9) {
 				//对data赋空字典

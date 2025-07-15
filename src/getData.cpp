@@ -87,7 +87,8 @@ json get_gacha_data(const std::string cardPoolId, const std::string cardPoolType
 	// 构造请求头
 	httplib::Headers headers = {
 		{ "User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36 Edg/133.0.0.0" },
-		{ "Content-Type", "application/json" }
+		{ "Content-Type", "application/json" },
+		{ "referer", "https://aki-gm-resources.aki-game.com/" }
 	};
 
 	// 构造请求体（JSON）
@@ -143,6 +144,7 @@ void merge(const std::string target_uid, json new_gacha_list) {
 		gacha_list[target_uid]["info"] = json::object();
 		gacha_list[target_uid]["data"] = json::object();
 		gacha_list[target_uid]["info"]["lang"] = new_gacha_list[target_uid]["info"]["lang"].get<std::string>();
+		gacha_list[target_uid]["info"]["timezone"] = 8;
 		for (auto& t : gacha_type["data"]) {
 			gacha_list[target_uid]["data"][t["key"].get<std::string>()] = json::array();
 		}

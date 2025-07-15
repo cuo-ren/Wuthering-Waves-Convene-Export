@@ -152,6 +152,7 @@
     <ClCompile Include="src\export.cpp" />
     <ClCompile Include="src\gachatype.cpp" />
     <ClCompile Include="src\getData.cpp" />
+    <ClCompile Include="src\import.cpp" />
     <ClCompile Include="src\language.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\path.cpp" />
@@ -168,6 +169,7 @@
     <ClInclude Include="include\getData.h" />
     <ClInclude Include="include\globals.h" />
     <ClInclude Include="include\httplib.h" />
+    <ClInclude Include="include\import.h" />
     <ClInclude Include="include\json.hpp" />
     <ClInclude Include="include\language.h" />
     <ClInclude Include="include\path.h" />

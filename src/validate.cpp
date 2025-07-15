@@ -64,6 +64,7 @@ json validate_data() {
 		{5,"info缺失字段或数量错误"},
 		{6,"update_time类型错误"},
 		{7,"lang类型错误"},
+		{20,"timezone类型错误"},
 		{8,"info中lang错误"},
 		{9,"data类型错误"},
 		{10,"非法卡池key"},
@@ -125,7 +126,7 @@ json validate_data() {
 			return error4;
 		}
 		//校验info中是否含有lang,update_time
-		if (!value["info"].contains("lang") or !value["info"].contains("update_time") or value["info"].size() != 2) {
+		if (!value["info"].contains("lang") or !value["info"].contains("update_time") or !value["info"].contains("timezone") or value["info"].size() != 3) {
 			std::cerr << utf8_to_local(language[used_lang]["validate_data5"].get<std::string>()) << std::endl;
 			json error5 = {
 				{"code",5},
@@ -133,7 +134,7 @@ json validate_data() {
 			};
 			return error5;
 		}
-		//校验lang,update_time类型
+		//校验lang,update_time,timezone类型
 		if (!value["info"]["update_time"].is_number_integer()) {
 			std::cerr << utf8_to_local(language[used_lang]["validate_data6"].get<std::string>()) << std::endl;
 			json error6 = {
@@ -141,6 +142,14 @@ json validate_data() {
 				{"data",{{"uid",uid}}}
 			};
 			return error6;
+		}
+		if (!value["info"]["timezone"].is_number_integer()) {
+			std::cerr << "timezone类型错误" << std::endl;
+			json error20 = {
+				{"code",20},
+				{"data",{{"uid",uid}}}
+			};
+			return error20;
 		}
 		if (!value["info"]["lang"].is_string()) {
 			std::cerr << utf8_to_local(language[used_lang]["validate_data7"].get<std::string>()) << std::endl;
