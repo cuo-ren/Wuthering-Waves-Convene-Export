@@ -144,7 +144,7 @@ json validate_data() {
 			return error6;
 		}
 		if (!value["info"]["timezone"].is_number_integer()) {
-			std::cerr << "timezone类型错误" << std::endl;
+			std::cerr << utf8_to_local(language[used_lang]["validate_data20"].get<std::string>()) << std::endl;
 			json error20 = {
 				{"code",20},
 				{"data",{{"uid",uid}}}

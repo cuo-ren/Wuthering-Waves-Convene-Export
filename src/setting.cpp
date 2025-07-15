@@ -28,9 +28,14 @@ void setting() {
 			change_language();
 		}
 		else if (choose == 7) {
+			//修复数据
 			fix();
 		}
 		else if (choose == 8) {
+			//导入数据
+			import_uigf();
+		}
+		else if (choose == 9) {
 			//返回
 			return;
 		}

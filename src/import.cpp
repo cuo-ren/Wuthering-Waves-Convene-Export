@@ -36,17 +36,17 @@ void import_uigf() {
         uigf = ReadJsonFile(utf8_to_local(json_path));
     }
     catch (const std::runtime_error& e) {
-        std::cerr << "导入失败！" << e.what() << std::endl;
+        std::cerr << utf8_to_local(language[used_lang]["import_failed"].get<std::string>()) << e.what() << std::endl;
         system("pause");
         return;
     }
     catch (const json::parse_error& e) {
-        std::cerr << "导入失败！" << e.what() << std::endl;
+        std::cerr << utf8_to_local(language[used_lang]["import_failed"].get<std::string>()) << e.what() << std::endl;
         system("pause");
         return;
     }
     catch (const std::exception& e) {
-        std::cerr << "导入失败！" << e.what() << std::endl;
+        std::cerr << utf8_to_local(language[used_lang]["import_failed"].get<std::string>()) << e.what() << std::endl;
         system("pause");
         return;
     }
@@ -61,13 +61,13 @@ void import_uigf() {
             uigf_version = 4;
         }
         else {
-            std::cerr << "无法判断uigf版本" << std::endl;
+            std::cerr << utf8_to_local(language[used_lang]["JudgeVersionFail"].get<std::string>()) << std::endl;
             system("pause");
             return;
         }
     }
     catch (const std::exception& e) {
-        std::cerr << "导入失败！" << e.what() << std::endl;
+        std::cerr << utf8_to_local(language[used_lang]["import_failed"].get<std::string>()) << e.what() << std::endl;
         system("pause");
         return;
     }
@@ -80,7 +80,7 @@ void import_uigf() {
         }
     }
     catch (const std::exception& e) {
-        std::cerr << "导入失败！" << e.what() << std::endl;
+        std::cerr << utf8_to_local(language[used_lang]["import_failed"].get<std::string>()) << e.what() << std::endl;
         system("pause");
         return;
     }
@@ -113,11 +113,10 @@ void import_v3(const json& uigf) {
         gacha_list[uid]["data"][item["gacha_type"]].push_back(it);
     }
     WriteData(gacha_list);
-    std::cout << "导入成功！正在校验" << std::endl;
+    std::cout << utf8_to_local(language[used_lang]["import_success"].get<std::string>()) << std::endl;
     //校验数据
     config["hash"] = "";
     initData();
-    std::cout << "校验完成！" << std::endl;
 }
 void import_v4(const json& uigf) {
     for (auto& user : uigf["aki"]) {
@@ -145,9 +144,8 @@ void import_v4(const json& uigf) {
         }
     }
     WriteData(gacha_list);
-    std::cout << "导入成功！正在校验" << std::endl;
+    std::cout << utf8_to_local(language[used_lang]["import_success"].get<std::string>()) << std::endl;
     //校验数据
     config["hash"] = "";
     initData();
-    std::cout << "校验完成！" << std::endl;
 }

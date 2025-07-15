@@ -113,7 +113,7 @@ void WriteData(const json& data) {
 		std::filesystem::copy_file("./data/gacha_list.json", "./data/gacha_list_" + std::to_string(timestamp) + ".json.bak", std::filesystem::copy_options::overwrite_existing);
 	}
 	catch (const std::filesystem::filesystem_error& e) {
-		std::cerr << "备份失败 " << e.what() << std::endl;
+		std::cerr << utf8_to_local(language[used_lang]["BackupFail"].get<std::string>()) << e.what() << std::endl;
 	}
 	WriteJsonFile("./data/gacha_list.json", gacha_list);
 	//更新配置的hash值
@@ -147,10 +147,10 @@ void trim_backup_files(const std::string& dir, int max_backup_count) {
 		for (size_t i = 0; i < num_to_delete; ++i) {
 			try {
 				fs::remove(backups[i].second);
-				std::cout << "已删除备份: " << backups[i].second << std::endl;
+				std::cout << utf8_to_local(language[used_lang]["delete_backup_success"].get<std::string>()) << backups[i].second << std::endl;
 			}
 			catch (const fs::filesystem_error& e) {
-				std::cerr << "删除失败: " << e.what() << std::endl;
+				std::cerr << utf8_to_local(language[used_lang]["delete_backup_failed"].get<std::string>()) << e.what() << std::endl;
 			}
 		}
 	}
