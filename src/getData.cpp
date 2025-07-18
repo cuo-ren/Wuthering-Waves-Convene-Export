@@ -37,7 +37,7 @@ std::map<std::string, std::string> get_params(const std::string& url) {
 json find_apis() {
 	json uid_url_map = json::object();
 
-	std::regex url_pattern(R"(https://aki-gm-resources\.aki-game\.com/aki/gacha/index\.html#/record\?[^"\\ ]+)");
+	std::regex url_pattern(R"(https://[^"\\ ]*/aki/gacha/index\.html#/record\?[^"\\ ]+)");
 	std::string log_path = utf8_to_local(config["path"].get<std::string>()) + "/Client/Saved/Logs/Client.log";
 
 	std::ifstream file(log_path);
@@ -79,9 +79,19 @@ json find_apis() {
 	return uid_url_map;
 }
 
-json get_gacha_data(const std::string cardPoolId, const std::string cardPoolType, const std::string playerId, const std::string recordId, const std::string serverId, const std::string lang){
+json get_gacha_data(const std::string cardPoolId, const std::string cardPoolType, const std::string playerId, const std::string recordId, const std::string serverId, const std::string lang, const std::string service_area){
 
-	httplib::Client cli("https://gmserver-api.aki-game2.com");
+	std::string url;
+	if (service_area == "cn") {
+		//国服域名
+		url = "https://gmserver-api.aki-game2.com";
+	}
+	else {
+		//国际服域名
+		url = "https://gmserver-api.aki-game2.net";
+	}
+
+	httplib::Client cli(url);
 	cli.set_read_timeout(10, 0); // 10 秒超时
 
 	// 构造请求头
@@ -119,10 +129,10 @@ json get_gacha_data(const std::string cardPoolId, const std::string cardPoolType
 	}
 }
 
-json get_gacha_data_retry(const std::string cardPoolId, const std::string cardPoolType, const std::string playerId, const std::string recordId, const std::string serverId, const std::string lang, int max_retry) {
+json get_gacha_data_retry(const std::string cardPoolId, const std::string cardPoolType, const std::string playerId, const std::string recordId, const std::string serverId, const std::string lang, const std::string service_area, int max_retry) {
 	json result;
 	for (int attempt = 1; attempt <= max_retry; ++attempt) {
-		result = get_gacha_data(cardPoolId, cardPoolType, playerId, recordId, serverId, lang);
+		result = get_gacha_data(cardPoolId, cardPoolType, playerId, recordId, serverId, lang, service_area);
 		if (result["code"] == 0) {
 			return result;
 		}
@@ -144,6 +154,7 @@ void merge(const std::string target_uid, json new_gacha_list) {
 		gacha_list[target_uid]["info"] = json::object();
 		gacha_list[target_uid]["data"] = json::object();
 		gacha_list[target_uid]["info"]["lang"] = new_gacha_list[target_uid]["info"]["lang"].get<std::string>();
+		//时区无法自动判断，先填+8。交给用户自行选择
 		gacha_list[target_uid]["info"]["timezone"] = 8;
 		for (auto& t : gacha_type["data"]) {
 			gacha_list[target_uid]["data"][t["key"].get<std::string>()] = json::array();
@@ -499,7 +510,7 @@ void update_data(int mode) {
 			}
 			std::cout << utf8_to_local(language[used_lang]["FetchingData1"].get<std::string>()) << utf8_to_local(language[used_lang][gacha_key["name"]]) << utf8_to_local(language[used_lang]["FetchingData2"].get<std::string>()) << std::endl;
 			//这里的数据是utf-8，注意转化
-			json new_data = get_gacha_data_retry(urls[uid]["resources_id"].get<std::string>(), gacha_key["key"].get<std::string>(), uid, urls[uid]["record_id"].get<std::string>(), urls[uid]["svr_id"].get<std::string>(),urls[uid]["lang"]);
+			json new_data = get_gacha_data_retry(urls[uid]["resources_id"].get<std::string>(), gacha_key["key"].get<std::string>(), uid, urls[uid]["record_id"].get<std::string>(), urls[uid]["svr_id"].get<std::string>(), urls[uid]["lang"], urls[uid]["svr_area"]);
 			if (new_data["code"] != 0) {
 				std::cout << "uid: " << uid << utf8_to_local(language[used_lang]["ExpiredAPIWarning"].get<std::string>()) << std::endl;
 				break;
@@ -524,16 +535,26 @@ void update_data(int mode) {
 				}
 				std::string item_name = "";
 				std::string type_name = "";
-				for (char c : (*it)["name"].get<std::string>()) {
-					if (c != ' ') {
-						item_name += c;
+
+				if (urls[uid]["lang"] == "zh-Hans" or urls[uid]["lang"] == "zh-Hant" or urls[uid]["lang"] == "ja" or urls[uid]["lang"] == "ko" or urls[uid]["lang"] == "th") {
+					//简体繁体中文，日文，韩文，泰文 去掉空格
+					for (char c : (*it)["name"].get<std::string>()) {
+						if (c != ' ') {
+							item_name += c;
+						}
+					}
+					for (char c : (*it)["resourceType"].get<std::string>()) {
+						if (c != ' ') {
+							type_name += c;
+						}
 					}
 				}
-				for (char c : (*it)["resourceType"].get<std::string>()) {
-					if (c != ' ') {
-						type_name += c;
-					}
+				else {
+					//其余语言不去掉空格
+					item_name = (*it)["name"].get<std::string>();
+					type_name = (*it)["resourceType"].get<std::string>();
 				}
+
 				json item = {
 					{"name",item_name},
 					{"id",(*it)["resourceId"]},
