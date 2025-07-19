@@ -536,8 +536,8 @@ void update_data(int mode) {
 				std::string item_name = "";
 				std::string type_name = "";
 
-				if (urls[uid]["lang"] == "zh-Hans" or urls[uid]["lang"] == "zh-Hant" or urls[uid]["lang"] == "ja" or urls[uid]["lang"] == "ko" or urls[uid]["lang"] == "th") {
-					//简体繁体中文，日文，韩文，泰文 去掉空格
+				if (urls[uid]["lang"] == "zh-Hans" or urls[uid]["lang"] == "zh-Hant" or urls[uid]["lang"] == "ja" or urls[uid]["lang"] == "th") {
+					//简体繁体中文，日文，泰文 去掉空格
 					for (char c : (*it)["name"].get<std::string>()) {
 						if (c != ' ') {
 							item_name += c;
