@@ -24,7 +24,7 @@ std::string used_lang = "";
 std::vector<std::string> support_languages = { "zh-Hans", "zh-Hant", "en", "ja", "ko"};
 json version = { 
 	{"name","Wuthering Waves Convene Export"},
-	{"version","betav2.0"} 
+	{"version","betav2.1"} 
 };
 
 int main() {
