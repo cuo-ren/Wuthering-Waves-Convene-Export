@@ -90,7 +90,7 @@ std::string sha256_file_streaming(const std::string& filepath) {
 }
 
 std::string local_to_utf8(const std::string& gbk) {
-	UINT acp = GetACP();
+	UINT acp = GetConsoleOutputCP();
 	if (acp == CP_UTF8) {
 		return gbk;
 	}
@@ -106,7 +106,7 @@ std::string local_to_utf8(const std::string& gbk) {
 }
 
 std::string utf8_to_local(const std::string& utf8) {
-	UINT acp = GetACP();
+	UINT acp = GetConsoleOutputCP();
 	if (acp == CP_UTF8) {
 		// 当前系统 ACP 是 UTF-8，说明 utf8 本身就是目标编码
 		return utf8;  // 无需转换
@@ -124,6 +124,48 @@ std::string utf8_to_local(const std::string& utf8) {
 
 	std::string gbk_str(gbk_len, 0);
 	WideCharToMultiByte(CP_ACP, 0, wide_str.c_str(), -1, &gbk_str[0], gbk_len, nullptr, nullptr);
+	gbk_str.pop_back();
+	return gbk_str;
+}
+
+std::string gbk_to_local(const std::string& gbk) {
+	UINT acp = GetConsoleOutputCP();
+	if (acp == 936) {
+		return gbk;
+	}
+	int wide_len = MultiByteToWideChar(936 /*CP_GBK*/, 0, gbk.c_str(), -1, nullptr, 0);
+	if (wide_len <= 0) return "";
+
+	std::wstring wide_str(wide_len, 0);
+	MultiByteToWideChar(936, 0, gbk.c_str(), -1, &wide_str[0], wide_len);
+
+	int local_len = WideCharToMultiByte(acp, 0, wide_str.c_str(), -1, nullptr, 0, nullptr, nullptr);
+	if (local_len <= 0) return "";
+
+	std::string local_str(local_len, 0);
+	WideCharToMultiByte(acp, 0, wide_str.c_str(), -1, &local_str[0], local_len, nullptr, nullptr);
+	local_str.pop_back();
+	return local_str;
+}
+
+// 当前 ACP -> GBK
+std::string local_to_gbk(const std::string& local) {
+	UINT acp = GetConsoleOutputCP();
+	if (acp == 936) {
+		return local;
+	}
+	
+	int wide_len = MultiByteToWideChar(acp, 0, local.c_str(), -1, nullptr, 0);
+	if (wide_len <= 0) return "";
+
+	std::wstring wide_str(wide_len, 0);
+	MultiByteToWideChar(acp, 0, local.c_str(), -1, &wide_str[0], wide_len);
+
+	int gbk_len = WideCharToMultiByte(936 /*CP_GBK*/, 0, wide_str.c_str(), -1, nullptr, 0, nullptr, nullptr);
+	if (gbk_len <= 0) return "";
+
+	std::string gbk_str(gbk_len, 0);
+	WideCharToMultiByte(936, 0, wide_str.c_str(), -1, &gbk_str[0], gbk_len, nullptr, nullptr);
 	gbk_str.pop_back();
 	return gbk_str;
 }

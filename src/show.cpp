@@ -78,7 +78,7 @@ void show_gacha_detail() {
 						std::cout << "  ";
 					}
 					for (int temp = 0; temp < count; temp++) {
-						std::cout << "█";
+						std::cout << gbk_to_local("█");
 					}
 					std::cout << "  " << count << utf8_to_local(language[used_lang]["Pulls"].get<std::string>()) << std::endl;
 					count_list.push_back(count);

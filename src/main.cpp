@@ -21,7 +21,7 @@ json gacha_type;
 json gacha_list;
 json language;
 std::string used_lang = "";
-std::vector<std::string> support_languages = { "zh-Hans","zh-Hant" ,"en"};
+std::vector<std::string> support_languages = { "zh-Hans", "zh-Hant", "en", "ja", "ko"};
 json version = { 
 	{"name","Wuthering Waves Convene Export"},
 	{"version","betav2.0"} 
