@@ -31,6 +31,9 @@
     <ClInclude Include="include\Logger.h">
       <Filter>Resource Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\nativeframeless.h">
+      <Filter>Resource Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
