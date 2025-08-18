@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/qt/qml/wuthering waves convene export">
+        <file>./ui/main.qml</file>
+    </qresource>
+</RCC>
