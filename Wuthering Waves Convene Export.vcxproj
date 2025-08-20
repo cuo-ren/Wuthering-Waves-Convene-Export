@@ -118,6 +118,7 @@
     <QtRcc Include="qml.qrc" />
   </ItemGroup>
   <ItemGroup>
+    <QtMoc Include="include\global.h" />
     <ClInclude Include="include\utils.h" />
     <QtMoc Include="include\config.h" />
     <ClInclude Include="include\Logger.h" />
@@ -126,12 +127,14 @@
     <ClInclude Include="include\json.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="global.cpp" />
     <ClCompile Include="src\logger.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\utils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="config.json" />
+    <None Include="GachaType.json" />
     <None Include="ui\Header.qml" />
     <None Include="ui\main.qml" />
   </ItemGroup>

@@ -195,22 +195,19 @@ void WriteJsonFile(const std::string& path, const json& data) {
 	std::ofstream f(path);
 	f.exceptions(std::ofstream::failbit | std::ofstream::badbit);
 	if (!f) {
-		throw std::runtime_error("打开文件失败！");
+		qCritical() << "文件打开失败! " << "path:" << QString::fromUtf8(path);
 	}
 	try {
 		f << data.dump(2);
 	}
 	catch (const json::type_error& e) {
-		std::cerr << "异常发生: " << e.what() << std::endl;
-		throw;
+		qWarning() << "json解析失败: " << e.what();
 	}
 	catch (const std::ios_base::failure& e) {
-		throw std::runtime_error(
-			"写入文件失败: " + std::string(e.what()));
+		qCritical() << "文件写入失败! " << "path:" << QString::fromUtf8(path);
 	}
 	catch (...) {
-		std::cerr << "未知错误: " << std::endl;
-		throw;
+		qCritical() << "文件写入发生位置错误 " << "path:" << QString::fromUtf8(path);
 	}
 }
 

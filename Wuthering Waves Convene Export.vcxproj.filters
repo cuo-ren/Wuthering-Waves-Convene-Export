@@ -54,6 +54,9 @@
     <ClCompile Include="src\utils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="global.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="ui\main.qml">
@@ -65,9 +68,15 @@
     <None Include="config.json">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="GachaType.json">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="include\config.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="include\global.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>

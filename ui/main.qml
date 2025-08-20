@@ -1,6 +1,8 @@
 ﻿import QtQuick 2.9
 import QtQuick.Window 2.2
 import App 1.0
+import QtQuick.Controls
+import Global
 
 Window {
     id: root
@@ -15,16 +17,23 @@ Window {
         font.bold: true
         font.pointSize: 42
         text: "Hello World!"
+        visible: false
     }
     Header{
         id: header
         width: root.width
     }
-Component.onCompleted:{
-    console.log(ConfigManager.getValue("skip"))
-    var l =[]
-    l = ConfigManager.QgetUrlList()
-    console.log(l)
-}
-    
+    Component.onCompleted:{
+        var obj = Global.gachaType
+        obj = JSON.parse( JSON.stringify(obj))
+        console.log(typeof obj) 
+        console.log(JSON.stringify(obj)) 
+console.log(obj["data"])
+        var list = obj.data
+        console.log(Array.isArray(list)) 
+
+        for (var i = 0; i < list.length; ++i) {
+            console.log(list[i].name) 
+        }
+    }
 }

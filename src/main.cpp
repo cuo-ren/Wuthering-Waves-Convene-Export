@@ -6,6 +6,7 @@
 #include <qtimer.h>
 #include "utils.h"
 #include "config.h"
+#include "global.h"
 
 int main(int argc, char *argv[])
 {
@@ -26,15 +27,17 @@ int main(int argc, char *argv[])
 
     QQmlApplicationEngine engine;
     qmlRegisterSingletonInstance("App", 1, 0, "ConfigManager", &ConfigManager::instance());
+    qmlRegisterSingletonInstance("Global", 1, 0, "Global", &Global::instance());
+
     engine.load(QUrl::fromLocalFile("./ui/main.qml"));
     
     auto* config = &ConfigManager::instance();
     std::vector<std::string> test = config->getUrlList();
-
+    /*
     for (std::string s : test) {
         //std::cout << s;
         qInfo().noquote() << QString::fromUtf8(s);
-    }
+    }*/
 
     if (engine.rootObjects().isEmpty())
         return -1;
