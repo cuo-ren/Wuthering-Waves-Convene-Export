@@ -28,11 +28,20 @@
     </QtRcc>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\Logger.h">
-      <Filter>Resource Files</Filter>
+    <ClInclude Include="include\json.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\picosha2.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\nativeframeless.h">
-      <Filter>Resource Files</Filter>
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Logger.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\utils.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -42,10 +51,24 @@
     <ClCompile Include="src\logger.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\utils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="ui\main.qml">
       <Filter>Source Files</Filter>
     </None>
+    <None Include="ui\Header.qml">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="config.json">
+      <Filter>Resource Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <QtMoc Include="include\config.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
   </ItemGroup>
 </Project>

@@ -118,14 +118,21 @@
     <QtRcc Include="qml.qrc" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\utils.h" />
+    <QtMoc Include="include\config.h" />
     <ClInclude Include="include\Logger.h" />
     <ClInclude Include="include\nativeframeless.h" />
+    <ClInclude Include="include\picosha2.h" />
+    <ClInclude Include="include\json.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\logger.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\utils.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="config.json" />
+    <None Include="ui\Header.qml" />
     <None Include="ui\main.qml" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

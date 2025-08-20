@@ -13,7 +13,7 @@ void Logger::updateLogFile() {
     //QString today = QDate::currentDate().toString("yyyy-MM-dd");
     QString today = QDate::currentDate().isValid()
         ? QDate::currentDate().toString("yyyy-MM-dd")
-        : QLatin1String("unknown-date");
+        : QString("1970-01-01"); //QLatin1String("unknown-date");
 
     if (today == currentDate && logFile.isOpen())
         return;
