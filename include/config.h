@@ -2,6 +2,8 @@
 #include <QObject>
 #include <QVariantMap>
 #include "utils.h"
+#include "global.h"
+#include "ErrorNotifier.h"
 
 class ConfigManager : public QObject {
     Q_OBJECT
@@ -12,12 +14,7 @@ public:
     }
 
     ~ConfigManager() {
-        try {
-            WriteJsonFile(configPath, config);
-        }
-        catch (...) {
-            qWarning() << "保存配置失败！";
-        }
+        WriteJsonFile(configPath, config);
     }
 
     static ConfigManager& instance() {
@@ -151,15 +148,9 @@ signals:
 private:
     json config;
     std::string configPath;
-    std::vector<std::string> support_languages = { "zh-Hans", "en", "ja", "ko" }; // 举例
 
     void save() {
-        try {
-            WriteJsonFile(configPath, config);
-        }
-        catch (...) {
-            qWarning() << "保存配置失败！";
-        }
+        WriteJsonFile(configPath, config);
     }
 
     void initConfig() {
@@ -179,16 +170,19 @@ private:
         }
         catch (const std::runtime_error& e) {
             qWarning() << "配置文件打开失败，正在创建";
+            ErrorNotifier::instance().notifyError("配置文件读取失败");
             config = default_config;
             save();
         }
         catch (const json::parse_error& e) {
             std::cerr << "配置文件json解析失败，正在创建" << std::endl;
+            ErrorNotifier::instance().notifyError("配置文件读取失败");
             config = default_config;
             save();
         }
         catch (...) {
             qWarning() << "读取配置文件发生未知错误";
+            ErrorNotifier::instance().notifyError("配置文件读取失败");
             config = default_config;
         }
 
@@ -208,7 +202,12 @@ private:
         ensure("url", json::array());
         ensure("fix", false);
         ensure("hash", "");
+        //
 
+        auto glob = &Global::instance();
+
+        std::vector<std::string> support_languages = glob->get_support_languages();
+        qDebug() << support_languages;
         // 特殊检查
         if (!config["language"].is_string() ||
             std::find(support_languages.begin(), support_languages.end(),

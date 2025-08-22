@@ -1,4 +1,5 @@
 ﻿#include "utils.h"
+#include "ErrorNotifier.h"
 
 std::string RunAndGetOutput(const std::string& exePath) {
 	HANDLE hRead, hWrite;
@@ -173,7 +174,7 @@ std::string local_to_gbk(const std::string& local) {
 json ReadJsonFile(const std::string& path) {
 	std::ifstream f(path);
 	if (!f) {
-		std::cout << "文件不存在！" << std::endl;
+		qCritical() << "文件打开失败! " << "path:" << QString::fromUtf8(path);
 		throw std::runtime_error("无法打开文件: " + path);
 	}
 	json data;
@@ -181,11 +182,11 @@ json ReadJsonFile(const std::string& path) {
 		f >> data;
 	}
 	catch (const json::parse_error& e) {
-		std::cerr << "异常发生: " << e.what() << std::endl;
+		qWarning() << "json解析失败: " << e.what();
 		throw;
 	}
 	catch (...) {
-		std::cerr << "未知错误: " << std::endl;
+		qCritical() << "文件写入发生未知错误 " << "path:" << QString::fromUtf8(path);
 		throw;
 	}
 	return data;
@@ -196,18 +197,22 @@ void WriteJsonFile(const std::string& path, const json& data) {
 	f.exceptions(std::ofstream::failbit | std::ofstream::badbit);
 	if (!f) {
 		qCritical() << "文件打开失败! " << "path:" << QString::fromUtf8(path);
+		ErrorNotifier::instance().notifyError("文件打开失败! ");
 	}
 	try {
 		f << data.dump(2);
 	}
 	catch (const json::type_error& e) {
 		qWarning() << "json解析失败: " << e.what();
+		ErrorNotifier::instance().notifyError("json解析失败 ");
 	}
 	catch (const std::ios_base::failure& e) {
 		qCritical() << "文件写入失败! " << "path:" << QString::fromUtf8(path);
+		ErrorNotifier::instance().notifyError("文件写入失败!");
 	}
 	catch (...) {
-		qCritical() << "文件写入发生位置错误 " << "path:" << QString::fromUtf8(path);
+		qCritical() << "文件写入发生未知错误 " << "path:" << QString::fromUtf8(path);
+		ErrorNotifier::instance().notifyError("文件写入发生未知错误");
 	}
 }
 

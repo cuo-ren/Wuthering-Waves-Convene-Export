@@ -66,10 +66,16 @@ void Logger::messageHandler(QtMsgType type, const QMessageLogContext& context, c
     case QtCriticalMsg: level = "[ERROR]"; break;
     case QtFatalMsg:    level = "[FATAL]"; break;
     }
-
+    /*
+    QString contextInfo = QString("(%1:%2, %3)")
+        .arg(QString::fromUtf8(context.file))
+        .arg(context.line)
+        .arg(QString::fromUtf8(context.function));
+        */
     QString logLine = QString("%1 %2 %3")
         .arg(QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss"))
         .arg(level)
+        //.arg(contextInfo)
         .arg(msg);
 
     std::cerr << logLine.toUtf8().constData() << std::endl;

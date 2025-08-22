@@ -54,7 +54,7 @@
     <ClCompile Include="src\utils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="global.cpp">
+    <ClCompile Include="src\global.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -71,6 +71,9 @@
     <None Include="GachaType.json">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="test.qm">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="include\config.h">
@@ -79,5 +82,16 @@
     <QtMoc Include="include\global.h">
       <Filter>Header Files</Filter>
     </QtMoc>
+    <QtMoc Include="include\ErrorNotifier.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="include\LanguageManager.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+  </ItemGroup>
+  <ItemGroup>
+    <QtTranslation Include="test.ts">
+      <Filter>Resource Files</Filter>
+    </QtTranslation>
   </ItemGroup>
 </Project>

@@ -7,32 +7,52 @@
 #include "utils.h"
 #include "config.h"
 #include "global.h"
+#include "ErrorNotifier.h"
+#include "LanguageManager.h"
 
 int main(int argc, char *argv[])
 {
 #if defined(Q_OS_WIN) && QT_VERSION_CHECK(5, 6, 0) <= QT_VERSION && QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 #endif
+#ifdef _DEBUG
+    //debug模式设置控制台编码
     SetConsoleOutputCP(CP_UTF8);
-    system("chcp 65001");
-
+    //system("chcp 65001");
+#endif
+    //注册日志系统
     Logger::init();
-
+    /*
     qDebug() << "调试输出";
     qInfo() << "普通信息";
     qWarning() << "警告信息";
     qCritical() << "错误信息";
+    */
     QApplication app(argc, argv);
+    //无边框窗口
     app.installNativeEventFilter(new NativeFramelessHelper);
+    //翻译模块
+    QTranslator translator;
+    if (translator.load(":/qt/qml/wuthering waves convene export/en_US.qm")) {
+        app.installTranslator(&translator);
+    }
+    else {
+        qWarning() << "加载翻译失败";
+    }
 
     QQmlApplicationEngine engine;
-    qmlRegisterSingletonInstance("App", 1, 0, "ConfigManager", &ConfigManager::instance());
-    qmlRegisterSingletonInstance("Global", 1, 0, "Global", &Global::instance());
 
-    engine.load(QUrl::fromLocalFile("./ui/main.qml"));
-    
-    auto* config = &ConfigManager::instance();
-    std::vector<std::string> test = config->getUrlList();
+    LanguageManager& langMgr = LanguageManager::instance();
+    langMgr.init(&engine, &app);
+    qmlRegisterSingletonInstance("LanguageManager", 1, 0, "LanguageManager", &langMgr);
+
+    qmlRegisterSingletonInstance("Error", 1, 0, "ErrorNotifier", &ErrorNotifier::instance());
+    qmlRegisterSingletonInstance("Global", 1, 0, "Global", &Global::instance());
+    qmlRegisterSingletonInstance("Config", 1, 0, "ConfigManager", &ConfigManager::instance());
+ 
+
+    engine.load(QUrl(QStringLiteral("qrc:/qt/qml/wuthering waves convene export/ui/main.qml")));
+
     /*
     for (std::string s : test) {
         //std::cout << s;

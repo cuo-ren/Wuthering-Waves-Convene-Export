@@ -23,12 +23,16 @@ Global::Global(QObject* parent)
 
     m_gachaType = jsonToVariantMap(gacha_type);
 
-    auto config = &ConfigManager::instance();
+    //auto config = &ConfigManager::instance();
     
-    m_usedLang = config->get<std::string>("language");; // 配置文件中语言
+    //m_usedLang = "";//config->get<std::string>("language");; // 配置文件中语言
 }
-
+/*
 void Global::setUsedLang(const QVariant& lang) {
+    if (m_usedLang.length() == 0) {
+        auto config = &ConfigManager::instance();
+        m_usedLang = config->get<std::string>("language");
+    }
     std::string newLang = lang.toString().toStdString();
     if (newLang != m_usedLang) {
         m_usedLang = newLang;
@@ -37,7 +41,7 @@ void Global::setUsedLang(const QVariant& lang) {
         emit usedLangChanged();
     }
 }
-
+*/
 QVariantMap Global::jsonToVariantMap(const json& j) {
     QVariantMap map;
     for (auto it = j.begin(); it != j.end(); ++it) {

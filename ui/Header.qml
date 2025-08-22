@@ -4,6 +4,9 @@ Item {
     id: header
     width: 600
     height: 32
+    
+    required property url path
+
     Text {
         id: title
         text: qsTr("鸣潮唤取记录导出分析工具")
@@ -35,7 +38,7 @@ Item {
         Image{
             id:closeButtonImage
             anchors.fill:parent
-            source:"../resource/closebtn.svg"
+            source: path + "/resource/closebtn.svg"
             fillMode: Image.PreserveAspectFit
 
             transformOrigin: Item.Center
@@ -103,7 +106,7 @@ Item {
         Image{
             id: minimizedButtonImage
             anchors.fill:parent
-            source:"../resource/minimized.svg"
+            source: path + "/resource/minimized.svg"
             fillMode: Image.PreserveAspectFit
         }
 
