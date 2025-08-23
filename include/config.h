@@ -207,7 +207,6 @@ private:
         auto glob = &Global::instance();
 
         std::vector<std::string> support_languages = glob->get_support_languages();
-        qDebug() << support_languages;
         // 特殊检查
         if (!config["language"].is_string() ||
             std::find(support_languages.begin(), support_languages.end(),

@@ -4,5 +4,6 @@
         <file>ui/Header.qml</file>
         <file>zh_CN.qm</file>
         <file>en_US.qm</file>
+        <file>language.json</file>
     </qresource>
 </RCC>

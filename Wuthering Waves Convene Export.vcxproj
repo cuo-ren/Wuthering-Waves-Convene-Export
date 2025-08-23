@@ -121,6 +121,7 @@
     <QtMoc Include="include\global.h" />
     <QtMoc Include="include\ErrorNotifier.h" />
     <QtMoc Include="include\LanguageManager.h" />
+    <QtMoc Include="include\Data.h" />
     <ClInclude Include="include\utils.h" />
     <QtMoc Include="include\config.h" />
     <ClInclude Include="include\Logger.h" />
@@ -129,6 +130,7 @@
     <ClInclude Include="include\json.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Data.cpp" />
     <ClCompile Include="src\global.cpp" />
     <ClCompile Include="src\logger.cpp" />
     <ClCompile Include="src\main.cpp" />
@@ -136,13 +138,11 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="config.json" />
+    <None Include="data\gacha_list.json" />
     <None Include="GachaType.json" />
-    <None Include="test.qm" />
+    <None Include="language.json" />
     <None Include="ui\Header.qml" />
     <None Include="ui\main.qml" />
-  </ItemGroup>
-  <ItemGroup>
-    <QtTranslation Include="test.ts" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">

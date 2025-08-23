@@ -162,3 +162,11 @@ bool Global::validate_GachaType() {
 
     return true;
 }
+
+std::vector<std::string> Global::get_gacha_type_key() {
+    std::vector<std::string> gacha_key_list;
+    for (auto& k : gacha_type["data"]) {
+        gacha_key_list.push_back(k["key"].get<std::string>());
+    }
+    return gacha_key_list;
+}

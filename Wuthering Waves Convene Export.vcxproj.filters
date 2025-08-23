@@ -57,6 +57,9 @@
     <ClCompile Include="src\global.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\Data.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="ui\main.qml">
@@ -71,7 +74,10 @@
     <None Include="GachaType.json">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="test.qm">
+    <None Include="language.json">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="data\gacha_list.json">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>
@@ -88,10 +94,8 @@
     <QtMoc Include="include\LanguageManager.h">
       <Filter>Header Files</Filter>
     </QtMoc>
-  </ItemGroup>
-  <ItemGroup>
-    <QtTranslation Include="test.ts">
-      <Filter>Resource Files</Filter>
-    </QtTranslation>
+    <QtMoc Include="include\Data.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
   </ItemGroup>
 </Project>

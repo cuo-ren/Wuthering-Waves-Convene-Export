@@ -37,6 +37,8 @@ public:
     */
     // 固定部分
     std::vector<std::string> get_support_languages() { return support_languages; }
+    json get_gacha_type() { return gacha_type; }
+    std::vector<std::string> get_gacha_type_key();
     QStringList supportLanguages() const { return m_supportLanguages; }
     QVariantMap version() const { return m_version; }
     QVariantMap gachaType() const { return m_gachaType; }

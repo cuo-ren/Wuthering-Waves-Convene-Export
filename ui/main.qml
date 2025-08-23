@@ -129,7 +129,7 @@ Popup {
 
         ComboBox {
             model: [
-                { "name": "中文", "lang": "zh_CN" },
+                { "name": "中文", "lang": "zh_Hans" },
                 { "name": "English", "lang": "en_US" }
             ]
             textRole: "name"

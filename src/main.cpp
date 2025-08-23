@@ -9,6 +9,7 @@
 #include "global.h"
 #include "ErrorNotifier.h"
 #include "LanguageManager.h"
+#include "Data.h"
 
 int main(int argc, char *argv[])
 {
@@ -31,9 +32,15 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
     //无边框窗口
     app.installNativeEventFilter(new NativeFramelessHelper);
+    //加载类
+    ErrorNotifier::instance();
+    Global::instance();
+    ConfigManager::instance();
+    LanguageManager& langMgr = LanguageManager::instance();
+    Data::instance();
     //翻译模块
     QTranslator translator;
-    if (translator.load(":/qt/qml/wuthering waves convene export/en_US.qm")) {
+    if (translator.load(":/qt/qml/wuthering waves convene export/zh_CN.qm")) {
         app.installTranslator(&translator);
     }
     else {
@@ -41,8 +48,6 @@ int main(int argc, char *argv[])
     }
 
     QQmlApplicationEngine engine;
-
-    LanguageManager& langMgr = LanguageManager::instance();
     langMgr.init(&engine, &app);
     qmlRegisterSingletonInstance("LanguageManager", 1, 0, "LanguageManager", &langMgr);
 
