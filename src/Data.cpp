@@ -506,6 +506,10 @@ Q_INVOKABLE QVariantList Data::getBarChartData(QString key) {
 		qDebug() << "active_uid变更为:" << QString::fromStdString(uid);
 	}
 
+	bool isStandard = Global::instance().get_gacha_type_map()[key.toStdString()]["isStandard"];
+	std::vector<int> standardList = Global::instance().get_standardList();
+
+
 	QVariantList list;
 	int count = 0;
 	for (auto& item : gacha_list[uid]["data"][key.toStdString()]) {
@@ -515,6 +519,14 @@ Q_INVOKABLE QVariantList Data::getBarChartData(QString key) {
 			map["ItemName"] = QString::fromStdString(item["name"].get<std::string>());
 			map["source"] = QString::number(item["id"].get<int>());
 			map["count"] = count;
+			//判断是否歪了
+			if (!isStandard and std::find(standardList.begin(), standardList.end(), item["id"].get<int>()) != standardList.end()) {
+				map["isOffTarget"] = true;
+			}
+			else {
+				map["isOffTarget"] = false;
+			}
+
 			list.append(map);
 			count = 0;
 		}
@@ -526,6 +538,7 @@ Q_INVOKABLE QVariantList Data::getBarChartData(QString key) {
 	map["ItemName"] = tr("已垫");
 	map["source"] = "unknown";
 	map["count"] = count;
+	map["isOffTarget"] = false;
 	list.append(map);
 	return list;
 }

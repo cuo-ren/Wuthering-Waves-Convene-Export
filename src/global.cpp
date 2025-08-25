@@ -170,3 +170,11 @@ std::vector<std::string> Global::get_gacha_type_key() {
     }
     return gacha_key_list;
 }
+
+json Global::get_gacha_type_map() {
+    json map = json::object();
+    for (auto& i : gacha_type["data"]) {
+        map[i["key"]] = { {"key",i["key"].get<std::string>()}, {"isStandard",i["isStandard"].get<bool>()}, {"name",i["name"].get<std::string>()}, {"skip",i["skip"].get<bool>()}};
+    }
+    return map;
+}

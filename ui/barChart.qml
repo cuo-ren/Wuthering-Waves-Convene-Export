@@ -37,7 +37,7 @@ Item {
 
     Flickable{
         width: chart.width
-        height: chart.height
+        height: chart.height - 30
         contentWidth: chartRow.width
         id: root
         flickableDirection:Flickable.HorizontalFlick
@@ -107,7 +107,7 @@ Item {
                         target: countRect
                         property: "height"
                         from: 0
-                        to: count*3
+                        to: count * (root.height - 130)/80
                         duration: 1000
                         easing.type: Easing.InOutCubic
                     }
@@ -127,6 +127,16 @@ Item {
                     Item{
                         anchors.bottom: bottomPart.top
                         anchors.horizontalCenter: parent.horizontalCenter
+                        Image {
+                            id: name
+                            source: path + "/resource/" + "wai.png"
+                            anchors.bottom: itemCount.top
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            anchors.margins: 10
+                            width: 30
+                            height: 30
+                            visible: model.isOffTarget
+                        }
                         Text {
                             anchors.bottom: countRect.top
                             anchors.horizontalCenter: parent.horizontalCenter
@@ -140,8 +150,8 @@ Item {
                             anchors.horizontalCenter: parent.horizontalCenter
                             anchors.margins: 10
                             width: 8
-                            height: count*3
-                            color: animatedCount < 45 ? "lightgreen" : animatedCount <= 60 ? "yellow" : "red"
+                            height: count * (root.height - 130)/80
+                            color: animatedCount < 40 ? "lightgreen" : animatedCount <= 60 ? "yellow" : "red"
                             radius: width/2
                             Behavior on height{
                                 NumberAnimation {
@@ -159,13 +169,13 @@ Item {
                                     duration: 300
                                 }
                             }
-                        }
+                        } 
                     }
 
                     Item{
                         id: bottomPart
 
-                        height: 80
+                        height: hiddenImage ? 30 : 80
                         width: 50
 
                         anchors.bottom: bar.bottom

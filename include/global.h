@@ -16,6 +16,7 @@ class Global : public QObject {
         Q_PROPERTY(QVariantMap version READ version CONSTANT)
         Q_PROPERTY(QVariantMap gachaType READ gachaType CONSTANT)
         Q_PROPERTY(QUrl path READ path CONSTANT)
+        Q_PROPERTY(QVariantList standardList READ standardList CONSTANT)
 
 public:
     explicit Global(QObject* parent = nullptr);
@@ -39,10 +40,19 @@ public:
     std::vector<std::string> get_support_languages() { return support_languages; }
     json get_gacha_type() { return gacha_type; }
     std::vector<std::string> get_gacha_type_key();
+    std::vector<int> get_standardList() {
+        std::vector<int> list = { 1104,1203,1301,1405,1503,21050015 ,21020015 };
+        return list;
+    }
+    json get_gacha_type_map();
     QStringList supportLanguages() const { return m_supportLanguages; }
     QVariantMap version() const { return m_version; }
     QVariantMap gachaType() const { return m_gachaType; }
     QUrl path() { return QUrl::fromLocalFile(QDir::currentPath()); }
+    QVariantList standardList() {
+        QVariantList list = { 1104,1203,1301,1405,1503,21050015 ,21020015 };
+        return list;
+    }
     /*
 signals:
     void usedLangChanged();*/
