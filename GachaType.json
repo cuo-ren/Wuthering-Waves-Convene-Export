@@ -1,49 +1,58 @@
 {
   "data": [
     {
-      "flag": true,
+      "isStandard": false,
       "key": "1",
-      "name": "Featured Resonator Convene"
+      "name": "Featured Resonator Convene",
+      "skip": false
     },
     {
-      "flag": true,
+      "isStandard": false,
       "key": "2",
-      "name": "Featured Weapon Convene"
+      "name": "Featured Weapon Convene",
+      "skip": false
     },
     {
-      "flag": true,
+      "isStandard": true,
       "key": "3",
-      "name": "Standard Resonator Convene"
+      "name": "Standard Resonator Convene",
+      "skip": false
     },
     {
-      "flag": true,
+      "isStandard": true,
       "key": "4",
-      "name": "Standard Weapon Convene"
+      "name": "Standard Weapon Convene",
+      "skip": false
     },
     {
-      "flag": false,
+      "isStandard": true,
       "key": "5",
-      "name": "Beginner Convene"
+      "name": "Beginner Convene",
+      "skip": true
     },
     {
-      "flag": false,
+      "isStandard": true,
       "key": "6",
-      "name": "Beginner's Choice Convene"
+      "name": "Beginner's Choice Convene",
+      "skip": true
     },
     {
-      "flag": false,
+      "isStandard": true,
       "key": "7",
-      "name": "Beginner's Choice Convene(Giveback Custom Convene)"
+      "name": "Beginner's Choice Convene(Giveback Custom Convene)",
+      "skip": true
     },
     {
-      "flag": false,
+      "isStandard": false,
       "key": "8",
-      "name": "New Voyage Resonator Convene"
+      "name": "New Voyage Resonator Convene",
+      "skip": true
     },
     {
-      "flag": false,
+      "isStandard": false,
       "key": "9",
-      "name": "New Voyage Weapon Convene"
+      "name": "New Voyage Weapon Convene",
+      "skip": true
     }
   ]
 }

@@ -96,15 +96,15 @@ void Global::initGachaType() {
 
     json default_gacha_type = {
         {"data", {
-            { { "key", "1" }, { "name", "Featured Resonator Convene" }, { "flag", true} },
-            { { "key", "2" }, { "name", "Featured Weapon Convene" }, { "flag", true } },
-            { { "key", "3" }, { "name", "Standard Resonator Convene" }, { "flag", true } },
-            { { "key", "4" }, { "name", "Standard Weapon Convene" }, { "flag", true } },
-            { { "key", "5" }, { "name", "Beginner Convene" }, { "flag", false } },
-            { { "key", "6" }, { "name", "Beginner's Choice Convene" }, { "flag", false } },
-            { { "key", "7" }, { "name", "Beginner's Choice Convene(Giveback Custom Convene)" }, { "flag", false } },
-            { { "key", "8" }, { "name", "New Voyage Resonator Convene" }, { "flag", false } },
-            { { "key", "9" }, { "name", "New Voyage Weapon Convene" }, { "flag", false } }
+            { { "key", "1" }, { "name", "Featured Resonator Convene" }, { "skip", false}, {"isStandard", false} },
+            { { "key", "2" }, { "name", "Featured Weapon Convene" }, { "skip", false }, {"isStandard", false} },
+            { { "key", "3" }, { "name", "Standard Resonator Convene" }, { "skip", false }, {"isStandard", true} },
+            { { "key", "4" }, { "name", "Standard Weapon Convene" }, { "skip", false }, {"isStandard", true} },
+            { { "key", "5" }, { "name", "Beginner Convene" }, { "skip", true }, {"isStandard", true} },
+            { { "key", "6" }, { "name", "Beginner's Choice Convene" }, { "skip", true }, {"isStandard", true} },
+            { { "key", "7" }, { "name", "Beginner's Choice Convene(Giveback Custom Convene)" }, { "skip", true }, {"isStandard", true} },
+            { { "key", "8" }, { "name", "New Voyage Resonator Convene" }, { "skip", true }, {"isStandard", false} },
+            { { "key", "9" }, { "name", "New Voyage Weapon Convene" }, { "skip", true }, {"isStandard", false} }
         }}
     };
     //读取卡池配置文件
@@ -146,11 +146,11 @@ bool Global::validate_GachaType() {
     }
 
     for (auto& item : gacha_type["data"]) {
-        if ((item.size() != 3) or (!item.contains("key")) or (!item.contains("name")) or (!item.contains("flag"))) {
+        if ((item.size() != 4) or (!item.contains("key")) or (!item.contains("name")) or (!item.contains("skip")) or (!item.contains("isStandard"))) {
             qWarning() << "卡池配置文件 data内元素错误";
             return false;
         }
-        if (!item["key"].is_string() or !item["name"].is_string() or !item["flag"].is_boolean()) {
+        if (!item["key"].is_string() or !item["name"].is_string() or !item["skip"].is_boolean() or !item["isStandard"].is_boolean()) {
             qWarning() << "卡池配置文件 data内元素类型错误";
             return false;
         }

@@ -19,6 +19,8 @@ public:
         return instance;
     }
 
+    Q_INVOKABLE QVariantList getBarChartData(QString key);
+
 signals:
     ;
 

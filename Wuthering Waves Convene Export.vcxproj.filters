@@ -80,6 +80,9 @@
     <None Include="data\gacha_list.json">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="ui\barChart.qml">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="include\config.h">

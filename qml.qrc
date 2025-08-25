@@ -5,5 +5,7 @@
         <file>zh_CN.qm</file>
         <file>en_US.qm</file>
         <file>language.json</file>
+        <file>ui/BarChart.qml</file>
+        <file>resource/favicon.ico</file>
     </qresource>
 </RCC>

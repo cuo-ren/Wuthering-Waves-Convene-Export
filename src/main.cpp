@@ -32,6 +32,7 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
     //无边框窗口
     app.installNativeEventFilter(new NativeFramelessHelper);
+    app.setWindowIcon(QIcon(":/qt/qml/wuthering waves convene export/resource/favicon.ico"));  // 支持 qrc 或文件路径
     //加载类
     ErrorNotifier::instance();
     Global::instance();
@@ -54,6 +55,7 @@ int main(int argc, char *argv[])
     qmlRegisterSingletonInstance("Error", 1, 0, "ErrorNotifier", &ErrorNotifier::instance());
     qmlRegisterSingletonInstance("Global", 1, 0, "Global", &Global::instance());
     qmlRegisterSingletonInstance("Config", 1, 0, "ConfigManager", &ConfigManager::instance());
+    qmlRegisterSingletonInstance("Data", 1, 0, "Data", &Data::instance());
  
 
     engine.load(QUrl(QStringLiteral("qrc:/qt/qml/wuthering waves convene export/ui/main.qml")));

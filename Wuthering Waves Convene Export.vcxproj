@@ -141,6 +141,7 @@
     <None Include="data\gacha_list.json" />
     <None Include="GachaType.json" />
     <None Include="language.json" />
+    <None Include="ui\barChart.qml" />
     <None Include="ui\Header.qml" />
     <None Include="ui\main.qml" />
   </ItemGroup>

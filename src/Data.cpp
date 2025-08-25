@@ -485,3 +485,47 @@ bool Data::validate_datetime(const std::string& datetime) {
 		tm.tm_mon == tm_check.tm_mon &&
 		tm.tm_year == tm_check.tm_year;
 }
+
+Q_INVOKABLE QVariantList Data::getBarChartData(QString key) {
+	//检查uid
+	std::vector<std::string> uid_list;
+	for (auto& [uid, value] : gacha_list.items()) {
+		uid_list.push_back(uid);
+	}
+	std::string uid = ConfigManager::instance().get<std::string>("active_uid");
+	if (uid.length() == 0 and uid_list.size() != 0) {
+		//没有活跃uid且存在uid，设置为第一个
+		uid = uid_list[0];
+		ConfigManager::instance().set<std::string>("active_uid", uid);
+		qDebug() << "active_uid变更为:" << QString::fromStdString(uid);
+	}
+	if (std::find(uid_list.begin(), uid_list.end(), uid) == uid_list.end()) {
+		//活跃uid不在列表中
+		uid = uid_list[0];
+		ConfigManager::instance().set<std::string>("active_uid", uid);
+		qDebug() << "active_uid变更为:" << QString::fromStdString(uid);
+	}
+
+	QVariantList list;
+	int count = 0;
+	for (auto& item : gacha_list[uid]["data"][key.toStdString()]) {
+		QVariantMap map;
+		count++;
+		if (item["qualityLevel"] == 5) {
+			map["ItemName"] = QString::fromStdString(item["name"].get<std::string>());
+			map["source"] = QString::number(item["id"].get<int>());
+			map["count"] = count;
+			list.append(map);
+			count = 0;
+		}
+	}
+	if (count == 0) {
+		return list;
+	}
+	QVariantMap map;
+	map["ItemName"] = tr("已垫");
+	map["source"] = "unknown";
+	map["count"] = count;
+	list.append(map);
+	return list;
+}
