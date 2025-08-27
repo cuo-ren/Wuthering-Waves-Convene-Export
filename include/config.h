@@ -10,7 +10,9 @@ class ConfigManager : public QObject {
 public:
     explicit ConfigManager(const std::string& path = "config.json", QObject* parent = nullptr)
         : QObject(parent), configPath(path) {
+        qInfo() << "正在加载配置文件模块";
         initConfig();
+        qInfo() << "配置文件初始化完成";
     }
 
     ~ConfigManager() {
@@ -202,11 +204,8 @@ private:
         ensure("url", json::array());
         ensure("fix", false);
         ensure("hash", "");
-        //
 
-        auto glob = &Global::instance();
-
-        std::vector<std::string> support_languages = glob->get_support_languages();
+        std::vector<std::string> support_languages = Global::instance().get_support_languages();
         // 特殊检查
         if (!config["language"].is_string() ||
             std::find(support_languages.begin(), support_languages.end(),

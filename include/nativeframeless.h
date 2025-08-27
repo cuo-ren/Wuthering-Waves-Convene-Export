@@ -1,6 +1,8 @@
 ﻿#pragma once
 #include <QAbstractNativeEventFilter>
 #include <QByteArray>
+#define _WINSOCKAPI_ 
+#define NOMINMAX
 #include <Windows.h>
 #include <windowsx.h>
 #include <dwmapi.h>

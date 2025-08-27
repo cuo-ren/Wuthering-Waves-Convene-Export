@@ -23,6 +23,7 @@ int main(int argc, char *argv[])
 #endif
     //注册日志系统
     Logger::init();
+    qDebug() << "日志模块初始化完成";
     /*
     qDebug() << "调试输出";
     qInfo() << "普通信息";

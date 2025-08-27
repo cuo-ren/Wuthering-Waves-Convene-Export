@@ -3,7 +3,10 @@
 #include "config.h"
 #include "LanguageManager.h"
 #include <regex>
-
+#include <QtConcurrent/QtConcurrent>
+#include <QFuture>
+#define CPPHTTPLIB_OPENSSL_SUPPORT
+#include "httplib.h"
 
 class Data : public QObject {
     Q_OBJECT
@@ -20,9 +23,17 @@ public:
     }
 
     Q_INVOKABLE QVariantList getBarChartData(QString key);
+    Q_INVOKABLE void update_data(int mode, QString input_url = "");
 
 signals:
-    ;
+    void prossessChanged(QString text);
+    void logNotFond();
+    void updateComplete(json merged_list, std::string uid);
+    void wrongInput();
+    void qUpdateComplete();
+
+public slots:
+    void onUpdateComplete(json merged_list, std::string uid);
 
 private:
     json gacha_list;
@@ -31,7 +42,12 @@ private:
 
     void initGachaList();
     json validate_data();
-    void save();
+    void save(json data);
     void trim_backup_files(const std::string& dir, int max_backup_count);
     bool validate_datetime(const std::string& datetime);
+    json findGachaUrls();
+    std::map<std::string, std::string> get_params(const std::string& url);
+    json get_gacha_data(const std::string cardPoolId, const std::string cardPoolType, const std::string playerId, const std::string recordId, const std::string serverId, const std::string lang, const std::string service_area);
+    json get_gacha_data_retry(const std::string cardPoolId, const std::string cardPoolType, const std::string playerId, const std::string recordId, const std::string serverId, const std::string lang, const std::string service_area, int max_retry = 3);
+    json merge(const std::string target_uid, json old_gacha_list, json new_gacha_list);
 };

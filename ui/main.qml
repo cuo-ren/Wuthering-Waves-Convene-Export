@@ -14,10 +14,31 @@ Window {
     height: Screen.height/2
     title: "Wuthering Waves Convene Export"
     Button{
-        width:50
+        width:100
         height:50
-        onClicked: root.initData("1",myModel.get(0).name)
+        onClicked: {
+            Data.update_data(1)
+            loading.visible = true
+        }
         text: qsTr("更新数据")
+    }
+    Text {
+        id: loading
+        visible: false
+        text: qsTr("正在加载")
+    }
+    Connections{
+        target: Data
+        function onProssessChanged(text){
+            loading.text = text;
+        }
+        function onWrongInput(){
+            console.log("错误的输入");
+        }
+        function onQUpdateComplete(){
+            loading.visible = false
+            initData(myModel.get(0)["key"],myModel.get(0)["name"])
+        }
     }
     Header{
         id: header
@@ -31,6 +52,7 @@ Window {
                 myModel.append({"key":gacha_type["data"][i]["key"], "name":LanguageManager.getValue(gacha_type["data"][i]["name"])})
             }
         }
+        initData(myModel.get(0)["key"],myModel.get(0)["name"])
     }
     Rectangle{
         x:50
@@ -46,6 +68,7 @@ Window {
         path: Global.path
         height: root.height - 130
         width: root.width - 60
+        //Component.onCompleted: moveToEnd()
     }
 
     ListModel{
@@ -76,8 +99,9 @@ Window {
                 }
             }
         }
-        Component.onCompleted: initData("1",myModel.get(0)["name"])
+
     }
+
     function initData(key,name){
         barChart.gacha_data.clear()
         barChart.chartTitle = name

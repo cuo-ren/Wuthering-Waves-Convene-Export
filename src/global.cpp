@@ -4,8 +4,10 @@
 Global::Global(QObject* parent)
     : QObject(parent)
 {
+    qInfo() << "正在加载全局变量";
+
     // 初始化全局只读变量
-    m_supportLanguages = { "zh-Hans", "zh-Hant", "en", "ja", "ko" };
+    m_supportLanguages = { "zh-Hans", "zh-Hant", "en" };
 
     for (auto i : m_supportLanguages) {
         support_languages.push_back(i.toStdString());
@@ -15,6 +17,7 @@ Global::Global(QObject* parent)
         {"name", "Wuthering Waves Convene Export"},
         {"version", "betav3.0"}
     };
+    qDebug() << "程序名称:" << QString::fromStdString(version["name"]) << " " << QString::fromStdString(version["version"]);
     m_version = jsonToVariantMap(version);
 
     versions = version;
@@ -23,25 +26,9 @@ Global::Global(QObject* parent)
 
     m_gachaType = jsonToVariantMap(gacha_type);
 
-    //auto config = &ConfigManager::instance();
-    
-    //m_usedLang = "";//config->get<std::string>("language");; // 配置文件中语言
+    qInfo() << "全局变量初始化完成";
 }
-/*
-void Global::setUsedLang(const QVariant& lang) {
-    if (m_usedLang.length() == 0) {
-        auto config = &ConfigManager::instance();
-        m_usedLang = config->get<std::string>("language");
-    }
-    std::string newLang = lang.toString().toStdString();
-    if (newLang != m_usedLang) {
-        m_usedLang = newLang;
-        auto config = &ConfigManager::instance();
-        config->set<std::string>("language", m_usedLang);
-        emit usedLangChanged();
-    }
-}
-*/
+
 QVariantMap Global::jsonToVariantMap(const json& j) {
     QVariantMap map;
     for (auto it = j.begin(); it != j.end(); ++it) {
@@ -131,6 +118,7 @@ void Global::initGachaType() {
         qInfo() << "重置卡池配置文件";
         WriteJsonFile("GachaType.json", default_gacha_type);
     }
+    qDebug() << "卡池配置文件初始化完成";
 }
 
 bool Global::validate_GachaType() {

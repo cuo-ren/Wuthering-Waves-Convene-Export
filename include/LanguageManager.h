@@ -19,7 +19,6 @@ public:
     void init(QQmlApplicationEngine* engine, QApplication* app) {
         this->engine = engine;
         this->app = app;
-
     }
 
     std::string getValue(const std::string& key){
@@ -78,8 +77,11 @@ public:
     
 private:
     LanguageManager() {
+        qInfo() << "正在加载语言模块";
         usedLang = ConfigManager::instance().get<std::string>("language");
+        qInfo() << "当前语言：" << QString::fromStdString(usedLang);
         loadLanguageJson(":/qt/qml/wuthering waves convene export/language.json");
+        qInfo() << "语言模块初始化完成";
     }
     ~LanguageManager() { delete translator; }
 

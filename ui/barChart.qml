@@ -10,10 +10,13 @@ Item {
 
     property alias gacha_data: myModel
     required property url path
-    property string chartTitle:"测试文本"
+    property string chartTitle: qsTr("卡池名称")
 
     property bool hiddenImage: false
 
+    function moveToEnd(){
+        root.contentX = myModel.count * 50 + myModel.count * 5 - 5 - root.width > 0 ? myModel.count * 50 + myModel.count * 5 - 5 - root.width : 0
+    }
     ListModel{
         id:myModel
     }
@@ -45,7 +48,11 @@ Item {
         anchors.bottom: chart.bottom
 
         clip: true
-
+        onContentWidthChanged: {
+            if (contentWidth > width) {
+                contentX = contentWidth - width
+            }
+        }
         WheelHandler {
             id: wheelHandler
             target: root

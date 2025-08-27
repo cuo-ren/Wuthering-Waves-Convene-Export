@@ -68,13 +68,17 @@ std::int64_t get_timestamp() {
 }
 
 std::string sha256_file_streaming(const std::string& filepath) {
-	std::ifstream file(filepath, std::ios::binary);
-	if (!file) throw std::runtime_error("Cannot open file: " + filepath);
+	std::filesystem::path fsPath = std::filesystem::u8path(filepath);
+
+	std::ifstream file(fsPath, std::ios::binary);
+	if (!file.is_open()) {
+		throw std::runtime_error("Cannot open file: " + filepath);
+	}
 
 	picosha2::hash256_one_by_one hasher;
 	hasher.init();
 
-	std::vector<unsigned char> buffer(8192);  // 8KB缓存
+	std::vector<unsigned char> buffer(8192);  // 8KB 缓冲区
 	while (file) {
 		file.read(reinterpret_cast<char*>(buffer.data()), buffer.size());
 		std::streamsize read_bytes = file.gcount();
@@ -89,6 +93,7 @@ std::string sha256_file_streaming(const std::string& filepath) {
 
 	return picosha2::bytes_to_hex_string(hash.begin(), hash.end());
 }
+
 
 std::string local_to_utf8(const std::string& gbk) {
 	UINT acp = GetConsoleOutputCP();
@@ -172,33 +177,40 @@ std::string local_to_gbk(const std::string& local) {
 }
 
 json ReadJsonFile(const std::string& path) {
-	std::ifstream f(path);
-	if (!f) {
+	std::filesystem::path fsPath = std::filesystem::u8path(path);
+	std::ifstream file(fsPath);  // 这里会调用 _wfopen 支持 UTF-16 路径
+	if (!file.is_open()) {
 		qCritical() << "文件打开失败! " << "path:" << QString::fromUtf8(path);
 		throw std::runtime_error("无法打开文件: " + path);
 	}
 	json data;
 	try {
-		f >> data;
+		file >> data;
 	}
 	catch (const json::parse_error& e) {
 		qWarning() << "json解析失败: " << e.what();
 		throw;
 	}
 	catch (...) {
-		qCritical() << "文件写入发生未知错误 " << "path:" << QString::fromUtf8(path);
+		qCritical() << "文件读取发生未知错误 " << "path:" << QString::fromUtf8(path);
 		throw;
 	}
 	return data;
 }
 
+
 void WriteJsonFile(const std::string& path, const json& data) {
-	std::ofstream f(path);
+	std::filesystem::path fsPath = std::filesystem::u8path(path);
+
+	std::ofstream f(fsPath, std::ios::binary);  // 用 fs::path 保证 UTF-16 路径
 	f.exceptions(std::ofstream::failbit | std::ofstream::badbit);
-	if (!f) {
+
+	if (!f.is_open()) {
 		qCritical() << "文件打开失败! " << "path:" << QString::fromUtf8(path);
 		ErrorNotifier::instance().notifyError("文件打开失败! ");
+		return;
 	}
+
 	try {
 		f << data.dump(2);
 	}
@@ -216,23 +228,21 @@ void WriteJsonFile(const std::string& path, const json& data) {
 	}
 }
 
+
 void makedirs(const std::string& path) {
+	std::filesystem::path fsPath = std::filesystem::u8path(path);
 	std::error_code ec; // 防止抛异常
-	if (!std::filesystem::exists(path)) {
-		if (!std::filesystem::create_directories(path, ec)) {
+
+	if (!std::filesystem::exists(fsPath)) {
+		if (!std::filesystem::create_directories(fsPath, ec)) {
 			if (ec) {
-				std::cerr << "Failed to create directory '" << path << "': " << ec.message() << '\n';
+				qCritical() << "创建路径失败! " << QString::fromStdString(path) << " " << QString::fromStdString(ec.message());
 			}
 		}
 	}
 }
 
-std::string current_time_str() {/*
-	auto now = std::chrono::system_clock::now();
-	std::time_t t = std::chrono::system_clock::to_time_t(now);
-	char buf[20];
-	std::strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", std::localtime(&t));
-	return std::string(buf);*/
+std::string current_time_str() {
 	return QDateTime::currentDateTime().toString("yyyy-MM-dd HH:mm:ss").toStdString();
 }
 
@@ -252,12 +262,7 @@ bool is_digit(const std::string& s) {
 	return true;
 }
 
-std::string timestamp_to_str(int timestamp) {/*
-	std::time_t t = static_cast<std::time_t>(timestamp);  // 将 int 转为 time_t
-	std::tm* tm_ptr = std::localtime(&t);                 // 转为本地时间
-	std::ostringstream oss;
-	oss << std::put_time(tm_ptr, "%Y-%m-%d %H:%M:%S");    // 格式化输出
-	return oss.str();*/
+std::string timestamp_to_str(int timestamp) {
 	QDateTime dt = QDateTime::fromSecsSinceEpoch(timestamp);
 	return dt.toString("yyyy-MM-dd HH:mm:ss").toStdString();
 }
