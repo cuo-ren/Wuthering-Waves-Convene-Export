@@ -11,7 +11,7 @@
     "New Voyage Weapon Convene": "武器新旅唤取",
     "Weapon": "武器",
     "Resonator": "角色",
-
+    "zh-Hans": "简体中文",
     "zh-Hant": "繁體中文",
     "en": "English",
     "ja": "日本語",
@@ -38,7 +38,7 @@
     "Weapon": "武器",
     "Resonator": "角色",
     "zh-Hans": "简体中文",
-
+    "zh-Hant": "繁體中文",
     "en": "English",
     "ja": "日本語",
     "ko": "한국어",
@@ -65,7 +65,7 @@
     "Resonator": "Resonator",
     "zh-Hans": "简体中文",
     "zh-Hant": "繁體中文",
-
+    "en": "English",
     "ja": "日本語",
     "ko": "한국어",
     "ru": "Русский",
@@ -92,7 +92,7 @@
     "zh-Hans": "简体中文",
     "zh-Hant": "繁體中文",
     "en": "English",
-
+    "ja": "日本語",
     "ko": "한국어",
     "ru": "Русский",
     "de": "Deutsch",
@@ -119,7 +119,7 @@
     "zh-Hant": "繁體中文",
     "en": "English",
     "ja": "日本語",
-
+    "ko": "한국어",
     "ru": "Русский",
     "de": "Deutsch",
     "es": "Español",
