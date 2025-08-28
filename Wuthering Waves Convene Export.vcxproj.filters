@@ -86,6 +86,9 @@
     <None Include="ui\barChart.qml">
       <Filter>Source Files</Filter>
     </None>
+    <None Include="ui\NotificationItem.qml">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="include\config.h">
@@ -94,7 +97,7 @@
     <QtMoc Include="include\global.h">
       <Filter>Header Files</Filter>
     </QtMoc>
-    <QtMoc Include="include\ErrorNotifier.h">
+    <QtMoc Include="include\Notifier.h">
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="include\LanguageManager.h">

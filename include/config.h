@@ -3,7 +3,7 @@
 #include <QVariantMap>
 #include "utils.h"
 #include "global.h"
-#include "ErrorNotifier.h"
+#include "Notifier.h"
 
 class ConfigManager : public QObject {
     Q_OBJECT
@@ -172,19 +172,19 @@ private:
         }
         catch (const std::runtime_error& e) {
             qWarning() << "配置文件打开失败，正在创建";
-            ErrorNotifier::instance().notifyError("配置文件读取失败");
+            Notifier::instance().notify(3, "配置文件读取失败");
             config = default_config;
             save();
         }
         catch (const json::parse_error& e) {
             std::cerr << "配置文件json解析失败，正在创建" << std::endl;
-            ErrorNotifier::instance().notifyError("配置文件读取失败");
+            Notifier::instance().notify(3, "配置文件读取失败");
             config = default_config;
             save();
         }
         catch (...) {
             qWarning() << "读取配置文件发生未知错误";
-            ErrorNotifier::instance().notifyError("配置文件读取失败");
+            Notifier::instance().notify(3, "配置文件读取失败");
             config = default_config;
         }
 

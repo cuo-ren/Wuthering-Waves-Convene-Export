@@ -35,13 +35,13 @@ void Data::initGachaList() {
 	}
 	catch (const json::parse_error& e) {
 		qWarning() << "数据文件解析失败 " << e.what();
-		ErrorNotifier::instance().notifyError("数据文件解析失败");
+		Notifier::instance().notify(3, "数据文件解析失败");
 		gacha_list = default_data;
 		WriteJsonFile(file_path + "/" + file_name + ".json", default_data);
 	}
 	catch (...) {
 		qWarning() << "数据文件读取失败 ";
-		ErrorNotifier::instance().notifyError("数据文件读取失败");
+		Notifier::instance().notify(3, "数据文件读取失败");
 		gacha_list = default_data;
 	}
 	//比对hash，若不一致，则检测文件是否合法
@@ -142,7 +142,7 @@ void Data::save(json data) {
 	}
 	catch (const std::filesystem::filesystem_error& e) {
 		qWarning() << "备份数据失败 " << e.what();
-		ErrorNotifier::instance().notifyError("备份数据失败");
+		Notifier::instance().notify(2, "备份数据失败");
 	}
 	WriteJsonFile(file_path + "/" + file_name + ".json", data);
 	//更新配置的hash值
@@ -180,7 +180,7 @@ void Data::trim_backup_files(const std::string& dir, int max_backup_count) {
 			}
 			catch (const fs::filesystem_error& e) {
 				qWarning() << "清理备份文件失败 " << e.what();
-				ErrorNotifier::instance().notifyError("备份文件删除失败");
+				Notifier::instance().notify(2, "备份文件删除失败");
 			}
 		}
 	}
@@ -630,7 +630,7 @@ Q_INVOKABLE void Data::update_data(int mode, QString input_url) {
 			if (gacha_listCopy.contains(uid) and gacha_listCopy[uid]["info"]["lang"].get<std::string>() != urls[uid]["lang"].get<std::string>()) {
 				qWarning() << "当前url的语言和数据语言不一致 当前选择语言：" << QString::fromStdString(urls[uid]["lang"].get<std::string>()) << "数据语言：" << QString::fromStdString(gacha_listCopy[uid]["info"]["lang"].get<std::string>());
 				qWarning() << "采用原数据语言 " << QString::fromStdString(gacha_listCopy[uid]["info"]["lang"].get<std::string>());
-				ErrorNotifier::instance().notifyError("当前url的语言和数据语言不一致!采用原数据语言");
+				Notifier::instance().notify(2, "当前url的语言和数据语言不一致!采用原数据语言");
 				urls[uid]["lang"] = gacha_listCopy[uid]["info"]["lang"].get<std::string>();
 				new_gacha_list[uid]["info"]["lang"] = gacha_listCopy[uid]["info"]["lang"].get<std::string>();
 			}
@@ -638,7 +638,7 @@ Q_INVOKABLE void Data::update_data(int mode, QString input_url) {
 			std::vector<std::string> support_lang = Global::instance().get_support_languages();
 			if (std::find(support_lang.begin(), support_lang.end(), new_gacha_list[uid]["info"]["lang"].get<std::string>()) == support_lang.end()) {
 				qWarning() << "当前语言不支持 采用简体中文";
-				ErrorNotifier::instance().notifyError("当前语言不支持 采用简体中文");
+				Notifier::instance().notify(2, "当前语言不支持 采用简体中文");
 				urls[uid]["lang"] = "zh-Hans";
 				new_gacha_list[uid]["info"]["lang"] = "zh-Hans";
 			}
@@ -664,7 +664,7 @@ Q_INVOKABLE void Data::update_data(int mode, QString input_url) {
 				//数据获取失败
 				if (new_data["code"] != 0) {
 					qWarning() << QString::fromStdString(uid) << ": 数据获取失败 code :" << QString::number(new_data["code"].get<int>());
-					ErrorNotifier::instance().notifyError("api已过期，请进入游戏刷新");
+					Notifier::instance().notify(2, "api已过期，请进入游戏刷新");
 					break;
 				}
 				//数据获取成功，自动切换uid
@@ -847,7 +847,7 @@ json Data::get_gacha_data(const std::string cardPoolId, const std::string cardPo
 
 	if (!res || res->status != 200) {
 		qWarning() << "网络异常 状态码：" << (res ? QString::fromStdString(std::to_string(res->status)) : "连接失败");
-		ErrorNotifier::instance().notifyError("网络异常" + (res ? QString::fromStdString(std::to_string(res->status)) : "连接失败"));
+		Notifier::instance().notify(2, "网络异常" + (res ? QString::fromStdString(std::to_string(res->status)) : "连接失败"));
 		return { {"code", -2} };
 	}
 	try {
@@ -856,7 +856,7 @@ json Data::get_gacha_data(const std::string cardPoolId, const std::string cardPo
 	}
 	catch (...) {
 		qWarning() << "响应解析失败";
-		ErrorNotifier::instance().notifyError(tr("响应解析失败"));
+		Notifier::instance().notify(3, tr("响应解析失败"));
 		return { {"code", -3} };
 	}
 }

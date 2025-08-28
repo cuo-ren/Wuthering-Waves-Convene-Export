@@ -7,5 +7,6 @@
         <file>language.json</file>
         <file>ui/BarChart.qml</file>
         <file>resource/favicon.ico</file>
+        <file>ui/NotificationItem.qml</file>
     </qresource>
 </RCC>

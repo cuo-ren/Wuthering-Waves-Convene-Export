@@ -3,7 +3,7 @@ import QtQuick.Window 2.2
 import Config 1.0
 import QtQuick.Controls
 import Global
-import Error
+import Notifier
 import LanguageManager
 import Data
 
@@ -13,6 +13,47 @@ Window {
     width: Screen.width/2
     height: Screen.height/2
     title: "Wuthering Waves Convene Export"
+
+    ListModel { id: notificationModel }
+
+    // 通知容器（顶部居中）
+    Column {
+        z: 100
+
+        id: notificationColumn
+        anchors.top: parent.top
+        anchors.horizontalCenter: parent.horizontalCenter
+        spacing: 8
+        width: parent.width * 0.6 > 400 ? 400 : parent.width * 0.6
+        padding: 10
+
+        Repeater {
+            model: notificationModel
+            delegate: NotificationItem {
+                // 把 model 的 role 映射到组件属性上（更稳妥）
+                notifactiontext: model.text
+                notifactioncolor: model.color
+                duration: model.duration
+                path: Global.path
+                enterDelay: index * 80   // 每条错开 80ms 入场
+                onClosed: notificationModel.remove(index)
+            }
+        }
+    }
+    Connections{
+        target: Notifier;
+        function onMessageOccurred(mode,message){
+
+            switch(mode){
+                case 0: notificationModel.append({ "text": message, "duration": 3000, "color":"green"});break;
+                case 1: notificationModel.append({ "text": message, "duration": 3000, "color":"blue"}); break;
+                case 2: notificationModel.append({ "text": message, "duration": 3000, "color":"yellow"}); break;
+                case 3: notificationModel.append({ "text": message, "duration": 3000, "color":"red"}); break;
+                default:break;
+            }
+        }
+    }
+
     Button{
         z:2
         id: btn

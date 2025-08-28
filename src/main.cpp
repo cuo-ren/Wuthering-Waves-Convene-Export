@@ -7,7 +7,7 @@
 #include "utils.h"
 #include "config.h"
 #include "global.h"
-#include "ErrorNotifier.h"
+#include "Notifier.h"
 #include "LanguageManager.h"
 #include "Data.h"
 
@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
     app.installNativeEventFilter(new NativeFramelessHelper);
     app.setWindowIcon(QIcon(":/qt/qml/wuthering waves convene export/resource/favicon.ico"));  // 支持 qrc 或文件路径
     //加载类
-    ErrorNotifier::instance();
+    Notifier::instance();
     Global::instance();
     ConfigManager::instance();
     LanguageManager& langMgr = LanguageManager::instance();
@@ -53,7 +53,7 @@ int main(int argc, char *argv[])
     langMgr.init(&engine, &app);
     qmlRegisterSingletonInstance("LanguageManager", 1, 0, "LanguageManager", &langMgr);
 
-    qmlRegisterSingletonInstance("Error", 1, 0, "ErrorNotifier", &ErrorNotifier::instance());
+    qmlRegisterSingletonInstance("Notifier", 1, 0, "Notifier", &Notifier::instance());
     qmlRegisterSingletonInstance("Global", 1, 0, "Global", &Global::instance());
     qmlRegisterSingletonInstance("Config", 1, 0, "ConfigManager", &ConfigManager::instance());
     qmlRegisterSingletonInstance("Data", 1, 0, "Data", &Data::instance());

@@ -119,7 +119,7 @@
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="include\global.h" />
-    <QtMoc Include="include\ErrorNotifier.h" />
+    <QtMoc Include="include\Notifier.h" />
     <QtMoc Include="include\LanguageManager.h" />
     <QtMoc Include="include\Data.h" />
     <ClInclude Include="include\httplib.h" />
@@ -145,6 +145,7 @@
     <None Include="ui\barChart.qml" />
     <None Include="ui\Header.qml" />
     <None Include="ui\main.qml" />
+    <None Include="ui\NotificationItem.qml" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">

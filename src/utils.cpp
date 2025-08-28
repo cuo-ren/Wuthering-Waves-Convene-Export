@@ -1,5 +1,5 @@
 ﻿#include "utils.h"
-#include "ErrorNotifier.h"
+#include "Notifier.h"
 
 std::string RunAndGetOutput(const std::string& exePath) {
 	HANDLE hRead, hWrite;
@@ -207,7 +207,7 @@ void WriteJsonFile(const std::string& path, const json& data) {
 
 	if (!f.is_open()) {
 		qCritical() << "文件打开失败! " << "path:" << QString::fromUtf8(path);
-		ErrorNotifier::instance().notifyError("文件打开失败! ");
+		Notifier::instance().notify(3, "文件打开失败! ");
 		return;
 	}
 
@@ -216,15 +216,15 @@ void WriteJsonFile(const std::string& path, const json& data) {
 	}
 	catch (const json::type_error& e) {
 		qWarning() << "json解析失败: " << e.what();
-		ErrorNotifier::instance().notifyError("json解析失败 ");
+		Notifier::instance().notify(3, "json解析失败 ");
 	}
 	catch (const std::ios_base::failure& e) {
 		qCritical() << "文件写入失败! " << "path:" << QString::fromUtf8(path);
-		ErrorNotifier::instance().notifyError("文件写入失败!");
+		Notifier::instance().notify(3, "文件写入失败!");
 	}
 	catch (...) {
 		qCritical() << "文件写入发生未知错误 " << "path:" << QString::fromUtf8(path);
-		ErrorNotifier::instance().notifyError("文件写入发生未知错误");
+		Notifier::instance().notify(3, "文件写入发生未知错误");
 	}
 }
 
