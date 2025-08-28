@@ -14,8 +14,11 @@ Window {
     height: Screen.height/2
     title: "Wuthering Waves Convene Export"
     Button{
+        z:2
+        id: btn
         width:100
         height:50
+        y:50
         onClicked: {
             Data.update_data(1)
             loading.visible = true
@@ -23,6 +26,9 @@ Window {
         text: qsTr("更新数据")
     }
     Text {
+        z:2
+        anchors.top:btn.bottom
+        anchors.horizontalCenter: btn.horizontalCenter
         id: loading
         visible: false
         text: qsTr("正在加载")
@@ -37,7 +43,7 @@ Window {
         }
         function onQUpdateComplete(){
             loading.visible = false
-            initData(myModel.get(0)["key"],myModel.get(0)["name"])
+            updateData()
         }
     }
     Header{
@@ -103,11 +109,40 @@ Window {
     }
 
     function initData(key,name){
+        barChart.key = key
         barChart.gacha_data.clear()
         barChart.chartTitle = name
         var gacha_data = Data.getBarChartData(key)
         for(var i = 0; i < gacha_data.length; i++){
             barChart.gacha_data.append({"ItemName":gacha_data[i]["ItemName"],"source":Global.path +"/resource/" +gacha_data[i]["source"] + ".png","count":gacha_data[i]["count"],"isOffTarget":gacha_data[i]["isOffTarget"]})
+        }
+    }
+
+    function updateData(){
+        var gacha_data = Data.getBarChartData(barChart.key)
+        for(var i = 0; i < gacha_data.length; i++){
+            if(i>=barChart.gacha_data.count){
+                //多余部分
+                barChart.gacha_data.append({"ItemName":gacha_data[i]["ItemName"],"source":Global.path +"/resource/" +gacha_data[i]["source"] + ".png","count":gacha_data[i]["count"],"isOffTarget":gacha_data[i]["isOffTarget"]})
+                continue;
+            }
+            var item = barChart.gacha_data.get(i)
+            //全部相等，继续遍历
+            if(item.ItemName == gacha_data[i]["ItemName"] && item.source == Global.path +"/resource/" +gacha_data[i]["source"] + ".png" && item.count == gacha_data[i]["count"] && item.isOffTarget == gacha_data[i]["isOffTarget"]){
+                continue;
+            }
+            else{
+                    //最后一项
+                    barChart.gacha_data.setProperty(i,"source",Global.path +"/resource/" +gacha_data[i]["source"] + ".png")
+                    barChart.gacha_data.setProperty(i,"ItemName",gacha_data[i]["ItemName"])
+                    barChart.gacha_data.setProperty(i,"count",gacha_data[i]["count"])
+                    barChart.gacha_data.setProperty(i,"isOffTarget",gacha_data[i]["isOffTarget"])
+                    //如果有别的数据，清除
+                    for(var j = i + 1; j < barChart.gacha_data.count; j++){
+                        barChart.gacha_data.remove(i+1,1)
+                    }
+                    continue;
+            }
         }
     }
 }

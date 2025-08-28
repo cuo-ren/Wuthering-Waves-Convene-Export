@@ -11,6 +11,7 @@ Item {
     property alias gacha_data: myModel
     required property url path
     property string chartTitle: qsTr("卡池名称")
+    property string key: "0"
 
     property bool hiddenImage: false
 

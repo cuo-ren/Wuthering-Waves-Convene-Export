@@ -513,7 +513,7 @@ Q_INVOKABLE QVariantList Data::getBarChartData(QString key) {
 		ConfigManager::instance().set<std::string>("active_uid", uid);
 		qDebug() << "active_uid变更为:" << QString::fromStdString(uid);
 	}
-	if (std::find(uid_list.begin(), uid_list.end(), uid) == uid_list.end()) {
+	if (std::find(uid_list.begin(), uid_list.end(), uid) == uid_list.end() and uid_list.size() != 0) {
 		//活跃uid不在列表中
 		uid = uid_list[0];
 		ConfigManager::instance().set<std::string>("active_uid", uid);
@@ -573,6 +573,7 @@ Q_INVOKABLE void Data::update_data(int mode, QString input_url) {
 	}
 	
 	QtConcurrent::run([this, mode, input_url]() {
+		json gacha_listCopy = gacha_list;
 		json urls = json::object();
 		if (mode == 1) {
 			//使用日志文件
@@ -621,17 +622,17 @@ Q_INVOKABLE void Data::update_data(int mode, QString input_url) {
 		for (auto& [uid, params] : urls.items()) {
 			//新建uid字段
 			new_gacha_list[uid] = json::object();
-			qDebug() << "正在获取数据:" << QString::fromStdString(uid));
+			qDebug() << "正在获取数据:" << QString::fromStdString(uid);
 			emit prossessChanged(tr("正在获取数据:") + QString::fromStdString(uid));
 			//新建info
 			new_gacha_list[uid]["info"] = json{ {"lang",urls[uid]["lang"].get<std::string>()} ,{"update_time",get_timestamp()} };
 			//检测旧数据的语言代码和当前的语言代码是否一致
-			if (gacha_list.contains(uid) and gacha_list[uid]["info"]["lang"].get<std::string>() != urls[uid]["lang"].get<std::string>()) {
-				qWarning() << "当前url的语言和数据语言不一致 当前选择语言：" << QString::fromStdString(urls[uid]["lang"].get<std::string>()) << "数据语言：" << QString::fromStdString(gacha_list[uid]["info"]["lang"].get<std::string>());
-				qWarning() << "采用原数据语言 " << QString::fromStdString(gacha_list[uid]["info"]["lang"].get<std::string>());
+			if (gacha_listCopy.contains(uid) and gacha_listCopy[uid]["info"]["lang"].get<std::string>() != urls[uid]["lang"].get<std::string>()) {
+				qWarning() << "当前url的语言和数据语言不一致 当前选择语言：" << QString::fromStdString(urls[uid]["lang"].get<std::string>()) << "数据语言：" << QString::fromStdString(gacha_listCopy[uid]["info"]["lang"].get<std::string>());
+				qWarning() << "采用原数据语言 " << QString::fromStdString(gacha_listCopy[uid]["info"]["lang"].get<std::string>());
 				ErrorNotifier::instance().notifyError("当前url的语言和数据语言不一致!采用原数据语言");
-				urls[uid]["lang"] = gacha_list[uid]["info"]["lang"].get<std::string>();
-				new_gacha_list[uid]["info"]["lang"] = gacha_list[uid]["info"]["lang"].get<std::string>();
+				urls[uid]["lang"] = gacha_listCopy[uid]["info"]["lang"].get<std::string>();
+				new_gacha_list[uid]["info"]["lang"] = gacha_listCopy[uid]["info"]["lang"].get<std::string>();
 			}
 			//检测语言是否支持
 			std::vector<std::string> support_lang = Global::instance().get_support_languages();
@@ -717,10 +718,10 @@ Q_INVOKABLE void Data::update_data(int mode, QString input_url) {
 				//一组数据获取完毕，等待一秒
 				QThread::sleep(1);
 			}
-			new_gacha_list = merge(uid, gacha_list, new_gacha_list);
+			gacha_listCopy = merge(uid, gacha_listCopy, new_gacha_list);
 		}
-		save(new_gacha_list);
-		emit updateComplete(new_gacha_list, last_uid);
+		save(gacha_listCopy);
+		emit updateComplete(gacha_listCopy, last_uid);
 	});
 	
 	
