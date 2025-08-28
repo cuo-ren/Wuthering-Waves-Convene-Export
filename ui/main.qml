@@ -21,7 +21,7 @@ Window {
         z: 100
 
         id: notificationColumn
-        anchors.top: parent.top
+        anchors.top: header.bottom
         anchors.horizontalCenter: parent.horizontalCenter
         spacing: 8
         width: parent.width * 0.6 > 400 ? 400 : parent.width * 0.6
@@ -47,7 +47,7 @@ Window {
             switch(mode){
                 case 0: notificationModel.append({ "text": message, "duration": 3000, "color":"green"});break;
                 case 1: notificationModel.append({ "text": message, "duration": 3000, "color":"blue"}); break;
-                case 2: notificationModel.append({ "text": message, "duration": 3000, "color":"yellow"}); break;
+                case 2: notificationModel.append({ "text": message, "duration": 3000, "color":"orange"}); break;
                 case 3: notificationModel.append({ "text": message, "duration": 3000, "color":"red"}); break;
                 default:break;
             }
@@ -61,8 +61,9 @@ Window {
         height:50
         y:50
         onClicked: {
-            Data.update_data(1)
-            loading.visible = true
+            notificationModel.append({ "text": "测试文本", "duration": 3000, "color":"orange"})
+            //Data.update_data(1)
+            //loading.visible = true
         }
         text: qsTr("更新数据")
     }

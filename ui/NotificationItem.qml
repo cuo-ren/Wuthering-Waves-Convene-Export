@@ -33,16 +33,44 @@ Item {
             verticalAlignment: Text.AlignVCenter
             wrapMode: Text.WordWrap
         }
-
-        Image {
-            width:parent.height -5
-            height:parent.height - 5
-            id: closebtn
-            source: path + "/resource/closebtn.svg"
+        Item{
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
             anchors.margins: 10
+
+            width: parent.height
+            height: parent.height
+
+            Rectangle{
+                id: closebtnoverlay
+                anchors.fill: parent
+                anchors.margins: 5
+
+                color: "grey"
+                radius: 5
+                visible: false
+                opacity: 0.3
+            }
+            Image {
+                id: closebtn
+                source: path + "/resource/closebtn.svg"
+                anchors.fill: parent
+                anchors.margins: 7
+            }
             MouseArea{
+                hoverEnabled: true
+                onEntered: {
+                    closebtnoverlay.visible = true
+                }
+                onExited: {
+                    closebtnoverlay.visible = false
+                }
+                onReleased: {
+                    closebtnoverlay.opacity = 0.3
+                }
+                onPressed: {
+                    closebtnoverlay.opacity = 0.2
+                }
                 anchors.fill:parent
                 onClicked: notificationItem.dismiss()
             }

@@ -189,7 +189,7 @@ Item {
                         anchors.bottom: bar.bottom
                         anchors.horizontalCenter: bar.horizontalCenter
 
-                        Rectangle{
+                        Image{
                             id: imagebackground
 
                             height: parent.width - 5
@@ -197,20 +197,15 @@ Item {
 
                             anchors.top: parent.top
                             anchors.horizontalCenter: parent.horizontalCenter
-                            visible: !hiddenImage
-                            color: "#FACC15"
 
-                            radius: 5
+                            visible: !hiddenImage
+                            source: path + "/resource/background5.png"
 
                             Image {
                                 id: previewImage
                                 source: model.source
 
                                 anchors.fill: parent
-                                //anchors.top: bottomPart.top
-                                //anchors.horizontalCenter: bottomPart.horizontalCenter
-
-
 
                                 fillMode: Image.PreserveAspectFit
 
