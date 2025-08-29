@@ -144,6 +144,7 @@
     <None Include="language.json" />
     <None Include="ui\barChart.qml" />
     <None Include="ui\Header.qml" />
+    <None Include="ui\Loading.qml" />
     <None Include="ui\main.qml" />
     <None Include="ui\NotificationItem.qml" />
   </ItemGroup>

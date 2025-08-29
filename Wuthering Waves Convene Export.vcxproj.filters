@@ -89,6 +89,9 @@
     <None Include="ui\NotificationItem.qml">
       <Filter>Source Files</Filter>
     </None>
+    <None Include="ui\Loading.qml">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="include\config.h">

@@ -62,23 +62,42 @@ Window {
         y:50
         onClicked: {
             notificationModel.append({ "text": "测试文本", "duration": 3000, "color":"orange"})
-            //Data.update_data(1)
-            //loading.visible = true
+            Data.update_data(1)
+            loading.visible = true
         }
         text: qsTr("更新数据")
     }
-    Text {
-        z:2
-        anchors.top:btn.bottom
-        anchors.horizontalCenter: btn.horizontalCenter
+
+    Item{
         id: loading
         visible: false
-        text: qsTr("正在加载")
+        z: 2
+        anchors.top:btn.bottom
+        anchors.left: btn.left
+
+        height: 15
+        Loading {
+            usedColor: "black"
+            id: loadingImage
+            width: parent.height
+            height: parent.height
+            anchors.left: parent.left
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.margins: 5
+        }
+        Text {
+            id: loadingText
+            anchors.left: loadingImage.right
+            anchors.horizontalCenter: loadingImage.horizontalCenter
+            anchors.margins: 5
+            text: qsTr("正在加载")
+        }
     }
+
     Connections{
         target: Data
         function onProssessChanged(text){
-            loading.text = text;
+            loadingText.text = text;
         }
         function onWrongInput(){
             console.log("错误的输入");
@@ -88,21 +107,25 @@ Window {
             updateData()
         }
     }
+
     Header{
         id: header
         width: root.width
         path: Global.path
     }
+
     Component.onCompleted:{
         var gacha_type = Global.gachaType
         for(var i = 0; i < gacha_type["data"].length; i++){
-            if(!gacha_type["data"][i]["skip"] || true){
+            if(!gacha_type["data"][i]["skip"] || !ConfigManager.getValue("skip")){
                 myModel.append({"key":gacha_type["data"][i]["key"], "name":LanguageManager.getValue(gacha_type["data"][i]["name"])})
             }
         }
         initData(myModel.get(0)["key"],myModel.get(0)["name"])
     }
+
     Rectangle{
+        //source: Global.path + "/resource/bg-5fdb795a.png"
         x:50
         y:50
         height: root.height - 130

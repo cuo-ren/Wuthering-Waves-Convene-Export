@@ -8,5 +8,6 @@
         <file>ui/BarChart.qml</file>
         <file>resource/favicon.ico</file>
         <file>ui/NotificationItem.qml</file>
+        <file>ui/Loading.qml</file>
     </qresource>
 </RCC>
