@@ -146,6 +146,7 @@
     <None Include="ui\Header.qml" />
     <None Include="ui\Loading.qml" />
     <None Include="ui\main.qml" />
+    <None Include="ui\MyButton.qml" />
     <None Include="ui\NotificationItem.qml" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

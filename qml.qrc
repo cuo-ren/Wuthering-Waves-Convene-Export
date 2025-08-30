@@ -9,5 +9,6 @@
         <file>resource/favicon.ico</file>
         <file>ui/NotificationItem.qml</file>
         <file>ui/Loading.qml</file>
+        <file>ui/MyButton.qml</file>
     </qresource>
 </RCC>

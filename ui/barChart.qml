@@ -12,6 +12,8 @@ Item {
     required property url path
     property string chartTitle: qsTr("卡池名称")
     property string key: "0"
+    property alias contentWidth: root.contentWidth
+    property alias chartClip: root.clip
 
     property bool hiddenImage: false
 

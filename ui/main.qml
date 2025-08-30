@@ -14,11 +14,17 @@ Window {
     height: Screen.height/2
     title: "Wuthering Waves Convene Export"
 
+    Header{
+        id: header
+        width: root.width
+        path: Global.path
+    }
+
     ListModel { id: notificationModel }
 
     // 通知容器（顶部居中）
     Column {
-        z: 100
+        z: 9999
 
         id: notificationColumn
         anchors.top: header.bottom
@@ -43,7 +49,6 @@ Window {
     Connections{
         target: Notifier;
         function onMessageOccurred(mode,message){
-
             switch(mode){
                 case 0: notificationModel.append({ "text": message, "duration": 3000, "color":"green"});break;
                 case 1: notificationModel.append({ "text": message, "duration": 3000, "color":"blue"}); break;
@@ -54,44 +59,123 @@ Window {
         }
     }
 
-    Button{
-        z:2
-        id: btn
-        width:100
-        height:50
-        y:50
-        onClicked: {
-            notificationModel.append({ "text": "测试文本", "duration": 3000, "color":"orange"})
-            Data.update_data(1)
-            loading.visible = true
+    Item{
+        id: btnGroup
+        Rectangle{
+            anchors.fill:parent
+            color:"yellow"
         }
-        text: qsTr("更新数据")
+        anchors.top: header.bottom
+        anchors.horizontalCenter: root.horizontalCenter
+
+        width: root.width
+        height: 60
+
+        MyButton{
+            id: btn
+            width: 100
+            height: 40
+
+            anchors.top: parent.top
+            anchors.left:parent.left
+            anchors.margins: 5
+            onClick: {
+                notificationModel.append({ "text": "测试文本", "duration": 3000, "color":"orange"})
+                btn.disabled = true
+                Data.update_data(1)
+                loading.visible = true
+            }
+            usedText: qsTr("更新数据")
+        }
+        Item{
+            id: loading
+            visible: false
+            anchors.top:btn.bottom
+            anchors.left: btn.left
+
+            height: 10
+            Loading {
+                usedColor: "black"
+                id: loadingImage
+                width: parent.height
+                height: parent.height
+                anchors.left: parent.left
+                anchors.verticalCenter: parent.verticalCenter
+                anchors.margins: 5
+            }
+            Text {
+                height: 50
+                id: loadingText
+                anchors.left: loadingImage.right
+                anchors.horizontalCenter: loadingImage.horizontalCenter
+                anchors.margins: 5
+                text: qsTr("正在加载")
+            }
+        }
     }
 
     Item{
-        id: loading
-        visible: false
-        z: 2
-        anchors.top:btn.bottom
-        anchors.left: btn.left
+        id: chartArea
+        anchors.top: btnGroup.bottom
+        anchors.left: pageArea.right
+        clip: true
 
-        height: 15
-        Loading {
-            usedColor: "black"
-            id: loadingImage
-            width: parent.height
-            height: parent.height
-            anchors.left: parent.left
-            anchors.verticalCenter: parent.verticalCenter
-            anchors.margins: 5
+        width: root.width - pageArea.width
+        height: root.height - header.height - btnGroup.height
+        Rectangle{
+            anchors.fill:parent
+            color:"lightblue"
         }
-        Text {
-            id: loadingText
-            anchors.left: loadingImage.right
-            anchors.horizontalCenter: loadingImage.horizontalCenter
-            anchors.margins: 5
-            text: qsTr("正在加载")
+        BarChart{
+            id: barChart
+            path: Global.path
+            anchors.top: parent.top
+            anchors.horizontalCenter: parent.horizontalCenter
+            height: parent.height - row.height
+            width: contentWidth > parent.width ? parent.width : contentWidth
+            chartClip: contentWidth > parent.width ? true : false
+            //clip: true
         }
+
+        ButtonGroup {
+            id: buttonGroup
+        }
+
+        Row {
+            //visible:false
+            anchors.top:barChart.bottom
+            anchors.horizontalCenter: barChart.horizontalCenter
+            id: row
+            anchors.bottom:root.bottom
+            property int lastclick: 0
+            Repeater{
+                model: myModel
+                RadioButton {
+                    text: model.name
+                    ButtonGroup.group: buttonGroup
+                    checked: index==0?true:false
+                    onClicked: {
+                        if(index != row.lastclick){
+                            initData(model.key,model.name)
+                            row.lastclick = index
+                        }
+                    }
+                }
+            }
+
+        }
+    }
+
+    Item{
+        id: pageArea
+        width: 50
+        height: root.height - header.height
+        Rectangle{
+            anchors.fill:parent
+            color:"red"
+        }
+        anchors.left: root.left
+        anchors.top: btnGroup.bottom
     }
 
     Connections{
@@ -103,15 +187,14 @@ Window {
             console.log("错误的输入");
         }
         function onQUpdateComplete(){
+            btn.disabled = false
             loading.visible = false
             updateData()
         }
     }
 
-    Header{
-        id: header
-        width: root.width
-        path: Global.path
+    ListModel{
+        id: myModel
     }
 
     Component.onCompleted:{
@@ -122,55 +205,6 @@ Window {
             }
         }
         initData(myModel.get(0)["key"],myModel.get(0)["name"])
-    }
-
-    Rectangle{
-        //source: Global.path + "/resource/bg-5fdb795a.png"
-        x:50
-        y:50
-        height: root.height - 130
-        width: root.width - 60
-        color:"lightblue"
-    }
-    BarChart{
-        x:50
-        y:50
-        id: barChart
-        path: Global.path
-        height: root.height - 130
-        width: root.width - 60
-        //Component.onCompleted: moveToEnd()
-    }
-
-    ListModel{
-        id: myModel
-    }
-
-    ButtonGroup {
-        id: buttonGroup
-    }
-
-    Row {
-        //visible:false
-        y:500
-        id: row
-        anchors.bottom:root.bottom
-        property int lastclick: 0
-        Repeater{
-            model: myModel
-            RadioButton {
-                text: model.name
-                ButtonGroup.group: buttonGroup
-                checked: index==0?true:false
-                onClicked: {
-                    if(index != row.lastclick){
-                        initData(model.key,model.name)
-                        row.lastclick = index
-                    }
-                }
-            }
-        }
-
     }
 
     function initData(key,name){
