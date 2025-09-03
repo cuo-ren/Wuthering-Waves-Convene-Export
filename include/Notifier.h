@@ -15,7 +15,7 @@ public:
         //2 警告 黄色 yellow
         //3 错误 红色 red
         emit messageOccurred(mode, message);
-        qDebug() << QString::number(mode) << message;
+        qDebug().noquote() << QString::number(mode) << message;
     }
 
 signals:

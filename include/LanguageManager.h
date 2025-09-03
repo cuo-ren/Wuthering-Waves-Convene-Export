@@ -77,18 +77,18 @@ public:
     
 private:
     LanguageManager() {
-        qInfo() << "正在加载语言模块";
+        qInfo().noquote() << "正在加载语言模块";
         usedLang = ConfigManager::instance().get<std::string>("language");
-        qInfo() << "当前语言：" << QString::fromStdString(usedLang);
+        qInfo().noquote() << "当前语言：" << QString::fromStdString(usedLang);
         loadLanguageJson(":/qt/qml/wuthering waves convene export/language.json");
-        qInfo() << "语言模块初始化完成";
+        qInfo().noquote() << "语言模块初始化完成";
     }
     ~LanguageManager() { delete translator; }
 
     void loadLanguageJson(const QString& path) {
         QFile file(path);
         if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-            qFatal() << "语言文件打开失败:" << path;
+            qFatal().noquote() << "语言文件打开失败:" << path;
             return;
         }
 
@@ -100,7 +100,7 @@ private:
             languageJson = json::parse(content.toStdString());
         }
         catch (const json::parse_error& e) {
-            qFatal() << "语言文件解析失败:" << e.what();
+            qFatal().noquote() << "语言文件解析失败:" << e.what();
         }
         for (auto& [langCode, item] : languageJson.items()) {
             QVariantMap temp;

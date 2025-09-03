@@ -58,13 +58,30 @@ void Logger::rotateLogs() {
 void Logger::messageHandler(QtMsgType type, const QMessageLogContext& context, const QString& msg) {
     updateLogFile();
 
-    QString level;
+    QString levelPlain;
+    QString levelColored;
+
     switch (type) {
-    case QtDebugMsg:    level = "[DEBUG]"; break;
-    case QtInfoMsg:     level = "[INFO]"; break;
-    case QtWarningMsg:  level = "[WARNING]"; break;
-    case QtCriticalMsg: level = "[ERROR]"; break;
-    case QtFatalMsg:    level = "[FATAL]"; break;
+    case QtDebugMsg:
+        levelPlain = "[DEBUG]";
+        levelColored = "[\033[36mDEBUG\033[0m]";
+        break;
+    case QtInfoMsg:
+        levelPlain = "[INFO]";
+        levelColored = "[\033[32mINFO\033[0m]";
+        break;
+    case QtWarningMsg:
+        levelPlain = "[WARNING]";
+        levelColored = "[\033[33mWARNING\033[0m]";
+        break;
+    case QtCriticalMsg:
+        levelPlain = "[ERROR]";
+        levelColored = "[\033[31mERROR\033[0m]";
+        break;
+    case QtFatalMsg:
+        levelPlain = "[FATAL]";
+        levelColored = "[\033[41;37mFATAL\033[0m]";
+        break;
     }
     /*
     QString contextInfo = QString("(%1:%2, %3)")
@@ -72,14 +89,20 @@ void Logger::messageHandler(QtMsgType type, const QMessageLogContext& context, c
         .arg(context.line)
         .arg(QString::fromUtf8(context.function));
         */
-    QString logLine = QString("%1 %2 %3")
+    QString logLineColored = QString("%1 %2 %3")
         .arg(QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss"))
-        .arg(level)
+        .arg(levelColored)
         //.arg(contextInfo)
         .arg(msg);
 
-    std::cerr << logLine.toUtf8().constData() << std::endl;
-    logStream << logLine << "\n";
+    QString logLinePlain = QString("%1 %2 %3")
+        .arg(QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss"))
+        .arg(levelPlain)
+        //.arg(contextInfo)
+        .arg(msg);
+
+    std::cerr << logLineColored.toUtf8().constData() << std::endl;
+    logStream << logLinePlain << "\n";
     logStream.flush();
 
     if (type == QtFatalMsg)

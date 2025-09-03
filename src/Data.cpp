@@ -3,14 +3,14 @@
 Data::Data(QObject* parent)
 	: QObject(parent) 
 {
-	qInfo() << "正在加载数据模块";
+	qInfo().noquote() << "正在加载数据模块";
 	QObject::connect(this, &Data::updateComplete,
 		this, &Data::onUpdateComplete);
 	file_path = "./data";
 	file_name = "gacha_list";
-	qDebug() << "当前数据文件目录:" << QString::fromStdString(file_path) << "/" <<  QString::fromStdString(file_name) << ".json";
+	qDebug().noquote() << "当前数据文件目录:" << QString::fromStdString(file_path) << "/" <<  QString::fromStdString(file_name) << ".json";
 	initGachaList();
-	qInfo() << "数据模块初始化完成";
+	qInfo().noquote() << "数据模块初始化完成";
 }
 
 Data::~Data() {
@@ -18,7 +18,7 @@ Data::~Data() {
 }
 
 void Data::initGachaList() {
-	qInfo() << "正在初始化数据";
+	qInfo().noquote() << "正在初始化数据";
 	json default_data = json::object();
 	//确保data目录存在
 	makedirs(file_path);
@@ -26,7 +26,7 @@ void Data::initGachaList() {
 	std::string file_hash = ConfigManager::instance().get<std::string>("hash");
 	//确保json文件存在
 	if (!std::filesystem::exists(file_path + "/" + file_name + ".json")) {
-		qWarning() << "数据文件不存在";
+		qWarning().noquote() << "数据文件不存在";
 		WriteJsonFile(file_path + "/" + file_name + ".json", default_data);
 	}
 	//读取数据
@@ -34,30 +34,30 @@ void Data::initGachaList() {
 		gacha_list = ReadJsonFile(file_path + "/" + file_name + ".json");
 	}
 	catch (const json::parse_error& e) {
-		qWarning() << "数据文件解析失败 " << e.what();
+		qWarning().noquote() << "数据文件解析失败 " << e.what();
 		Notifier::instance().notify(3, "数据文件解析失败");
 		gacha_list = default_data;
 		WriteJsonFile(file_path + "/" + file_name + ".json", default_data);
 	}
 	catch (...) {
-		qWarning() << "数据文件读取失败 ";
+		qWarning().noquote() << "数据文件读取失败 ";
 		Notifier::instance().notify(3, "数据文件读取失败");
 		gacha_list = default_data;
 	}
 	//比对hash，若不一致，则检测文件是否合法
 	if (sha256_file_streaming(file_path + "/" + file_name + ".json") + sha256_file_streaming("./GachaType.json") == ConfigManager::instance().get<std::string>("hash")) {
-		qInfo() << "文件未变动，校验通过";
+		qInfo().noquote() << "文件未变动，校验通过";
 	}
 	else {
-		qWarning() << "数据文件发生变动，开始校验格式";
+		qWarning().noquote() << "数据文件发生变动，开始校验格式";
 		int count = 0;
 		while (true) {
 			count++;
 			json validate_result = validate_data();
 			if (validate_result["code"] == 0) {
-				qInfo() << "数据文件校验成功";
+				qInfo().noquote() << "数据文件校验成功";
 				std::string hash = sha256_file_streaming(file_path + "/" + file_name + ".json") + sha256_file_streaming("./GachaType.json");
-				qDebug() << "hash:" << hash;
+				qDebug().noquote() << "hash:" << hash;
 				ConfigManager::instance().set<std::string>("hash", hash);
 				break;
 			}
@@ -117,7 +117,7 @@ void Data::initGachaList() {
 				std::sort(gacha_list[validate_result["data"]["uid"].get<std::string>()]["data"][validate_result["data"]["key"].get<std::string>()].begin(), gacha_list[validate_result["data"]["uid"].get<std::string>()]["data"][validate_result["data"]["key"].get<std::string>()].end(), compareByTime);
 			}
 			else {
-				qCritical() << "数据文件校验发生未知情况";
+				qCritical().noquote() << "数据文件校验发生未知情况";
 				gacha_list = json::object();
 				break;
 			}
@@ -129,7 +129,7 @@ void Data::initGachaList() {
 }
 
 void Data::save(json data) {
-	qInfo() << "正在保存数据";
+	qInfo().noquote() << "正在保存数据";
 	//获取时间戳
 	std::int64_t timestamp = get_timestamp();
 	//备份当前文件
@@ -138,10 +138,10 @@ void Data::save(json data) {
 		std::filesystem::path dst = std::filesystem::u8path(file_path) / (file_name + "_" + std::to_string(timestamp) + ".json.bak");
 
 		std::filesystem::copy_file(src, dst, std::filesystem::copy_options::overwrite_existing);
-		qInfo() << "备份数据成功 " << QString::fromStdString(file_path + "/" + file_name + "_" + std::to_string(timestamp) + ".json.bak");
+		qInfo().noquote() << "备份数据成功 " << QString::fromStdString(file_path + "/" + file_name + "_" + std::to_string(timestamp) + ".json.bak");
 	}
 	catch (const std::filesystem::filesystem_error& e) {
-		qWarning() << "备份数据失败 " << e.what();
+		qWarning().noquote() << "备份数据失败 " << e.what();
 		Notifier::instance().notify(2, "备份数据失败");
 	}
 	WriteJsonFile(file_path + "/" + file_name + ".json", data);
@@ -176,10 +176,10 @@ void Data::trim_backup_files(const std::string& dir, int max_backup_count) {
 			try {
 				fs::path& file_to_delete = backups[i].second;
 				fs::remove(file_to_delete);
-				qInfo() << "清理备份文件成功:" << QString::fromStdString(file_to_delete.u8string());
+				qInfo().noquote() << "清理备份文件成功:" << QString::fromStdString(file_to_delete.u8string());
 			}
 			catch (const fs::filesystem_error& e) {
-				qWarning() << "清理备份文件失败 " << e.what();
+				qWarning().noquote() << "清理备份文件失败 " << e.what();
 				Notifier::instance().notify(2, "备份文件删除失败");
 			}
 		}
@@ -219,13 +219,13 @@ json Data::validate_data() {
 				{"data",{{"uid",uid}}}
 		};
 		if (!is_digit(uid)) {
-			qWarning() << "数据文件UID键不是数字字符串";
+			qWarning().noquote() << "数据文件UID键不是数字字符串";
 			return error1;
 		}
 
 		//校验uid后是否为字典
 		if (!value.is_object()) {
-			qWarning() << "数据文件UID不是json";
+			qWarning().noquote() << "数据文件UID不是json";
 			json error2 = {
 				{"code",2},
 				{"data",{{"uid",uid}}}
@@ -239,7 +239,7 @@ json Data::validate_data() {
 	for (auto& [uid, value] : gacha_list.items()) {
 		//校验info,data是否存在
 		if (!value.contains("info") or !value.contains("data") or value.size() != 2) {
-			qWarning() << "数据文件UID缺失字段";
+			qWarning().noquote() << "数据文件UID缺失字段";
 			json error3 = {
 				{"code",3},
 				{"data",{{"uid",uid}}}
@@ -249,7 +249,7 @@ json Data::validate_data() {
 		//校验info
 		//校验info是否为字典
 		if (!value["info"].is_object()) {
-			qWarning() << "数据文件UID->info不是json";
+			qWarning().noquote() << "数据文件UID->info不是json";
 			json error4 = {
 				{"code",4},
 				{"data",{{"uid",uid}}}
@@ -258,7 +258,7 @@ json Data::validate_data() {
 		}
 		//校验info中是否含有lang,update_time
 		if (!value["info"].contains("lang") or !value["info"].contains("update_time") or !value["info"].contains("timezone") or value["info"].size() != 3) {
-			qWarning() << "数据文件UID->info缺失字段";
+			qWarning().noquote() << "数据文件UID->info缺失字段";
 			json error5 = {
 				{"code",5},
 				{"data",{{"uid",uid}}}
@@ -267,7 +267,7 @@ json Data::validate_data() {
 		}
 		//校验lang,update_time,timezone类型
 		if (!value["info"]["update_time"].is_number_integer()) {
-			qWarning() << "数据文件UID->info->update_time不是int";
+			qWarning().noquote() << "数据文件UID->info->update_time不是int";
 			json error6 = {
 				{"code",6},
 				{"data",{{"uid",uid}}}
@@ -275,7 +275,7 @@ json Data::validate_data() {
 			return error6;
 		}
 		if (!value["info"]["timezone"].is_number_integer()) {
-			qWarning() << "数据文件UID->info->timezone不是int";
+			qWarning().noquote() << "数据文件UID->info->timezone不是int";
 			json error20 = {
 				{"code",20},
 				{"data",{{"uid",uid}}}
@@ -283,7 +283,7 @@ json Data::validate_data() {
 			return error20;
 		}
 		if (!value["info"]["lang"].is_string()) {
-			qWarning() << "数据文件UID->info->lang不是lang";
+			qWarning().noquote() << "数据文件UID->info->lang不是lang";
 			json error7 = {
 				{"code",7},
 				{"data",{{"uid",uid}}}
@@ -302,7 +302,7 @@ json Data::validate_data() {
 		}
 		//校验data
 		if (!value["data"].is_object()) {
-			qWarning() << "数据文件UID->data不是json";
+			qWarning().noquote() << "数据文件UID->data不是json";
 			json error9 = {
 				{"code",9},
 				{"data",{{"uid",uid}}}
@@ -312,7 +312,7 @@ json Data::validate_data() {
 		for (auto& [key, list] : value["data"].items()) {
 			//校验key是否合法
 			if (std::find(gacha_type_list.begin(), gacha_type_list.end(), key) == gacha_type_list.end()) {
-				qWarning() << "数据文件UID->data->key键不合法";
+				qWarning().noquote() << "数据文件UID->data->key键不合法";
 				json error10 = {
 					{"code", 10},
 					{"data", {
@@ -325,7 +325,7 @@ json Data::validate_data() {
 			}
 			//校验key的值是否为列表
 			if (!list.is_array()) {
-				qWarning() << "数据文件UID->data->key不是列表";
+				qWarning().noquote() << "数据文件UID->data->key不是列表";
 				json error11 = {
 					{"code", 11},
 					{"data", {
@@ -344,7 +344,7 @@ json Data::validate_data() {
 		}
 		for (auto& key : gacha_type_list) {
 			if (std::find(uid_key_list.begin(), uid_key_list.end(), key) == uid_key_list.end()) {
-				qWarning() << "数据文件UID->data->key缺失";
+				qWarning().noquote() << "数据文件UID->data->key缺失";
 				json error12 = {
 					{"code", 12},
 					{"data", {
@@ -366,7 +366,7 @@ json Data::validate_data() {
 			for (auto& item : list) {
 				//校验元素是否为字典
 				if (!item.is_object()) {
-					qWarning() << "数据文件UID->data->key[i]不是json";
+					qWarning().noquote() << "数据文件UID->data->key[i]不是json";
 					json error13 = {
 						{"code", 13},
 						{"data", {
@@ -380,7 +380,7 @@ json Data::validate_data() {
 				}
 				//校验元素数量，字段是否齐全
 				if (item.size() != 5 or !item.contains("name") or !item.contains("id") or !item.contains("type") or !item.contains("qualityLevel") or !item.contains("time")) {
-					qWarning() << "数据文件UID->data->key[i]缺失字段";
+					qWarning().noquote() << "数据文件UID->data->key[i]缺失字段";
 					json error14 = {
 						{"code", 14},
 						{"data", {
@@ -394,7 +394,7 @@ json Data::validate_data() {
 				}
 				//校验字段类型是否合法
 				if (!item["name"].is_string() or !item["id"].is_number_integer() or !item["type"].is_string() or !item["qualityLevel"].is_number_integer() or !item["time"].is_string()) {
-					qWarning() << "数据文件UID->data->key[i]字段类型错误";
+					qWarning().noquote() << "数据文件UID->data->key[i]字段类型错误";
 					json error15 = {
 						{"code", 15},
 						{"data", {
@@ -408,7 +408,7 @@ json Data::validate_data() {
 				}
 				//校验type类型是否为武器/角色
 				if (item["type"] != LanguageManager::instance().getValueByCode(gacha_list[uid]["info"]["lang"].get<std::string>(), "Weapon") and item["type"] != LanguageManager::instance().getValueByCode(gacha_list[uid]["info"]["lang"].get<std::string>(), "Resonator")) {
-					qWarning() << "数据文件UID->data->key[i]->type不是对应语言的角色或武器";
+					qWarning().noquote() << "数据文件UID->data->key[i]->type不是对应语言的角色或武器";
 					json error16 = {
 						{"code", 16},
 						{"data", {
@@ -422,7 +422,7 @@ json Data::validate_data() {
 				}
 				//校验星级是否在3~5之间
 				if (item["qualityLevel"] > 5 or item["qualityLevel"] < 3) {
-					qWarning() << "数据文件UID->data->key[i]->qualityLevel不在3~5之间";
+					qWarning().noquote() << "数据文件UID->data->key[i]->qualityLevel不在3~5之间";
 					json error17 = {
 						{"code", 17},
 						{"data", {
@@ -436,7 +436,7 @@ json Data::validate_data() {
 				}
 				//校验时间是否符合标准
 				if (!validate_datetime(item["time"].get<std::string>())) {
-					qWarning() << "数据文件UID->data->key[i]->time格式不符合要求";
+					qWarning().noquote() << "数据文件UID->data->key[i]->time格式不符合要求";
 					json error18 = {
 						{"code", 18},
 						{"data", {
@@ -451,7 +451,7 @@ json Data::validate_data() {
 				//判断时间是否递增，如果非递增，暂时不返回，等待循环结束再返回
 				std::string now_time = item["time"].get<std::string>();
 				if (now_time < last_time and !flag) {
-					qWarning() << "数据文件UID->data->key不是时间正序";
+					qWarning().noquote() << "数据文件UID->data->key不是时间正序";
 					flag = true;
 				}
 				last_time = now_time;
@@ -511,13 +511,13 @@ Q_INVOKABLE QVariantList Data::getBarChartData(QString key) {
 		//没有活跃uid且存在uid，设置为第一个
 		uid = uid_list[0];
 		ConfigManager::instance().set<std::string>("active_uid", uid);
-		qDebug() << "active_uid变更为:" << QString::fromStdString(uid);
+		qDebug().noquote() << "active_uid变更为:" << QString::fromStdString(uid);
 	}
 	if (std::find(uid_list.begin(), uid_list.end(), uid) == uid_list.end() and uid_list.size() != 0) {
 		//活跃uid不在列表中
 		uid = uid_list[0];
 		ConfigManager::instance().set<std::string>("active_uid", uid);
-		qDebug() << "active_uid变更为:" << QString::fromStdString(uid);
+		qDebug().noquote() << "active_uid变更为:" << QString::fromStdString(uid);
 	}
 
 	bool isStandard = Global::instance().get_gacha_type_map()[key.toStdString()]["isStandard"];
@@ -558,18 +558,18 @@ Q_INVOKABLE QVariantList Data::getBarChartData(QString key) {
 }
 
 Q_INVOKABLE void Data::update_data(int mode, QString input_url) {
-	qInfo() << "准备更新数据";
-	qInfo() << "正在检测游戏日志";
+	qInfo().noquote() << "准备更新数据";
+	qInfo().noquote() << "正在检测游戏日志";
 	std::string logPath = ConfigManager::instance().get<std::string>("path") + "/Client/Saved/Logs/Client.log";
 	std::filesystem::path fsPath = std::filesystem::u8path(logPath);
 
 	if(!std::filesystem::exists(fsPath)) {
-		qWarning() << "游戏目录错误：" << QString::fromStdString(ConfigManager::instance().get<std::string>("path") + "/Client/Saved/Logs/Client.log");
+		qWarning().noquote() << "游戏目录错误：" << QString::fromStdString(ConfigManager::instance().get<std::string>("path") + "/Client/Saved/Logs/Client.log");
 		emit logNotFond();
 		return;
 	}
 	else {
-		qDebug() << "成功检测日志目录";
+		qDebug().noquote() << "成功检测日志目录";
 	}
 	
 	QtConcurrent::run([this, mode, input_url]() {
@@ -589,7 +589,7 @@ Q_INVOKABLE void Data::update_data(int mode, QString input_url) {
 				};
 				for (auto& key : required_keys) {
 					if (params_dict.count(key) == 0) {
-						qWarning() << "输入的url有误:" << input_url;
+						qWarning().noquote() << "输入的url有误:" << input_url;
 						emit wrongInput();
 						return;
 					}
@@ -609,7 +609,7 @@ Q_INVOKABLE void Data::update_data(int mode, QString input_url) {
 				ConfigManager::instance().setUrlList(temp);
 			}
 			catch (const std::exception& e) {
-				qWarning() << "输入的url解析失败:" << input_url;
+				qWarning().noquote() << "输入的url解析失败:" << input_url;
 				return;
 			}
 		}
@@ -622,14 +622,14 @@ Q_INVOKABLE void Data::update_data(int mode, QString input_url) {
 		for (auto& [uid, params] : urls.items()) {
 			//新建uid字段
 			new_gacha_list[uid] = json::object();
-			qDebug() << "正在获取数据:" << QString::fromStdString(uid);
+			qDebug().noquote() << "正在获取数据:" << QString::fromStdString(uid);
 			emit prossessChanged(tr("正在获取数据:") + QString::fromStdString(uid));
 			//新建info
 			new_gacha_list[uid]["info"] = json{ {"lang",urls[uid]["lang"].get<std::string>()} ,{"update_time",get_timestamp()} };
 			//检测旧数据的语言代码和当前的语言代码是否一致
 			if (gacha_listCopy.contains(uid) and gacha_listCopy[uid]["info"]["lang"].get<std::string>() != urls[uid]["lang"].get<std::string>()) {
-				qWarning() << "当前url的语言和数据语言不一致 当前选择语言：" << QString::fromStdString(urls[uid]["lang"].get<std::string>()) << "数据语言：" << QString::fromStdString(gacha_listCopy[uid]["info"]["lang"].get<std::string>());
-				qWarning() << "采用原数据语言 " << QString::fromStdString(gacha_listCopy[uid]["info"]["lang"].get<std::string>());
+				qWarning().noquote() << "当前url的语言和数据语言不一致 当前选择语言：" << QString::fromStdString(urls[uid]["lang"].get<std::string>()) << "数据语言：" << QString::fromStdString(gacha_listCopy[uid]["info"]["lang"].get<std::string>());
+				qWarning().noquote() << "采用原数据语言 " << QString::fromStdString(gacha_listCopy[uid]["info"]["lang"].get<std::string>());
 				Notifier::instance().notify(2, "当前url的语言和数据语言不一致!采用原数据语言");
 				urls[uid]["lang"] = gacha_listCopy[uid]["info"]["lang"].get<std::string>();
 				new_gacha_list[uid]["info"]["lang"] = gacha_listCopy[uid]["info"]["lang"].get<std::string>();
@@ -637,7 +637,7 @@ Q_INVOKABLE void Data::update_data(int mode, QString input_url) {
 			//检测语言是否支持
 			std::vector<std::string> support_lang = Global::instance().get_support_languages();
 			if (std::find(support_lang.begin(), support_lang.end(), new_gacha_list[uid]["info"]["lang"].get<std::string>()) == support_lang.end()) {
-				qWarning() << "当前语言不支持 采用简体中文";
+				qWarning().noquote() << "当前语言不支持 采用简体中文";
 				Notifier::instance().notify(2, "当前语言不支持 采用简体中文");
 				urls[uid]["lang"] = "zh-Hans";
 				new_gacha_list[uid]["info"]["lang"] = "zh-Hans";
@@ -653,17 +653,17 @@ Q_INVOKABLE void Data::update_data(int mode, QString input_url) {
 			for (auto& gacha_key : gacha_type["data"]) {
 				//当选择跳过时跳过卡池
 				if (gacha_key["skip"].get<bool>() and ConfigManager::instance().get<bool>("skip")) {
-					qDebug() << "跳过更新卡池：" << QString::fromStdString(gacha_key["name"]);
+					qDebug().noquote() << "跳过更新卡池：" << QString::fromStdString(gacha_key["name"]);
 					continue;
 				}
 				QString loading_text = QString::fromStdString(uid) + ":" + tr("正在获取数据：") + QString::fromStdString(LanguageManager::instance().getValue(gacha_key["name"]));
-				qDebug() << loading_text;
+				qDebug().noquote() << loading_text;
 				emit prossessChanged(loading_text);
 				//获取数据
 				json new_data = get_gacha_data_retry(urls[uid]["resources_id"].get<std::string>(), gacha_key["key"].get<std::string>(), uid, urls[uid]["record_id"].get<std::string>(), urls[uid]["svr_id"].get<std::string>(), urls[uid]["lang"], urls[uid]["svr_area"]);
 				//数据获取失败
 				if (new_data["code"] != 0) {
-					qWarning() << QString::fromStdString(uid) << ": 数据获取失败 code :" << QString::number(new_data["code"].get<int>());
+					qWarning().noquote() << QString::fromStdString(uid) << ": 数据获取失败 code :" << QString::number(new_data["code"].get<int>());
 					Notifier::instance().notify(2, "api已过期，请进入游戏刷新");
 					break;
 				}
@@ -728,7 +728,7 @@ Q_INVOKABLE void Data::update_data(int mode, QString input_url) {
 }
 
 json Data::findGachaUrls() {
-	qInfo() << "正在查找抽卡记录url";
+	qInfo().noquote() << "正在查找抽卡记录url";
 	json uid_url_map = json::object();
 
 	std::regex url_pattern(R"(https://[^"\\ ]*/aki/gacha/index\.html#/record\?[^"\\ ]+)");
@@ -736,7 +736,7 @@ json Data::findGachaUrls() {
 	std::filesystem::path fsPath = std::filesystem::u8path(logPath);
 	std::ifstream file(fsPath);
 	if (!file.is_open()) {
-		qWarning() << "打开游戏日志文件失败";
+		qWarning().noquote() << "打开游戏日志文件失败";
 		return uid_url_map;
 	}
 	//清空上次保存的url
@@ -761,7 +761,7 @@ json Data::findGachaUrls() {
 				};
 			}
 			catch (const std::exception& e) {
-				qWarning() << "解析url参数失败:" << e.what();
+				qWarning().noquote() << "解析url参数失败:" << e.what();
 				continue;
 			}
 		}
@@ -769,17 +769,17 @@ json Data::findGachaUrls() {
 	std::vector<std::string> temp;
 	for (auto& [uid, m] : uid_url_map.items()) {
 		temp.push_back(m["url"]);
-		qDebug() << QString::fromStdString(m["url"]);
+		qDebug().noquote() << QString::fromStdString(m["url"]);
 	}
 	ConfigManager::instance().setUrlList(temp);
-	qDebug() << "抽卡记录url查找完成";
+	qDebug().noquote() << "抽卡记录url查找完成";
 	return uid_url_map;
 }
 
 std::map<std::string, std::string> Data::get_params(const std::string& url) {
 	std::map<std::string, std::string> params;
 	if (url.find("?") == std::string::npos) {
-		qWarning() << "url不含参数" << QString::fromStdString(url);
+		qWarning().noquote() << "url不含参数" << QString::fromStdString(url);
 		return params;
 	}
 	std::string find_url = url.substr(url.find("?") + 1);
@@ -846,7 +846,7 @@ json Data::get_gacha_data(const std::string cardPoolId, const std::string cardPo
 	auto res = cli.Post("/gacha/record/query", headers, post_data.dump(), "application/json");
 
 	if (!res || res->status != 200) {
-		qWarning() << "网络异常 状态码：" << (res ? QString::fromStdString(std::to_string(res->status)) : "连接失败");
+		qWarning().noquote() << "网络异常 状态码：" << (res ? QString::fromStdString(std::to_string(res->status)) : "连接失败");
 		Notifier::instance().notify(2, "网络异常" + (res ? QString::fromStdString(std::to_string(res->status)) : "连接失败"));
 		return { {"code", -2} };
 	}
@@ -855,7 +855,7 @@ json Data::get_gacha_data(const std::string cardPoolId, const std::string cardPo
 		return result;
 	}
 	catch (...) {
-		qWarning() << "响应解析失败";
+		qWarning().noquote() << "响应解析失败";
 		Notifier::instance().notify(3, tr("响应解析失败"));
 		return { {"code", -3} };
 	}
@@ -870,7 +870,7 @@ json Data::get_gacha_data_retry(const std::string cardPoolId, const std::string 
 		}
 		QString text;
 		text = "请求失败";
-		qWarning() << "请求失败,正在重试 第" << attempt << "/" << max_retry << "次 " << "code:" << result["code"].get<int>();
+		qWarning().noquote() << "请求失败,正在重试 第" << attempt << "/" << max_retry << "次 " << "code:" << result["code"].get<int>();
 		text = QString::fromStdString(playerId) + ":" + "请求失败,正在重试 第" + QString::number(attempt) + "/" + QString::number(max_retry) + "次";
 		emit prossessChanged(text);
 		//等待一秒后重试
@@ -946,7 +946,7 @@ json Data::merge(const std::string target_uid, json old_gacha_list, json new_gac
 			}
 
 			if (new_gacha_list[target_uid]["data"][gacha_key][right]["time"].get<std::string>() != last_date) {
-				qWarning() << "未找到对应时间点 " << QString::fromStdString(last_date);
+				qWarning().noquote() << "未找到对应时间点 " << QString::fromStdString(last_date);
 			}
 			else {
 				//删除旧数据last_time时间点的数据

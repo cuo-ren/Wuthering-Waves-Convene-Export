@@ -148,6 +148,7 @@
     <None Include="ui\main.qml" />
     <None Include="ui\MyButton.qml" />
     <None Include="ui\NotificationItem.qml" />
+    <None Include="ui\SettingPopup.qml" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">

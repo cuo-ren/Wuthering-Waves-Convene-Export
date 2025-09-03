@@ -4,7 +4,7 @@
 Global::Global(QObject* parent)
     : QObject(parent)
 {
-    qInfo() << "正在加载全局变量";
+    qInfo().noquote() << "正在加载全局变量";
 
     // 初始化全局只读变量
     m_supportLanguages = { "zh-Hans", "zh-Hant", "en" };
@@ -17,7 +17,7 @@ Global::Global(QObject* parent)
         {"name", "Wuthering Waves Convene Export"},
         {"version", "betav3.0"}
     };
-    qDebug() << "程序名称:" << QString::fromStdString(version["name"]) << " " << QString::fromStdString(version["version"]);
+    qDebug().noquote() << "程序名称:" << QString::fromStdString(version["name"]) << " " << QString::fromStdString(version["version"]);
     m_version = jsonToVariantMap(version);
 
     versions = version;
@@ -26,7 +26,7 @@ Global::Global(QObject* parent)
 
     m_gachaType = jsonToVariantMap(gacha_type);
 
-    qInfo() << "全局变量初始化完成";
+    qInfo().noquote() << "全局变量初始化完成";
 }
 
 QVariantMap Global::jsonToVariantMap(const json& j) {
@@ -99,51 +99,51 @@ void Global::initGachaType() {
         gacha_type = ReadJsonFile("GachaType.json");
     }
     catch (const std::runtime_error& e) {
-        qWarning() << "卡池配置文件打开失败，正在创建";
+        qWarning().noquote() << "卡池配置文件打开失败，正在创建";
         gacha_type = default_gacha_type;
         WriteJsonFile("GachaType.json", default_gacha_type);
     }
     catch (const json::parse_error& e) {
-        qWarning() << "卡池配置文件json解析失败，正在创建";
+        qWarning().noquote() << "卡池配置文件json解析失败，正在创建";
         gacha_type = default_gacha_type;
         WriteJsonFile("GachaType.json", default_gacha_type);
     }
     catch (...) {
-        qWarning() << "读取卡池配置文件发生未知错误";
+        qWarning().noquote() << "读取卡池配置文件发生未知错误";
         gacha_type = default_gacha_type;
     }
     //校验GachaType是否符合要求
     if (!validate_GachaType()) {
         gacha_type = default_gacha_type;
-        qInfo() << "重置卡池配置文件";
+        qInfo().noquote() << "重置卡池配置文件";
         WriteJsonFile("GachaType.json", default_gacha_type);
     }
-    qDebug() << "卡池配置文件初始化完成";
+    qDebug().noquote() << "卡池配置文件初始化完成";
 }
 
 bool Global::validate_GachaType() {
     //判断是否存在data
     if (!gacha_type.contains("data")) {
-        qWarning() << "卡池配置文件 键data不存在";
+        qWarning().noquote() << "卡池配置文件 键data不存在";
         return false;
     }
     //判断data是否是数组
     if (!gacha_type["data"].is_array()) {
-        qWarning() << "卡池配置文件 data值类型不是数组";
+        qWarning().noquote() << "卡池配置文件 data值类型不是数组";
         return false;
     }
 
     for (auto& item : gacha_type["data"]) {
         if ((item.size() != 4) or (!item.contains("key")) or (!item.contains("name")) or (!item.contains("skip")) or (!item.contains("isStandard"))) {
-            qWarning() << "卡池配置文件 data内元素错误";
+            qWarning().noquote() << "卡池配置文件 data内元素错误";
             return false;
         }
         if (!item["key"].is_string() or !item["name"].is_string() or !item["skip"].is_boolean() or !item["isStandard"].is_boolean()) {
-            qWarning() << "卡池配置文件 data内元素类型错误";
+            qWarning().noquote() << "卡池配置文件 data内元素类型错误";
             return false;
         }
         if (!is_digit(item["key"].get<std::string>())) {
-            qWarning() << "卡池配置文件 key错误" << "当前key:" << QString::fromUtf8(item["key"].get<std::string>());
+            qWarning().noquote() << "卡池配置文件 key错误" << "当前key:" << QString::fromUtf8(item["key"].get<std::string>());
             return false;
         }
     }

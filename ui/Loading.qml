@@ -9,10 +9,20 @@ Item{
     property int callCount: 0
     property int duration: 5500
 
-    Component.onCompleted:{
+    function start(){
         callCount = 0
         intervalTimer.start()
     }
+
+    function stop(){
+        obj1.visible = false;ranim1.stop();oanim1.stop();
+        obj2.visible = false;ranim2.stop();oanim2.stop();
+        obj3.visible = false;ranim3.stop();oanim3.stop();
+        obj4.visible = false;ranim4.stop();oanim4.stop();
+        obj5.visible = false;ranim5.stop();oanim5.stop();
+        obj6.visible = false;ranim6.stop();oanim6.stop();
+    }
+
     Timer {
         id: intervalTimer
         interval: root.duration/5500*200 // 毫秒

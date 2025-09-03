@@ -23,17 +23,13 @@ int main(int argc, char *argv[])
 #endif
     //注册日志系统
     Logger::init();
-    qDebug() << "日志模块初始化完成";
-    /*
-    qDebug() << "调试输出";
-    qInfo() << "普通信息";
-    qWarning() << "警告信息";
-    qCritical() << "错误信息";
-    */
+    qDebug().noquote() << "日志模块初始化完成";
+
     QApplication app(argc, argv);
     //无边框窗口
     app.installNativeEventFilter(new NativeFramelessHelper);
     app.setWindowIcon(QIcon(":/qt/qml/wuthering waves convene export/resource/favicon.ico"));  // 支持 qrc 或文件路径
+
     //加载类
     Notifier::instance();
     Global::instance();
@@ -46,7 +42,7 @@ int main(int argc, char *argv[])
         app.installTranslator(&translator);
     }
     else {
-        qWarning() << "加载翻译失败";
+        qWarning().noquote() << "加载翻译失败";
     }
 
     QQmlApplicationEngine engine;
@@ -55,7 +51,7 @@ int main(int argc, char *argv[])
 
     qmlRegisterSingletonInstance("Notifier", 1, 0, "Notifier", &Notifier::instance());
     qmlRegisterSingletonInstance("Global", 1, 0, "Global", &Global::instance());
-    qmlRegisterSingletonInstance("Config", 1, 0, "ConfigManager", &ConfigManager::instance());
+    qmlRegisterSingletonInstance("ConfigManager", 1, 0, "ConfigManager", &ConfigManager::instance());
     qmlRegisterSingletonInstance("Data", 1, 0, "Data", &Data::instance());
  
 

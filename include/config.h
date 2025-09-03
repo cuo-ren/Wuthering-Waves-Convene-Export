@@ -10,9 +10,9 @@ class ConfigManager : public QObject {
 public:
     explicit ConfigManager(const std::string& path = "config.json", QObject* parent = nullptr)
         : QObject(parent), configPath(path) {
-        qInfo() << "正在加载配置文件模块";
+        qInfo().noquote() << "正在加载配置文件模块";
         initConfig();
-        qInfo() << "配置文件初始化完成";
+        qInfo().noquote() << "配置文件初始化完成";
     }
 
     ~ConfigManager() {
@@ -32,7 +32,7 @@ public:
                 return config.at(key).get<T>();
             }
             catch (...) {
-                qWarning() << "无法转换类型：键:" << key << "返回默认值" << defaultValue;
+                qWarning().noquote() << "无法转换类型：键:" << key << "返回默认值" << defaultValue;
                 return defaultValue;
             }
         }
@@ -111,7 +111,7 @@ public:
             config[k] = value.toString().toStdString();
         }
         else {
-            qWarning() << "不支持的类型" << value.typeName();
+            qWarning().noquote() << "不支持的类型" << value.typeName();
             return;
         }
 
@@ -164,6 +164,7 @@ private:
             {"skip", false},//跳过一次性卡池
             {"url", json::array()},//历史记录url
             {"fix", false},//修复记录
+            {"update", false},//自动更新
             {"hash",""}//数据文件hash值
         };
 
@@ -171,7 +172,7 @@ private:
             config = ReadJsonFile(configPath);
         }
         catch (const std::runtime_error& e) {
-            qWarning() << "配置文件打开失败，正在创建";
+            qWarning().noquote() << "配置文件打开失败，正在创建";
             Notifier::instance().notify(3, "配置文件读取失败");
             config = default_config;
             save();
@@ -183,7 +184,7 @@ private:
             save();
         }
         catch (...) {
-            qWarning() << "读取配置文件发生未知错误";
+            qWarning().noquote() << "读取配置文件发生未知错误";
             Notifier::instance().notify(3, "配置文件读取失败");
             config = default_config;
         }
@@ -191,7 +192,7 @@ private:
         // 检查关键字段
         auto ensure = [&](const std::string& key, const json& defaultValue) {
             if (!config.contains(key) || config[key].type() != defaultValue.type()) {
-                qWarning() << "修复键:" << QString::fromStdString(key);
+                qWarning().noquote() << "修复键:" << QString::fromStdString(key);
                 config[key] = defaultValue;
                 save();
             }
@@ -204,20 +205,21 @@ private:
         ensure("url", json::array());
         ensure("fix", false);
         ensure("hash", "");
+        ensure("update", false);
 
         std::vector<std::string> support_languages = Global::instance().get_support_languages();
         // 特殊检查
         if (!config["language"].is_string() ||
             std::find(support_languages.begin(), support_languages.end(),
                 config["language"].get<std::string>()) == support_languages.end()) {
-            qWarning() << "语言无效，重置为 zh-Hans";
+            qWarning().noquote() << "语言无效，重置为 zh-Hans";
             config["language"] = "zh-Hans";
             save();
         }
 
         if (!config["active_uid"].is_string() ||
             !is_digit(config["active_uid"].get<std::string>())) {
-            qWarning() << "active_uid 错误，重置为空";
+            qWarning().noquote() << "active_uid 错误，重置为空";
             config["active_uid"] = "";
             save();
         }

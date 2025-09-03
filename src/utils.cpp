@@ -180,7 +180,7 @@ json ReadJsonFile(const std::string& path) {
 	std::filesystem::path fsPath = std::filesystem::u8path(path);
 	std::ifstream file(fsPath);  // 这里会调用 _wfopen 支持 UTF-16 路径
 	if (!file.is_open()) {
-		qCritical() << "文件打开失败! " << "path:" << QString::fromUtf8(path);
+		qCritical().noquote() << "文件打开失败! " << "path:" << QString::fromUtf8(path);
 		throw std::runtime_error("无法打开文件: " + path);
 	}
 	json data;
@@ -188,11 +188,11 @@ json ReadJsonFile(const std::string& path) {
 		file >> data;
 	}
 	catch (const json::parse_error& e) {
-		qWarning() << "json解析失败: " << e.what();
+		qWarning().noquote() << "json解析失败: " << e.what();
 		throw;
 	}
 	catch (...) {
-		qCritical() << "文件读取发生未知错误 " << "path:" << QString::fromUtf8(path);
+		qCritical().noquote() << "文件读取发生未知错误 " << "path:" << QString::fromUtf8(path);
 		throw;
 	}
 	return data;
@@ -206,7 +206,7 @@ void WriteJsonFile(const std::string& path, const json& data) {
 	f.exceptions(std::ofstream::failbit | std::ofstream::badbit);
 
 	if (!f.is_open()) {
-		qCritical() << "文件打开失败! " << "path:" << QString::fromUtf8(path);
+		qCritical().noquote() << "文件打开失败! " << "path:" << QString::fromUtf8(path);
 		Notifier::instance().notify(3, "文件打开失败! ");
 		return;
 	}
@@ -215,15 +215,15 @@ void WriteJsonFile(const std::string& path, const json& data) {
 		f << data.dump(2);
 	}
 	catch (const json::type_error& e) {
-		qWarning() << "json解析失败: " << e.what();
+		qWarning().noquote() << "json解析失败: " << e.what();
 		Notifier::instance().notify(3, "json解析失败 ");
 	}
 	catch (const std::ios_base::failure& e) {
-		qCritical() << "文件写入失败! " << "path:" << QString::fromUtf8(path);
+		qCritical().noquote() << "文件写入失败! " << "path:" << QString::fromUtf8(path);
 		Notifier::instance().notify(3, "文件写入失败!");
 	}
 	catch (...) {
-		qCritical() << "文件写入发生未知错误 " << "path:" << QString::fromUtf8(path);
+		qCritical().noquote() << "文件写入发生未知错误 " << "path:" << QString::fromUtf8(path);
 		Notifier::instance().notify(3, "文件写入发生未知错误");
 	}
 }
@@ -236,7 +236,7 @@ void makedirs(const std::string& path) {
 	if (!std::filesystem::exists(fsPath)) {
 		if (!std::filesystem::create_directories(fsPath, ec)) {
 			if (ec) {
-				qCritical() << "创建路径失败! " << QString::fromStdString(path) << " " << QString::fromStdString(ec.message());
+				qCritical().noquote() << "创建路径失败! " << QString::fromStdString(path) << " " << QString::fromStdString(ec.message());
 			}
 		}
 	}

@@ -95,6 +95,9 @@
     <None Include="ui\MyButton.qml">
       <Filter>Source Files</Filter>
     </None>
+    <None Include="ui\SettingPopup.qml">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="include\config.h">

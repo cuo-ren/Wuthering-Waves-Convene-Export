@@ -1,6 +1,6 @@
 ﻿import QtQuick 2.9
 import QtQuick.Window 2.2
-import Config 1.0
+import ConfigManager 1.0
 import QtQuick.Controls
 import Global
 import Notifier
@@ -17,20 +17,34 @@ Window {
     Header{
         id: header
         width: root.width
+        //parent: Overlay.overlay
         path: Global.path
     }
 
     ListModel { id: notificationModel }
+    //设置窗口
+    SettingPopup{
+        id: popup
+        parentWidth: root.width
+        parentHeight: root.width - header.height
+        parentX: 0
+        parentY: header.height
+        modal: false
+    }
 
     // 通知容器（顶部居中）
     Column {
         z: 9999
+        parent: Overlay.overlay
+
+        x: (root.width - width) / 2
+        y: header.y + header.height
 
         id: notificationColumn
-        anchors.top: header.bottom
-        anchors.horizontalCenter: parent.horizontalCenter
+        //anchors.top: header.bottom
+        //anchors.horizontalCenter: parent.horizontalCenter
         spacing: 8
-        width: parent.width * 0.6 > 400 ? 400 : parent.width * 0.6
+        width: root.width * 0.6 > 400 ? 400 : root.width * 0.6
         padding: 10
 
         Repeater {
@@ -69,7 +83,7 @@ Window {
         anchors.horizontalCenter: root.horizontalCenter
 
         width: root.width
-        height: 60
+        height: 65
 
         MyButton{
             id: btn
@@ -78,20 +92,75 @@ Window {
 
             anchors.top: parent.top
             anchors.left:parent.left
-            anchors.margins: 5
+            anchors.topMargin: 5
+            anchors.leftMargin: 10
+
+            commonFillColor: "#ECF5FF"
+            commonBorderColor: "#409eff"
+            commonTextColor: "#409eff"
+
+            hoverFillColor: "#409eff"
+            hoverBorderColor: "#409eff"
+
             onClick: {
                 notificationModel.append({ "text": "测试文本", "duration": 3000, "color":"orange"})
-                btn.disabled = true
-                Data.update_data(1)
+                //btn.disabled = true
+                //Data.update_data(1)
                 loading.visible = true
+                loadingImage.start()
             }
             usedText: qsTr("更新数据")
+        }
+        MyButton{
+            id: btn2
+            width: 100
+            height: 40
+
+            anchors.top: parent.top
+            anchors.left: btn.right
+            anchors.topMargin: 5
+            anchors.leftMargin: 10
+
+            commonFillColor: "#F0F9EF"
+            commonBorderColor: "#67c23a"
+            commonTextColor: "#67c23a"
+
+            hoverFillColor: "#67c23a"
+            hoverBorderColor: "#67c23a"
+
+            onClick: {
+                btn2.disabled = true
+            }
+            usedText: qsTr("导出数据")
+        }
+        MyButton{
+            id: settingbtn
+            width: 60
+            height: 40
+
+            anchors.top: parent.top
+            anchors.right: parent.right
+            anchors.topMargin: 5
+            anchors.rightMargin: 10
+
+            commonFillColor: "white"
+            commonBorderColor: "grey"
+            commonTextColor: "grey"
+
+            hoverFillColor: "grey"
+            hoverBorderColor: "grey"
+
+            onClick: {
+                popup.open()
+            }
+            usedText: qsTr("设置")
         }
         Item{
             id: loading
             visible: false
             anchors.top:btn.bottom
             anchors.left: btn.left
+            anchors.margins: 3
 
             height: 10
             Loading {
@@ -188,6 +257,7 @@ Window {
         }
         function onQUpdateComplete(){
             btn.disabled = false
+            loadingImage.stop()
             loading.visible = false
             updateData()
         }

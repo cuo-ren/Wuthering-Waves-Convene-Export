@@ -16,6 +16,7 @@ Item {
     property alias chartClip: root.clip
 
     property bool hiddenImage: false
+    property bool flag: false
 
     function moveToEnd(){
         root.contentX = myModel.count * 50 + myModel.count * 5 - 5 - root.width > 0 ? myModel.count * 50 + myModel.count * 5 - 5 - root.width : 0
@@ -52,8 +53,12 @@ Item {
 
         clip: true
         onContentWidthChanged: {
-            if (contentWidth > width) {
-                contentX = contentWidth - width
+            if(flag){
+                if (contentWidth > width) {
+                    contentX = contentWidth - width
+                }
+            }else{
+                flag = true
             }
         }
         WheelHandler {
@@ -71,6 +76,7 @@ Item {
             acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
             acceptedModifiers: Qt.ControlModifier
             onWheel: (event) => {
+                    flag = false
                     // Ctrl + 滚轮通常表示缩放
                     chartRow.spacing += event.angleDelta.y > 0 ? 1 : chartRow.spacing > 1 ? -1 : 0
             }
