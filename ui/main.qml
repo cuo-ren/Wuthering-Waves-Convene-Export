@@ -108,12 +108,15 @@ Window {
             onClick: {
                 if(flag){
                     btn.disabled = true
-                    Data.update_data(1)
                     loading.visible = true
                     loadingImage.start()
+                    Data.update_data(1)
                 }
                 else{
-                    console.log("查找游戏")
+                    if(Path.FindGameLog()){
+                        flag = true
+                        popup.updatePath()
+                    }
                 }
             }
 
@@ -248,7 +251,6 @@ Window {
                     }
                 }
             }
-
         }
     }
 
@@ -277,6 +279,12 @@ Window {
             loadingImage.stop()
             loading.visible = false
             updateData()
+        }
+        function onLogNotFound(){
+            btn.disabled = false
+            btn.flag = false
+            loadingImage.stop()
+            loading.visible = false
         }
     }
 

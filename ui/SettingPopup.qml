@@ -6,6 +6,11 @@ import LanguageManager
 import Global
 
 Popup {
+    function updatePath(){
+        var path = ConfigManager.getValue("path")
+        gameFolderSettingTextField.text = path
+    }
+
     MouseArea{
         anchors.fill: parent
         onClicked: focus = true

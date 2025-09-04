@@ -27,7 +27,7 @@ public:
 
 signals:
     void prossessChanged(QString text);
-    void logNotFond();
+    void logNotFound();
     void updateComplete(json merged_list, std::string uid);
     void wrongInput();
     void qUpdateComplete();

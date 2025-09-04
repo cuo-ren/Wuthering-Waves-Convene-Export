@@ -564,7 +564,7 @@ Q_INVOKABLE void Data::update_data(int mode, QString input_url) {
 
 	if(!std::filesystem::exists(fsPath)) {
 		qWarning().noquote() << "游戏目录错误：" << QString::fromStdString(ConfigManager::instance().get<std::string>("path") + "/Client/Saved/Logs/Client.log");
-		emit logNotFond();
+		emit logNotFound();
 		return;
 	}
 	else {
