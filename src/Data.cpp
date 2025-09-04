@@ -186,7 +186,6 @@ void Data::trim_backup_files(const std::string& dir, int max_backup_count) {
 	}
 }
 
-
 json Data::validate_data() {
 	std::vector<std::pair<int, std::string>> ERROR_CODES = {
 		{-1,"未知错误"},
@@ -578,6 +577,12 @@ Q_INVOKABLE void Data::update_data(int mode, QString input_url) {
 		if (mode == 1) {
 			//使用日志文件
 			urls = findGachaUrls();
+			//未找到url
+			if (urls.size() == 0) {
+				Notifier::instance().notify(2, tr("未找到url"));
+				emit qUpdateComplete();
+				return;
+			}
 		}
 		else if (mode == 2) {
 			std::string url = input_url.toStdString();

@@ -123,6 +123,7 @@
     <QtMoc Include="include\LanguageManager.h" />
     <QtMoc Include="include\Data.h" />
     <ClInclude Include="include\httplib.h" />
+    <QtMoc Include="include\Path.h" />
     <ClInclude Include="include\utils.h" />
     <QtMoc Include="include\config.h" />
     <ClInclude Include="include\Logger.h" />

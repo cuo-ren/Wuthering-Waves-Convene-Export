@@ -2,8 +2,6 @@
     <qresource prefix="/qt/qml/wuthering waves convene export">
         <file>ui/main.qml</file>
         <file>ui/Header.qml</file>
-        <file>zh_CN.qm</file>
-        <file>en_US.qm</file>
         <file>language.json</file>
         <file>ui/BarChart.qml</file>
         <file>resource/favicon.ico</file>
@@ -11,5 +9,7 @@
         <file>ui/Loading.qml</file>
         <file>ui/MyButton.qml</file>
         <file>ui/SettingPopup.qml</file>
+        <file>translations/zh-Hans.qm</file>
+        <file>translations/zh-Hant.qm</file>
     </qresource>
 </RCC>

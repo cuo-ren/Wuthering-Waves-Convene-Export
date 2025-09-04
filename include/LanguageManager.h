@@ -39,7 +39,7 @@ public:
         return languageJson;
     }
 
-    Q_INVOKABLE void switchLanguage(const QString& lang) {
+    Q_INVOKABLE bool switchLanguage(const QString& lang) {
         if (translator) {
             app->removeTranslator(translator);
             delete translator;
@@ -47,12 +47,17 @@ public:
         }
         translator = new QTranslator;
 
-        QString file = QString(":/qt/qml/wuthering waves convene export/%1.qm").arg(lang);
+        QString file = QString(":/qt/qml/wuthering waves convene export/translations/%1.qm").arg(lang);
         if (translator->load(file)) {
             app->installTranslator(translator);
             ConfigManager::instance().set<std::string>("language", lang.toStdString());
             usedLang = lang.toStdString();
             if (engine) engine->retranslate();
+            return true;
+        }
+        else {
+            Notifier::instance().notify(3, tr("切换语言失败"));
+            return false;
         }
     }
 

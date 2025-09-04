@@ -10,6 +10,7 @@
 #include "Notifier.h"
 #include "LanguageManager.h"
 #include "Data.h"
+#include "Path.h"
 
 int main(int argc, char *argv[])
 {
@@ -36,9 +37,11 @@ int main(int argc, char *argv[])
     ConfigManager::instance();
     LanguageManager& langMgr = LanguageManager::instance();
     Data::instance();
+    Path::instance();
+
     //翻译模块
     QTranslator translator;
-    if (translator.load(":/qt/qml/wuthering waves convene export/zh_CN.qm")) {
+    if (translator.load(QString(":/qt/qml/wuthering waves convene export/translations/%1.qm").arg(QString::fromStdString(ConfigManager::instance().get<std::string>("language"))))) {
         app.installTranslator(&translator);
     }
     else {
@@ -53,6 +56,7 @@ int main(int argc, char *argv[])
     qmlRegisterSingletonInstance("Global", 1, 0, "Global", &Global::instance());
     qmlRegisterSingletonInstance("ConfigManager", 1, 0, "ConfigManager", &ConfigManager::instance());
     qmlRegisterSingletonInstance("Data", 1, 0, "Data", &Data::instance());
+    qmlRegisterSingletonInstance("Path", 1, 0, "Path", &Path::instance());
  
 
     engine.load(QUrl(QStringLiteral("qrc:/qt/qml/wuthering waves convene export/ui/main.qml")));

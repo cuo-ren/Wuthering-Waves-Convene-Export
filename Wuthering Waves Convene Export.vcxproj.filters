@@ -115,5 +115,8 @@
     <QtMoc Include="include\Data.h">
       <Filter>Header Files</Filter>
     </QtMoc>
+    <QtMoc Include="include\Path.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
   </ItemGroup>
 </Project>

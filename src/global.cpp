@@ -7,7 +7,7 @@ Global::Global(QObject* parent)
     qInfo().noquote() << "正在加载全局变量";
 
     // 初始化全局只读变量
-    m_supportLanguages = { "zh-Hans", "zh-Hant", "en" };
+    m_supportLanguages = { "zh-Hans", "zh-Hant", "en", "ja"};
 
     for (auto i : m_supportLanguages) {
         support_languages.push_back(i.toStdString());

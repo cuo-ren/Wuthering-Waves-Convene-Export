@@ -6,6 +6,7 @@ import Global
 import Notifier
 import LanguageManager
 import Data
+import Path
 
 Window {
     id: root
@@ -102,14 +103,30 @@ Window {
             hoverFillColor: "#409eff"
             hoverBorderColor: "#409eff"
 
+            property bool flag: false
+
             onClick: {
-                notificationModel.append({ "text": "测试文本", "duration": 3000, "color":"orange"})
-                //btn.disabled = true
-                //Data.update_data(1)
-                loading.visible = true
-                loadingImage.start()
+                if(flag){
+                    btn.disabled = true
+                    Data.update_data(1)
+                    loading.visible = true
+                    loadingImage.start()
+                }
+                else{
+                    console.log("查找游戏")
+                }
             }
-            usedText: qsTr("更新数据")
+
+            Component.onCompleted: {
+                if(Path.validatePath(ConfigManager.getValue("path"))){
+                    flag = true
+                }
+                else{
+                    flag = false
+                }
+            }
+
+            usedText: flag ? qsTr("更新数据") : qsTr("查找游戏")
         }
         MyButton{
             id: btn2
