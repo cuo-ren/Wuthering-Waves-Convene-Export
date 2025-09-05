@@ -1035,3 +1035,12 @@ void Data::onUpdateComplete(json merged_list, std::string uid) {
 	ConfigManager::instance().set<std::string>("active_uid", uid);
 	emit qUpdateComplete();
 }
+
+Q_INVOKABLE QStringList Data::getUidList() {
+	QStringList uid_list;
+
+	for (auto& [uid, value] : gacha_list.items()) {
+		uid_list.append(QString::fromStdString(uid));
+	}
+	return uid_list;
+}

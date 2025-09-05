@@ -219,6 +219,54 @@ Window {
             }
             usedText: qsTr("设置")
         }
+        ComboBox{
+            id: uidList
+            width: 150
+            height: 25
+
+            anchors.top: parent.top
+            anchors.right: settingbtn.left
+            anchors.topMargin: 5
+            anchors.rightMargin: 10
+
+            ListModel{
+                id: uidModel
+            }
+
+            textRole: "uid"
+            model: uidModel
+
+            onActivated:{
+                ConfigManager.setValue("active_uid",currentText)
+                console.log("切换uid为 " + currentText)
+                initButtonGroup()
+                if(myModel.count != 0){
+                    initData(myModel.get(0)["key"],myModel.get(0)["name"])
+                }
+            }
+
+            Component.onCompleted: {
+                uidModel.clear()
+                var uidlist = Data.getUidList()
+                for(var i = 0; i < uidlist.length; i++){
+                    uidModel.append({"uid": uidlist[i]})
+                }
+                if(uidlist.length == 0){
+                    if(ConfigManager.getValue("active_uid").length){
+                        console.log("切换uid为空")
+                        ConfigManager.setValue("active_uid","")
+                    }
+                    return
+                }
+                if(uidlist.includes(ConfigManager.getValue("active_uid"))){
+                    currentIndex = uidlist.indexOf(ConfigManager.getValue("active_uid"))
+                }else{
+                    currentIndex = 0
+                    ConfigManager.setValue("active_uid",uidlist[0])
+                }
+            }
+        }
+
         Item{
             id: loading
             visible: false
