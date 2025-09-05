@@ -35,6 +35,9 @@ Window {
         modal: false
         onRefresh: {
             initButtonGroup()
+            if(myModel.count != 0){
+                initData(myModel.get(0)["key"],myModel.get(0)["name"])
+            }
         }
         onGamePathChanged: {
             if(Path.validatePath(ConfigManager.getValue("path"))){
@@ -339,17 +342,21 @@ Window {
 
     Component.onCompleted:{
         initButtonGroup()
+        if(myModel.count != 0){
+            initData(myModel.get(0)["key"],myModel.get(0)["name"])
+        }
     }
 
     function initButtonGroup(){
         myModel.clear()
+
         var gacha_type = Global.gachaType
         for(var i = 0; i < gacha_type["data"].length; i++){
-            if(!gacha_type["data"][i]["skip"] || !ConfigManager.getValue("skip")){
+            var gacha_data = Data.getBarChartData(gacha_type["data"][i]["key"])
+            if(gacha_data.length != 0 && (!gacha_type["data"][i]["skip"] || !ConfigManager.getValue("skip"))){
                 myModel.append({"key":gacha_type["data"][i]["key"], "name":LanguageManager.getValue(gacha_type["data"][i]["name"])})
             }
         }
-        initData(myModel.get(0)["key"],myModel.get(0)["name"])
     }
 
     function initData(key,name){
@@ -363,6 +370,16 @@ Window {
     }
 
     function updateData(){
+        //重新加载
+        initButtonGroup()
+        if(myModel.count == 0){
+            //更新后还是无数据，之间返回
+            return
+        }
+        if(barChart.key == "0"){
+            //之前没数据但现在有了
+            initData(myModel.get(0)["key"],myModel.get(0)["name"])
+        }
         var gacha_data = Data.getBarChartData(barChart.key)
         for(var i = 0; i < gacha_data.length; i++){
             if(i>=barChart.gacha_data.count){
@@ -376,16 +393,16 @@ Window {
                 continue;
             }
             else{
-                    //最后一项
-                    barChart.gacha_data.setProperty(i,"source",Global.path +"/resource/" +gacha_data[i]["source"] + ".png")
-                    barChart.gacha_data.setProperty(i,"ItemName",gacha_data[i]["ItemName"])
-                    barChart.gacha_data.setProperty(i,"count",gacha_data[i]["count"])
-                    barChart.gacha_data.setProperty(i,"isOffTarget",gacha_data[i]["isOffTarget"])
-                    //如果有别的数据，清除
-                    for(var j = i + 1; j < barChart.gacha_data.count; j++){
-                        barChart.gacha_data.remove(i+1,1)
-                    }
-                    continue;
+                //最后一项
+                barChart.gacha_data.setProperty(i,"source",Global.path +"/resource/" +gacha_data[i]["source"] + ".png")
+                barChart.gacha_data.setProperty(i,"ItemName",gacha_data[i]["ItemName"])
+                barChart.gacha_data.setProperty(i,"count",gacha_data[i]["count"])
+                barChart.gacha_data.setProperty(i,"isOffTarget",gacha_data[i]["isOffTarget"])
+                //如果有别的数据，清除
+                for(var j = i + 1; j < barChart.gacha_data.count; j++){
+                    barChart.gacha_data.remove(i+1,1)
+                }
+                continue;
             }
         }
     }

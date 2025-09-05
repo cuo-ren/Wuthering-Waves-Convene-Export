@@ -176,7 +176,7 @@ void Data::trim_backup_files(const std::string& dir, int max_backup_count) {
 			try {
 				fs::path& file_to_delete = backups[i].second;
 				fs::remove(file_to_delete);
-				qInfo().noquote() << "清理备份文件成功:" << QString::fromStdString(file_to_delete.u8string());
+				qInfo().noquote() << "清理备份文件成功:" << QString::fromStdString(file_to_delete.u8string()).replace("\\", "/");
 			}
 			catch (const fs::filesystem_error& e) {
 				qWarning().noquote() << "清理备份文件失败 " << e.what();
@@ -506,6 +506,16 @@ Q_INVOKABLE QVariantList Data::getBarChartData(QString key) {
 		uid_list.push_back(uid);
 	}
 	std::string uid = ConfigManager::instance().get<std::string>("active_uid");
+
+	if (uid_list.size() == 0) {
+		//无数据
+		if (uid.length() != 0) {
+			ConfigManager::instance().set<std::string>("active_uid", "");
+			qDebug().noquote() << "active_uid变更为空";
+		}
+		return QVariantList();
+	}
+
 	if (uid.length() == 0 and uid_list.size() != 0) {
 		//没有活跃uid且存在uid，设置为第一个
 		uid = uid_list[0];
@@ -639,6 +649,7 @@ Q_INVOKABLE void Data::update_data(int mode, QString input_url) {
 				urls[uid]["lang"] = gacha_listCopy[uid]["info"]["lang"].get<std::string>();
 				new_gacha_list[uid]["info"]["lang"] = gacha_listCopy[uid]["info"]["lang"].get<std::string>();
 			}
+
 			//检测语言是否支持
 			std::vector<std::string> support_lang = Global::instance().get_support_languages();
 			if (std::find(support_lang.begin(), support_lang.end(), new_gacha_list[uid]["info"]["lang"].get<std::string>()) == support_lang.end()) {
