@@ -4,6 +4,7 @@ import QtQuick.Dialogs
 import ConfigManager 1.0
 import LanguageManager
 import Global
+import Path
 
 Popup {
     function updatePath(){
@@ -25,6 +26,7 @@ Popup {
             var path = ConfigManager.getValue("path")
             if(gameFolderSettingTextField.text != path){
                 ConfigManager.setValue("path", gameFolderSettingTextField.text)
+                settingsPopup.gamePathChanged()
             }
         }
     }
@@ -33,6 +35,8 @@ Popup {
     property int parentHeight: 0
     property int parentX: 0
     property int parentY: 0
+    signal refresh()
+    signal gamePathChanged()
 
     ListModel{
         id: myModel
@@ -168,6 +172,8 @@ Popup {
                                 var supportLanguages = Global.supportLanguages
                                 var usedLang = supportLanguages.indexOf(ConfigManager.getValue("language"))
                                 languageSettingCombobox.currentIndex = usedLang
+                            }else{
+                                settingsPopup.refresh()
                             }
                         }
                     }
@@ -207,17 +213,37 @@ Popup {
                             if(text != path){
                                 console.log("修改游戏路径设置 " + "当前设置 " + text)
                                 ConfigManager.setValue("path", text)
+                                settingsPopup.gamePathChanged()
                             }
                         }
                     }
 
                     // “...”按钮触发文件夹选择器
                     Button {
+                        id: gameFolderSettingOpenBtn
+                        height: 25
                         anchors.left: gameFolderSettingTextField.right
                         anchors.verticalCenter: parent.verticalCenter
-                        anchors.margins: 10
                         text: "..."
                         onClicked: folderDialog.open()
+                    }
+
+                    Button{
+                        id: gameFolderSettingFindBtn
+                        width: 90
+                        height: 35
+                        anchors.left: gameFolderSettingOpenBtn.right
+                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.margins: 10
+
+                        text: qsTr("自动查找")
+
+                        onClicked: {
+                            if(Path.FindGameLog()){
+                                settingsPopup.updatePath()
+                                settingsPopup.gamePathChanged()
+                            }
+                        }
                     }
                 }
 
@@ -271,6 +297,7 @@ Popup {
                             if(ConfigManager.getValue("skip") != checked){
                                 console.log("修改跳过一次性卡池设置 "+ "当前设置 " + checked)
                                 ConfigManager.setValue("skip",checked)
+                                settingsPopup.refresh()
                             }
                         }
                     }

@@ -2,6 +2,7 @@
 import QtQuick.Window 2.2
 import ConfigManager 1.0
 import QtQuick.Controls
+import QtQuick.Dialogs
 import Global
 import Notifier
 import LanguageManager
@@ -24,6 +25,7 @@ Window {
 
     ListModel { id: notificationModel }
     //设置窗口
+
     SettingPopup{
         id: popup
         parentWidth: root.width
@@ -31,6 +33,17 @@ Window {
         parentX: 0
         parentY: header.height
         modal: false
+        onRefresh: {
+            initButtonGroup()
+        }
+        onGamePathChanged: {
+            if(Path.validatePath(ConfigManager.getValue("path"))){
+                btn.flag = true
+            }
+            else{
+                btn.flag = false
+            }
+        }
     }
 
     // 通知容器（顶部居中）
@@ -61,6 +74,7 @@ Window {
             }
         }
     }
+
     Connections{
         target: Notifier;
         function onMessageOccurred(mode,message){
@@ -74,11 +88,36 @@ Window {
         }
     }
 
+    FolderDialog {
+        id: folderDialog
+        title: qsTr("选择文件夹")
+        onAccepted: {
+            var path = folderDialog.selectedFolder.toString().replace("file:///", "")
+            console.log("选择的文件夹:", path)
+            if(Path.validatePath(path)){
+                notificationModel.append({"text": qsTr("已定位到游戏日志"), "duration": 3000, "color":"green"})
+                ConfigManager.setValue("path", path)
+                popup.updatePath()
+            }else{
+                notificationModel.append({"text": qsTr("未定位到游戏日志"), "duration": 3000, "color":"orange"})
+            }
+        }
+    }
+
+    Image{
+        anchors.top: header.bottom
+        anchors.left: parent.left
+        width:parent.width
+        height:parent.height - header.height
+
+        source: "../resource/bg.jpg"
+    }
+
     Item{
         id: btnGroup
         Rectangle{
             anchors.fill:parent
-            color:"yellow"
+            color:"transparent"//color:"yellow"
         }
         anchors.top: header.bottom
         anchors.horizontalCenter: root.horizontalCenter
@@ -116,6 +155,8 @@ Window {
                     if(Path.FindGameLog()){
                         flag = true
                         popup.updatePath()
+                    }else{
+                        folderDialog.open()
                     }
                 }
             }
@@ -213,14 +254,14 @@ Window {
         height: root.height - header.height - btnGroup.height
         Rectangle{
             anchors.fill:parent
-            color:"lightblue"
+            color:"transparent"//color:"lightblue"
         }
         BarChart{
             id: barChart
             path: Global.path
             anchors.top: parent.top
             anchors.horizontalCenter: parent.horizontalCenter
-            height: parent.height - row.height
+            height: parent.height - row.height - 10
             width: contentWidth > parent.width ? parent.width : contentWidth
             chartClip: contentWidth > parent.width ? true : false
             //clip: true
@@ -232,11 +273,14 @@ Window {
 
         Row {
             //visible:false
-            anchors.top:barChart.bottom
-            anchors.horizontalCenter: barChart.horizontalCenter
             id: row
-            anchors.bottom:root.bottom
             property int lastclick: 0
+
+            //anchors.top:barChart.bottom
+            anchors.horizontalCenter: barChart.horizontalCenter
+            anchors.bottom: chartArea.bottom
+            anchors.margins: 10
+
             Repeater{
                 model: myModel
                 RadioButton {
@@ -260,7 +304,7 @@ Window {
         height: root.height - header.height
         Rectangle{
             anchors.fill:parent
-            color:"red"
+            color:"transparent"//color:"red"
         }
         anchors.left: root.left
         anchors.top: btnGroup.bottom
@@ -281,6 +325,7 @@ Window {
             updateData()
         }
         function onLogNotFound(){
+            notificationModel.append({ "text": qsTr("找不到游戏日志"), "duration": 3000, "color":"orange"})
             btn.disabled = false
             btn.flag = false
             loadingImage.stop()
@@ -293,6 +338,11 @@ Window {
     }
 
     Component.onCompleted:{
+        initButtonGroup()
+    }
+
+    function initButtonGroup(){
+        myModel.clear()
         var gacha_type = Global.gachaType
         for(var i = 0; i < gacha_type["data"].length; i++){
             if(!gacha_type["data"][i]["skip"] || !ConfigManager.getValue("skip")){

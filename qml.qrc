@@ -11,5 +11,6 @@
         <file>ui/SettingPopup.qml</file>
         <file>translations/zh-Hans.qm</file>
         <file>translations/zh-Hant.qm</file>
+        <file>resource/bg.jpg</file>
     </qresource>
 </RCC>

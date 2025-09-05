@@ -53,6 +53,7 @@ public:
 					json data;
 					ifs >> data;
 					if (data.contains("path")) {
+						Notifier::instance().notify(0, "查找游戏成功 " + QString::fromStdString(data["path"]));
 						ConfigManager::instance().set<std::string>("path", data["path"]);
 						return true;
 					}
@@ -71,6 +72,7 @@ public:
 
 		if (!std::filesystem::exists(fsPath) and !FindGamePath()) {
 			//配置文件中的不存在且找不到游戏路径
+			Notifier::instance().notify(3, "查找游戏失败");
 			return false;
 		}
 		else {

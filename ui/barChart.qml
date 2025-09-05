@@ -23,6 +23,67 @@ Item {
     }
     ListModel{
         id:myModel
+    }/*
+    function valueToColor(v) {
+        v = Math.max(0, Math.min(80, v));
+
+        let r, g, b;
+
+        if (v <= 40) {
+            // lightgreen → yellow
+            let t = v / 40;
+            r = lerp(144, 255, t);
+            g = lerp(238, 255, t);
+            b = lerp(144,   0, t);
+        } else if (v <= 65) {
+            // yellow → orange (#FFA500)
+            let t = (v - 40) / (65 - 40);
+            r = lerp(255, 255, t);
+            g = lerp(255, 165, t);
+            b = lerp(  0,   0, t);
+        } else {
+            // orange → red
+            let t = (v - 65) / (80 - 65);
+            r = lerp(255, 255, t);
+            g = lerp(165,   0, t);
+            b = lerp(  0,   0, t);
+        }
+
+        return Qt.rgba(r/255, g/255, b/255, 1);
+    }*/
+    // 输入 v: 0~80 任意值；40~80 做黄→红非线性
+    function valueToColor(v) {
+        // 关键：仅对 40~80 段做非线性映射
+        let r, g, b;
+
+        if (v <= 40) {
+            // lightgreen → yellow
+            let t = v / 40;
+            r = lerp(144, 255, t);
+            g = lerp(238, 255, t);
+            b = lerp(144,   0, t);
+            return Qt.rgba(r/255, g/255, b/255, 1);
+        } // lightgreen，可按需替换
+        if (v >= 80) return Qt.hsla(0/360,    1.0, 0.5, 1); // red
+
+        // 线性比例
+        const t = (v - 40) / 40;
+
+        // 指数形状函数：p≈1.48 让 v=65 时接近橙（H=30°）
+        const p = 1.48; // 可当作参数暴露出去
+        const u = Math.pow(t, p); // 变形后的比例
+
+        // HSL 插值：H 60°→0°，S/L 保持一致（可按需调）
+        const h0 = 60/360, h1 = 0/360;
+        const s = 1.0,     l = 0.5;
+
+        const h = h0 + (h1 - h0) * u;
+        return Qt.hsla(h, s, l, 1);
+    }
+
+
+    function lerp(a, b, t) {
+        return a + (b - a) * t;
     }
 
     Text {
@@ -123,7 +184,7 @@ Item {
                         target: countRect
                         property: "height"
                         from: 0
-                        to: count * (root.height - 130)/80
+                        to: count * (root.height - 30 - 10 - 12 - 10 - 10 - 50 - 5 - 12 - 30)/80
                         duration: 1000
                         easing.type: Easing.InOutCubic
                     }
@@ -158,7 +219,7 @@ Item {
                             anchors.horizontalCenter: parent.horizontalCenter
                             anchors.margins: 10
                             id: itemCount
-                            text: qsTr(animatedCount+"抽")
+                            text: qsTr(animatedCount + qsTr("抽"))
                         }
                         Rectangle{
                             id: countRect
@@ -166,8 +227,8 @@ Item {
                             anchors.horizontalCenter: parent.horizontalCenter
                             anchors.margins: 10
                             width: 8
-                            height: count * (root.height - 130)/80
-                            color: animatedCount < 40 ? "lightgreen" : animatedCount <= 60 ? "yellow" : "red"
+                            height: count * (root.height - 30 - 10 - 12 - 10 - 10 - 50 - 5 -12 - 30)/80
+                            color: chart.valueToColor(animatedCount)//animatedCount < 40 ? "lightgreen" : animatedCount <= 65 ? "yellow" : "red"
                             radius: width/2
                             Behavior on height{
                                 NumberAnimation {
@@ -180,11 +241,11 @@ Item {
                                     duration: 100
                                 }
                             }
-                            Behavior on color{
-                                ColorAnimation {
-                                    duration: 300
-                                }
-                            }
+                            //Behavior on color{
+                            //    ColorAnimation {
+                            //        duration: 300
+                            //    }
+                            //}
                         } 
                     }
 
