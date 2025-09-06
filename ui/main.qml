@@ -194,6 +194,7 @@ Window {
 
             onClick: {
                 btn2.disabled = true
+                Data.exportToExcel()
             }
             usedText: qsTr("导出数据")
         }
@@ -388,6 +389,10 @@ Window {
         }
         function onUidChanged(uid){
             uidList.initUidList(uid)
+        }
+        function onExportCompleted(){
+            btn2.disabled = false
+            Notifier.notify(0,"导出成功")
         }
     }
 

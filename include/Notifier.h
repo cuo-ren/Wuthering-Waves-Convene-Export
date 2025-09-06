@@ -12,7 +12,7 @@ public:
     Q_INVOKABLE void notify(int mode,const QString& message) {
         //0 成功 绿色 green
         //1 通知 蓝色 blue
-        //2 警告 黄色 yellow
+        //2 警告 黄色 orange
         //3 错误 红色 red
         emit messageOccurred(mode, message);
         qDebug().noquote() << QString::number(mode) << message;

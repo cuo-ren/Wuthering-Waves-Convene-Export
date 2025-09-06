@@ -7,6 +7,9 @@
 #include <QFuture>
 #define CPPHTTPLIB_OPENSSL_SUPPORT
 #include "httplib.h"
+#include <OpenXLSX.hpp>
+using namespace OpenXLSX;
+
 
 class Data : public QObject {
     Q_OBJECT
@@ -25,6 +28,7 @@ public:
     Q_INVOKABLE QVariantList getBarChartData(QString key);
     Q_INVOKABLE QStringList getUidList();
     Q_INVOKABLE void update_data(int mode, QString input_url = "");
+    Q_INVOKABLE void exportToExcel();
 
 signals:
     void prossessChanged(QString text);
@@ -33,6 +37,7 @@ signals:
     void wrongInput();
     void qUpdateComplete();
     void uidChanged(QString uid);
+    void exportCompleted();
 
 public slots:
     void onUpdateComplete(json merged_list, std::string uid);
@@ -41,6 +46,12 @@ private:
     json gacha_list;
     std::string file_path;
     std::string file_name;
+    struct ExcelStyles {
+        XLStyleIndex titleStyle;
+        XLStyleIndex star3Style;
+        XLStyleIndex star4Style;
+        XLStyleIndex star5Style;
+    };
 
     void initGachaList();
     json validate_data();
@@ -52,4 +63,5 @@ private:
     json get_gacha_data(const std::string cardPoolId, const std::string cardPoolType, const std::string playerId, const std::string recordId, const std::string serverId, const std::string lang, const std::string service_area);
     json get_gacha_data_retry(const std::string cardPoolId, const std::string cardPoolType, const std::string playerId, const std::string recordId, const std::string serverId, const std::string lang, const std::string service_area, int max_retry = 3);
     json merge(const std::string target_uid, json old_gacha_list, json new_gacha_list);
+    ExcelStyles create_styles(XLDocument& doc);
 };
