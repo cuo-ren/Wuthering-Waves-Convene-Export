@@ -511,6 +511,7 @@ Q_INVOKABLE QVariantList Data::getBarChartData(QString key) {
 		//无数据
 		if (uid.length() != 0) {
 			ConfigManager::instance().set<std::string>("active_uid", "");
+			emit uidChanged("");
 			qDebug().noquote() << "active_uid变更为空";
 		}
 		return QVariantList();
@@ -520,12 +521,14 @@ Q_INVOKABLE QVariantList Data::getBarChartData(QString key) {
 		//没有活跃uid且存在uid，设置为第一个
 		uid = uid_list[0];
 		ConfigManager::instance().set<std::string>("active_uid", uid);
+		emit uidChanged(QString::fromStdString(uid));
 		qDebug().noquote() << "active_uid变更为:" << QString::fromStdString(uid);
 	}
 	if (std::find(uid_list.begin(), uid_list.end(), uid) == uid_list.end() and uid_list.size() != 0) {
 		//活跃uid不在列表中
 		uid = uid_list[0];
 		ConfigManager::instance().set<std::string>("active_uid", uid);
+		emit uidChanged(QString::fromStdString(uid));
 		qDebug().noquote() << "active_uid变更为:" << QString::fromStdString(uid);
 	}
 
@@ -1033,6 +1036,7 @@ json Data::merge(const std::string target_uid, json old_gacha_list, json new_gac
 void Data::onUpdateComplete(json merged_list, std::string uid) {
 	gacha_list = merged_list;
 	ConfigManager::instance().set<std::string>("active_uid", uid);
+	emit uidChanged(QString::fromStdString(uid));
 	emit qUpdateComplete();
 }
 

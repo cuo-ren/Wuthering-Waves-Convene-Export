@@ -5,6 +5,7 @@ import ConfigManager 1.0
 import LanguageManager
 import Global
 import Path
+import Notifier
 
 Popup {
     function updatePath(){
@@ -364,6 +365,27 @@ Popup {
                         anchors.left: urlSettingText.right
                         anchors.verticalCenter: parent.verticalCenter
                         anchors.margins: 10
+
+                        text: qsTr("点击获取")
+
+                        TextInput{
+                            id: copyUrl
+                            width: 0
+                            height: 0
+                            clip: true
+                            visible: false
+                        }
+
+                        onClicked: {
+                            var urlList = ConfigManager.QgetUrlList()
+                            if(urlList.length == 1){
+                                copyUrl.text = urlList[0]
+                                copyUrl.cursorPosition = 0
+                                copyUrl.moveCursorSelection(urlList[0].length, TextInput.SelectCharacters)
+                                copyUrl.copy()
+                                Notifier.notify(0,qsTr("复制成功"))
+                            }
+                        }
                     }
                 }
 

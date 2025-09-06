@@ -119,8 +119,8 @@ public:
         emit configChanged(key, value);
     }
 
-    Q_INVOKABLE QVariantList QgetUrlList() {
-        QVariantList qurls;
+    Q_INVOKABLE QStringList QgetUrlList() {
+        QStringList qurls;
         for (auto url : config["url"]) {
             qurls.append(QString::fromStdString(url));
         }
