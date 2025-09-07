@@ -194,7 +194,7 @@ Window {
 
             onClick: {
                 btn2.disabled = true
-                Data.exportToExcel()
+                Data.exportToUIGF4(true)
             }
             usedText: qsTr("导出数据")
         }

@@ -35,6 +35,9 @@ public:
         return list;
     }
     json get_gacha_type_map();
+    json getInfo() {
+        return versions;
+    }
     QStringList supportLanguages() const { return m_supportLanguages; }
     QVariantMap version() const { return m_version; }
     QVariantMap gachaType() const { return m_gachaType; }

@@ -51,7 +51,6 @@ int main(int argc, char *argv[])
     QQmlApplicationEngine engine;
     langMgr.init(&engine, &app);
     qmlRegisterSingletonInstance("LanguageManager", 1, 0, "LanguageManager", &langMgr);
-
     qmlRegisterSingletonInstance("Notifier", 1, 0, "Notifier", &Notifier::instance());
     qmlRegisterSingletonInstance("Global", 1, 0, "Global", &Global::instance());
     qmlRegisterSingletonInstance("ConfigManager", 1, 0, "ConfigManager", &ConfigManager::instance());

@@ -94,7 +94,6 @@ std::string sha256_file_streaming(const std::string& filepath) {
 	return picosha2::bytes_to_hex_string(hash.begin(), hash.end());
 }
 
-
 std::string local_to_utf8(const std::string& gbk) {
 	UINT acp = GetConsoleOutputCP();
 	if (acp == CP_UTF8) {
@@ -198,7 +197,6 @@ json ReadJsonFile(const std::string& path) {
 	return data;
 }
 
-
 void WriteJsonFile(const std::string& path, const json& data) {
 	std::filesystem::path fsPath = std::filesystem::u8path(path);
 
@@ -227,7 +225,6 @@ void WriteJsonFile(const std::string& path, const json& data) {
 		Notifier::instance().notify(3, "文件写入发生未知错误");
 	}
 }
-
 
 void makedirs(const std::string& path) {
 	std::filesystem::path fsPath = std::filesystem::u8path(path);

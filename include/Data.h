@@ -29,6 +29,9 @@ public:
     Q_INVOKABLE QStringList getUidList();
     Q_INVOKABLE void update_data(int mode, QString input_url = "");
     Q_INVOKABLE void exportToExcel();
+    Q_INVOKABLE void exportToCsv();
+    Q_INVOKABLE void exportToUIGF3();
+    Q_INVOKABLE void exportToUIGF4(bool isTotal);
 
 signals:
     void prossessChanged(QString text);

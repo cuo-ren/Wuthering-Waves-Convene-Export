@@ -1213,3 +1213,202 @@ Data::ExcelStyles Data::create_styles(XLDocument& doc){
 
 	return { titleStyle, star3Style, star4Style, star5Style };
 }
+
+Q_INVOKABLE void Data::exportToCsv() {
+	makedirs("./export/csv");
+
+	QtConcurrent::run([this]() {
+		json gacha_type = Global::instance().get_gacha_type();
+		std::string uid = ConfigManager::instance().get<std::string>("active_uid");
+
+		std::time_t now = std::time(nullptr);
+		std::string filename = "./export/csv/" + LanguageManager::instance().getValue((std::string)"fileName") + "_" + uid + "_" + std::to_string(now) + ".csv";
+		std::filesystem::path fsPath = std::filesystem::u8path(filename);
+		
+		std::ofstream file(fsPath, std::ios::binary);
+		if (!file.is_open()) {
+			qCritical().noquote() << "文件打开失败! " << "path:" << QString::fromUtf8(filename);
+			Notifier::instance().notify(3, "文件创建失败! ");
+			return;
+		}
+
+		// 写入UTF-8 BOM
+		const unsigned char bom[] = { 0xEF, 0xBB, 0xBF };
+		file.write(reinterpret_cast<const char*>(bom), sizeof(bom));
+
+		// 写入表头
+		file << tr("卡池,时间,名称,类型,星级,总抽数,保底内抽数\n").toStdString();
+
+		for (auto& [key, items] : gacha_list[uid]["data"].items()) {
+			// 获取中文卡池名，默认使用 key
+			std::string pool_name = key;
+			for (const auto& t : gacha_type["data"]) {
+				if (t.contains("key") && t["key"] == key && t.contains("name")) {
+					pool_name = LanguageManager::instance().getValue(t["name"]);
+					break;
+				}
+			}
+
+			int total_count = 0;
+			int pity_count = 0;
+
+			for (const auto& item : items) {
+				++total_count;
+				++pity_count;
+
+				// 写入一行
+				file << pool_name << ','
+					<< item.value("time", "") << ','
+					<< item.value("name", "") << ','
+					<< item.value("type", "") << ','
+					<< item.value("qualityLevel", 0) << ','
+					<< total_count << ','
+					<< pity_count << '\n';
+
+				if (item.value("qualityLevel", 0) == 5) {
+					pity_count = 0; // 五星重置保底计数
+				}
+			}
+		}
+		emit exportCompleted();
+	});
+}
+
+Q_INVOKABLE void Data::exportToUIGF3() {
+	makedirs("./export/UIGFv3");
+
+	QtConcurrent::run([this]() {
+		json gacha_type = Global::instance().get_gacha_type();
+		std::string uid = ConfigManager::instance().get<std::string>("active_uid");
+
+		json uigf3;
+
+		uigf3["info"] = {
+			{"uid", uid},
+			{"lang", gacha_list[uid]["info"]["lang"]},
+			{"export_timestamp", get_timestamp()},
+			{"export_time", current_time_str()},
+			{"export_app", Global::instance().getInfo()["name"].get<std::string>() + ".exe"},
+			{"export_app_version", Global::instance().getInfo()["version"]},
+			{"uigf_version", "v3.0"},
+			{"region_time_zone", gacha_list[uid]["info"]["timezone"]}
+		};		
+
+		uigf3["list"] = json::array();
+
+		for (auto& [key, items] : gacha_list[uid]["data"].items()) {
+			// 找中文卡池名
+			std::string pool_name = key;
+
+			for (const auto& t : gacha_type["data"]) {
+				if (t.contains("key") && t["key"] == key && t.contains("name")) {
+					pool_name = LanguageManager::instance().getValue(t["name"]);
+					break;
+				}
+			}
+
+			for (const auto& item : items) {
+				uigf3["list"].push_back({
+					{"uigf_gacha_type", key},
+					{"gacha_type", key},
+					{"item_id", std::to_string(item.value("id", 0))},
+					{"count", "1"},
+					{"time", item.value("time", "")},
+					{"name", item.value("name", "")},
+					{"item_type", item.value("type", "")},
+					{"rank_type", std::to_string(item.value("qualityLevel", 0))},
+					{"id", std::to_string(item.value("id", 0))}
+					});
+			}
+		}
+
+		std::string filename = "./export/UIGFv3/UIGFv3_" + uid + "_" + std::to_string(uigf3["info"]["export_timestamp"].get<int>()) + ".json";
+		WriteJsonFile(filename, uigf3);
+
+		emit exportCompleted();
+	});
+}
+
+Q_INVOKABLE void Data::exportToUIGF4(bool isTotal) {
+	makedirs("./export/UIGFv4");
+
+	QtConcurrent::run([this, isTotal]() {
+		json gacha_type = Global::instance().get_gacha_type();
+		std::string uid = ConfigManager::instance().get<std::string>("active_uid");
+
+		json export_data = {
+			{"info", {
+				{"export_timestamp", get_timestamp()},
+				{"export_app", Global::instance().getInfo()["name"].get<std::string>() + ".exe"},
+				{"export_app_version", Global::instance().getInfo()["version"]},
+				{"version", "v4.0"}
+			}},
+			{"aki", json::array()}
+		};
+		if (isTotal) {
+			for (auto& [uid, values] : gacha_list.items()) {
+				json uid_entry = {
+					{"uid", uid},
+					{"timezone", gacha_list[uid]["info"]["timezone"]},
+					{"lang", gacha_list[uid]["info"]["lang"]},
+					{"list", json::array()}
+				};
+
+				// 这里没用 record_id 和 counter，它们没实际作用，可以忽略
+
+				for (auto& [key, items] : values["data"].items()) {
+					for (const auto& item : items) {
+						uid_entry["list"].push_back({
+							{"gacha_id", key},
+							{"gacha_type", key},
+							{"item_id", std::to_string(item.value("id", 0))},
+							{"count", "1"},
+							{"time", item.value("time", "")},
+							{"name", item.value("name", "")},
+							{"item_type", item.value("type", "")},
+							{"rank_type", std::to_string(item.value("qualityLevel", 0))},
+							{"id", std::to_string(item.value("id", 0))}
+							});
+					}
+				}
+
+				export_data["aki"].push_back(uid_entry);
+			}
+			std::string filename = "./export/UIGFv4/UIGFv4_" + std::to_string(export_data["info"]["export_timestamp"].get<int>()) + ".json";
+			WriteJsonFile(filename, export_data);
+		}
+		else {
+			std::string uid = ConfigManager::instance().get<std::string>("active_uid");
+			json uid_entry = {
+				{"uid", uid},
+				{"timezone", gacha_list[uid]["info"]["timezone"]},
+				{"lang", gacha_list[uid]["info"]["lang"]},
+				{"list", json::array()}
+			};
+
+			// 这里没用 record_id 和 counter，它们没实际作用，可以忽略
+
+			for (auto& [key, items] : gacha_list[uid]["data"].items()) {
+				for (const auto& item : items) {
+					uid_entry["list"].push_back({
+						{"gacha_id", key},
+						{"gacha_type", key},
+						{"item_id", std::to_string(item.value("id", 0))},
+						{"count", "1"},
+						{"time", item.value("time", "")},
+						{"name", item.value("name", "")},
+						{"item_type", item.value("type", "")},
+						{"rank_type", std::to_string(item.value("qualityLevel", 0))},
+						{"id", std::to_string(item.value("id", 0))}
+						});
+				}
+			}
+
+			export_data["aki"].push_back(uid_entry);
+
+			std::string filename = "./export/UIGFv4/UIGFv4_" + uid + "_" + std::to_string(export_data["info"]["export_timestamp"].get<int>()) + ".json";
+			WriteJsonFile(filename, export_data);
+		}
+		emit exportCompleted();
+	});
+}
