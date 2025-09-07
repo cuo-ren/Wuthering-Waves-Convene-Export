@@ -197,7 +197,7 @@ Item {
                     MouseArea{
                         anchors.fill: parent
                         hoverEnabled: true
-                        onEntered: countRect.width = 12
+                        onEntered: countRect.width = 16
                         onExited: countRect.width = 8
                     }
 

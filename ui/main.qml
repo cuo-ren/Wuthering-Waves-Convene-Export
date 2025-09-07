@@ -126,7 +126,7 @@ Window {
         anchors.horizontalCenter: root.horizontalCenter
 
         width: root.width
-        height: 65
+        height: 70
 
         MyButton{
             id: btn
@@ -135,8 +135,8 @@ Window {
 
             anchors.top: parent.top
             anchors.left:parent.left
-            anchors.topMargin: 5
-            anchors.leftMargin: 10
+            anchors.topMargin: 10
+            anchors.leftMargin: 20
 
             commonFillColor: "#ECF5FF"
             commonBorderColor: "#409eff"
@@ -182,7 +182,7 @@ Window {
 
             anchors.top: parent.top
             anchors.left: btn.right
-            anchors.topMargin: 5
+            anchors.topMargin: 10
             anchors.leftMargin: 10
 
             commonFillColor: "#F0F9EF"
@@ -205,8 +205,8 @@ Window {
 
             anchors.top: parent.top
             anchors.right: parent.right
-            anchors.topMargin: 5
-            anchors.rightMargin: 10
+            anchors.topMargin: 10
+            anchors.rightMargin: 20
 
             commonFillColor: "white"
             commonBorderColor: "grey"
@@ -227,8 +227,10 @@ Window {
 
             anchors.top: parent.top
             anchors.right: settingbtn.left
-            anchors.topMargin: 5
+            anchors.topMargin: 10
             anchors.rightMargin: 10
+
+            property string lastUid: ""
 
             ListModel{
                 id: uidModel
@@ -238,11 +240,14 @@ Window {
             model: uidModel
 
             onActivated:{
-                ConfigManager.setValue("active_uid",currentText)
-                console.log("切换uid为 " + currentText)
-                initButtonGroup()
-                if(myModel.count != 0){
-                    initData(myModel.get(0)["key"],myModel.get(0)["name"])
+                if(currentText != lastUid){
+                    lastUid = currentText
+                    ConfigManager.setValue("active_uid",currentText)
+                    console.log("切换uid为 " + currentText)
+                    initButtonGroup()
+                    if(myModel.count != 0){
+                        initData(myModel.get(0)["key"],myModel.get(0)["name"])
+                    }
                 }
             }
 
@@ -260,14 +265,17 @@ Window {
                     if(uid.length){
                         console.log("切换uid为空")
                         ConfigManager.setValue("active_uid","")
+                        lastUid = ""
                     }
                     return
                 }
                 if(uidlist.includes(uid)){
                     currentIndex = uidlist.indexOf(uid)
+                    lastUid = uid
                 }else{
                     currentIndex = 0
                     ConfigManager.setValue("active_uid",uidlist[0])
+                    lastUid = uidlist[0]
                 }
             }
         }

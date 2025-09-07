@@ -408,7 +408,7 @@ Popup {
                     //height: 60
                     //height: contentHeight
                     width: parent.width
-                    text: qsTr("作者: 氧化铜<br>Github: <a href = 'https://github.com/cuo-ren/Wuthering-Waves-Convene-Export' >github.com/cuo-ren/Wuthering-Waves-Convene-Export</a>")
+                    text: qsTr("作者: 氧化铜<br>版本：beta v3.0<br>Github: <a href = 'https://github.com/cuo-ren/Wuthering-Waves-Convene-Export' >github.com/cuo-ren/Wuthering-Waves-Convene-Export</a>")
                     anchors.left: parent.left
                     anchors.margins: 80
                     font.pixelSize: 12
