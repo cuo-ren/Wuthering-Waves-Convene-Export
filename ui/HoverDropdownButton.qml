@@ -10,6 +10,7 @@ Item {
 
     property alias text: label.text
     property alias iconSource: icon.source
+    property int pixelSize: 12
     property ListModel menuModel: ListModel {}
     signal clicked()
     signal triggered(int index, var item)
@@ -19,33 +20,31 @@ Item {
     property int padding: 12
 
     property color bgCommonColor: "#ffffff"
-    property color bgHoverColor: "#f2f3f5"
-    property color bgPressedColor: "#f2f3f5"
-    property color bgDisabledColor: "grey"
-
     property color borderCommonColor: "#e5e7eb"
-    property color borderHoverColor: "#d0d5dd"
-    property color borderPressedColor: "#d0d5dd"
-    property color borderDisabledColor: Qt.darker("grey")
-
     property color textCommonColor: "#1f2937"
-    property color textHoverColor: "#1f2937"
-    property color textPressedColor: "#1f2937"
-    property color textDisabledColor: "#1f2937"
-
     property color menuBgCommonColor: "#ffffff"
-    property color menuBgHoverColor: "#ffffff"
-    property color menuBgPressedColor: "#ffffff"
-    property color menuBgDisabledColor: "#ffffff"
-
     property color menuBorderCommonColor: "#e5e7eb"
-    property color menuBorderHoverColor: "#e5e7eb"
-    property color menuBorderPressedColor: "#e5e7eb"
-    property color menuBorderDisabledColor: "#e5e7eb"
-
     property color itemCommonColor: "transparent"
+
+    property color bgHoverColor: borderCommonColor
+    property color borderHoverColor: "#d0d5dd"
+    property color textHoverColor: "#1f2937"
+    property color menuBgHoverColor: menuBorderCommonColor
+    property color menuBorderHoverColor: "#e5e7eb"
     property color itemHoverColor: "#f3f4f6"
-    property color itemPressedColor: "#f3f4f6"
+
+    property color bgPressedColor: Qt.darker(borderCommonColor)
+    property color borderPressedColor: Qt.darker(borderCommonColor)
+    property color textPressedColor: textHoverColor
+    property color menuBgPressedColor: menuBorderCommonColor
+    property color menuBorderPressedColor: menuBorderCommonColor
+    property color itemPressedColor: Qt.darker(borderCommonColor)
+
+    property color bgDisabledColor: "grey"
+    property color borderDisabledColor: Qt.darker("grey")
+    property color textDisabledColor: "#1f2937"
+    property color menuBgDisabledColor: "#ffffff"
+    property color menuBorderDisabledColor: Qt.darker("grey")
     property color itemDisabledColor: "grey"
 
     property int menuRadius: 8
@@ -118,7 +117,7 @@ Item {
             }
         ]
 
-        state: root.disabled ? "disabled" : (!root.hovered ? "common" : root.pressed ? "pressed" : "hover")
+        state: root.disabled ? "disabled" : (!btnArea.containsMouse ? "common" : btnArea.containsPress ? "pressed" : "hover")
 
         Row {
             id: buttonRow
@@ -136,7 +135,7 @@ Item {
                 id: label
                 text: "Action"
                 color: root.textCommonColor
-                font.pixelSize: 14
+                font.pixelSize: root.pixelSize
                 verticalAlignment: Text.AlignVCenter
             }
         }
@@ -145,21 +144,23 @@ Item {
             anchors.fill: parent
             hoverEnabled: true
             cursorShape: containsMouse ? root.disabled ? Qt.ForbiddenCursor : Qt.PointingHandCursor:Qt.ArrowCursor
-            acceptedButtons: Qt.NoButton
+            onClicked: {
+                if(!root.disabled){
+                    root.clicked()
+                }
+            }
         }
     }
-
+/*
     TapHandler {
         acceptedButtons: Qt.LeftButton
         onPressedChanged: root.pressed = pressed
 
         onTapped: {
-            if(!root.disabled){
-                root.clicked()
-            }
+
         }
     }
-
+*/
     HoverHandler {
         onHoveredChanged: {
             root.hovered = hovered
@@ -236,44 +237,44 @@ Item {
                             name: "common"
                             PropertyChanges {
                                 target: itemRec
-                                color: itemCommonColor
+                                color: root.itemCommonColor
                             }
                             PropertyChanges {
                                 target: itemText
-                                color: textCommonColor
+                                color: root.textCommonColor
                             }
                         },
                         State {
                             name: "pressed"
                             PropertyChanges {
                                 target: itemRec
-                                color: itemPressedColor
+                                color: root.itemPressedColor
                             }
                             PropertyChanges {
                                 target: itemText
-                                color: textPressedColor
+                                color: root.textPressedColor
                             }
                         },
                         State {
                             name: "hover"
                             PropertyChanges {
                                 target: itemRec
-                                color: itemHoverColor
+                                color: root.itemHoverColor
                             }
                             PropertyChanges {
                                 target: itemText
-                                color: textHoverColor
+                                color: root.textHoverColor
                             }
                         },
                         State {
                             name: "disabled"
                             PropertyChanges {
                                 target: itemRec
-                                color: itemDisabledColor
+                                color: root.itemDisabledColor
                             }
                             PropertyChanges {
                                 target: itemText
-                                color: textDisabledColor
+                                color: root.textDisabledColor
                             }
                         }
                     ]
@@ -285,7 +286,7 @@ Item {
                         anchors.centerIn: parent
                         text: model.text
                         color: "#111827"
-                        font.pixelSize: 14
+                        font.pixelSize: root.pixelSize
                     }
 
                     MouseArea {

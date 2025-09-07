@@ -175,28 +175,57 @@ Window {
 
             usedText: flag ? qsTr("更新数据") : qsTr("查找游戏")
         }
-        MyButton{
+        HoverDropdownButton{
             id: btn2
             width: 100
             height: 40
+            radius: 5
+
+            menuItemHeight: 28
+            arrowSize: 8
+
+            text: qsTr("导出数据")
 
             anchors.top: parent.top
             anchors.left: btn.right
             anchors.topMargin: 10
             anchors.leftMargin: 10
 
-            commonFillColor: "#F0F9EF"
-            commonBorderColor: "#67c23a"
-            commonTextColor: "#67c23a"
+            bgCommonColor: "#F0F9EF"
+            borderCommonColor: "#67c23a"
+            textCommonColor: "#67c23a"
+            menuBgCommonColor: "#F0F9EF"
+            menuBorderCommonColor: "#67c23a"
 
-            hoverFillColor: "#67c23a"
-            hoverBorderColor: "#67c23a"
+            bgHoverColor: "#67c23a"
+            borderHoverColor: "#67c23a"
+            itemHoverColor:"#67c23a"
+            textHoverColor:"white"
 
-            onClick: {
-                btn2.disabled = true
-                Data.exportToUIGF4(true)
+            itemPressedColor:Qt.darker("#67c23a")
+
+            menuModel: ListModel {
+                ListElement { text: qsTr("导出为excel")}
+                ListElement { text: qsTr("导出为csv") }
+                ListElement { text: qsTr("导出为UIGF3") }
+                ListElement { text: qsTr("导出为UIGF4") }
             }
-            usedText: qsTr("导出数据")
+
+            onClicked: {
+                btn2.disabled = true
+                Data.exportToExcel()
+            }
+
+            onTriggered: function(index, item) {
+                btn2.disabled = true
+                switch(index){
+                    case 0:Data.exportToExcel();break;
+                    case 1:Data.exportToCsv();break;
+                    case 2:Data.exportToUIGF3();break;
+                    case 3:Data.exportToUIGF4(false);break;
+                }
+            }
+
         }
         MyButton{
             id: settingbtn

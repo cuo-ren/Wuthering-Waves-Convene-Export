@@ -12,5 +12,6 @@
         <file>translations/zh-Hans.qm</file>
         <file>translations/zh-Hant.qm</file>
         <file>resource/bg.jpg</file>
+        <file>ui/HoverDropdownButton.qml</file>
     </qresource>
 </RCC>

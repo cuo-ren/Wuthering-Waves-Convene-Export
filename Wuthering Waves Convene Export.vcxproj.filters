@@ -101,6 +101,9 @@
     <None Include="ui\SettingPopup.qml">
       <Filter>Resource Files\ui</Filter>
     </None>
+    <None Include="ui\HoverDropdownButton.qml">
+      <Filter>Resource Files\ui</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="include\config.h">
