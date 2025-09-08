@@ -127,5 +127,8 @@
     <QtMoc Include="include\update.h">
       <Filter>Header Files</Filter>
     </QtMoc>
+    <QtMoc Include="include\DownloadManager.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
   </ItemGroup>
 </Project>

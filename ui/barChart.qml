@@ -1,7 +1,7 @@
 import QtQuick
 //import Qt.labs.animation
 import QtQuick.Controls
-import Update
+import DownloadManager
 
 Item {
     id: chart
@@ -284,14 +284,14 @@ Item {
 
                                 onStatusChanged : {
                                     if(this.status == Image.Error){
-                                        Update.getImage(model.source)
+                                        DownloadManager.enqueue(model.source)
                                         this.source = path + "unknown.png"
                                     }
                                 }
                                 Connections {
-                                        target: Update
-                                        function onGetImageSuccessed(filename){
-                                            if (filename === model.source) {
+                                        target: DownloadManager
+                                        function onDownloadFinished(filename,code){
+                                            if (code && filename === model.source) {
                                                 previewImage.source = path + filename
                                             }
                                         }

@@ -122,6 +122,7 @@
     <QtMoc Include="include\Notifier.h" />
     <QtMoc Include="include\LanguageManager.h" />
     <QtMoc Include="include\Data.h" />
+    <QtMoc Include="include\DownloadManager.h" />
     <ClInclude Include="include\httplib.h" />
     <QtMoc Include="include\Path.h" />
     <QtMoc Include="include\update.h" />

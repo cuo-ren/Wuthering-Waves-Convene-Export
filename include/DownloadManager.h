@@ -1,61 +1,90 @@
 ﻿#pragma once
 #include <QObject>
+#include "Notifier.h"
 #include "config.h"
 #include <QtConcurrent/QtConcurrent>
 #include <QFuture>
+#include <queue>
 #define CPPHTTPLIB_OPENSSL_SUPPORT
 #include "httplib.h"
 
-class Update : public QObject {
-	Q_OBJECT
 
+class DownloadManager : public QObject {
+    Q_OBJECT
 public:
-	explicit Update(QObject* parent = nullptr)
-		: QObject(parent) {
-		;
-	}
+    static DownloadManager& instance() {
+        static DownloadManager inst;
+        return inst;
+    }
 
-	static Update& instance() {
-		static Update instance;  // C++11 线程安全懒加载
-		return instance;
-	}
+    Q_INVOKABLE void enqueue(const QString& fileName) {
+        qInfo() << "添加到任务列表 " << fileName;
+        QMutexLocker locker(&mutex);
+        tasks.push(fileName);
+        tryStartNext();
+    }
 
-	Q_INVOKABLE void getImage(QString fileName) {
-
-        QtConcurrent::run([this, fileName]() {
-            httplib::Client cli("https://raw.githubusercontent.com");
-            cli.set_read_timeout(10, 0);
-            std::string proxy = get_system_proxy();
-
-            if (!proxy.empty()) {
-                qDebug() << "设置了系统代理：" << QString::fromStdString(proxy);
-
-                auto r = parse_proxy(proxy);
-                qDebug() << "ip:" << r->first << "端口:" << r->second;
-                cli.set_proxy(r->first, r->second);
-            }
-
-            qInfo() << "开始下载文件 " + fileName;
-            auto res = cli.Get("/cuo-ren/Wuthering-Waves-Convene-Export/refs/heads/main/resource/" + fileName.toStdString());
-
-            if (res && res->status == 200) {
-                std::filesystem::path fsPath = std::filesystem::u8path(resourcePath + fileName.toStdString());
-                std::ofstream ofs(fsPath, std::ios::binary | std::ios::trunc);
-                ofs.write(res->body.data(), res->body.size());
-                ofs.close();
-                qInfo() << "下载完成";
-                emit getImageSuccessed(fileName);
-            }
-            else {
-                qWarning() << "下载失败: " << (res ? QString::fromStdString(std::to_string(res->status)) : "网络请求超时");
-            }
-        });
-	}
 signals:
-    void getImageSuccessed(QString fileName);
+    void downloadFinished(const QString& fileName, bool success);
 
 private:
-    std::string resourcePath = "./resource/";
+    DownloadManager() {}
+
+    void tryStartNext() {
+        if (activeCount >= maxConcurrent) return;
+        if (tasks.empty()) return;
+
+        QString fileName = tasks.front();
+        tasks.pop();
+        activeCount++;
+
+        QtConcurrent::run([this, fileName]() {
+            try {
+                bool success = downloadFile(fileName);
+
+                QMetaObject::invokeMethod(this, [this, fileName, success]() {
+                    emit downloadFinished(fileName, success);
+                    activeCount--;
+                    tryStartNext(); // 继续下一个
+                    }, Qt::QueuedConnection);
+            }
+            catch (std::exception& e) {
+                qCritical() << "线程崩溃 " << e.what();
+                Notifier::instance().notify(3, "线程崩溃 " + QString::fromStdString(e.what()));
+                QMetaObject::invokeMethod(this, [this, fileName]() {
+                    activeCount--;
+                    tryStartNext();
+                    }, Qt::QueuedConnection);
+            }
+        });
+    }
+
+    bool downloadFile(const QString& fileName) {
+        httplib::Client cli("https://raw.githubusercontent.com");
+        cli.set_read_timeout(10, 0);
+        std::string proxy = get_system_proxy();
+
+        if (!proxy.empty()) {
+            qDebug() << "设置了系统代理：" << QString::fromStdString(proxy);
+
+            auto r = parse_proxy(proxy);
+            qDebug() << "ip:" << r->first << "端口:" << r->second;
+            cli.set_proxy(r->first, r->second);
+        }
+
+        qInfo() << "开始下载文件 " + fileName;
+        auto res = cli.Get(("/cuo-ren/Wuthering-Waves-Convene-Export/refs/heads/main/resource/" + fileName.toStdString()).c_str());
+        if (res && res->status == 200) {
+            std::filesystem::path fsPath = std::filesystem::u8path(resourcePath + fileName.toStdString());
+            std::ofstream ofs(fsPath, std::ios::binary | std::ios::trunc);
+            ofs.write(res->body.data(), res->body.size());
+            qInfo() << "下载完成";
+            return true;
+        }
+        qWarning() << "下载失败: " << (res ? QString::fromStdString(std::to_string(res->status)) : "网络请求超时");
+        Notifier::instance().notify(3, "下载文件失败 " + (res ? QString::fromStdString(std::to_string(res->status)) : "网络请求超时"));
+        return false;
+    }
 
     std::string get_system_proxy() {
         HKEY hKey;
@@ -175,4 +204,10 @@ private:
             return {};
         }
     }
+    
+    std::string resourcePath = "./resource/";
+    std::queue<QString> tasks;
+    QMutex mutex;
+    int activeCount = 0;
+    const int maxConcurrent = 3;
 };

@@ -11,7 +11,7 @@
 #include "LanguageManager.h"
 #include "Data.h"
 #include "Path.h"
-#include "update.h"
+#include "DownloadManager.h"
 
 int main(int argc, char *argv[])
 {
@@ -39,7 +39,7 @@ int main(int argc, char *argv[])
     LanguageManager& langMgr = LanguageManager::instance();
     Data::instance();
     Path::instance();
-    Update::instance();
+    DownloadManager::instance();
 
     //翻译模块
     QTranslator translator;
@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
     qmlRegisterSingletonInstance("ConfigManager", 1, 0, "ConfigManager", &ConfigManager::instance());
     qmlRegisterSingletonInstance("Data", 1, 0, "Data", &Data::instance());
     qmlRegisterSingletonInstance("Path", 1, 0, "Path", &Path::instance());
-    qmlRegisterSingletonInstance("Update", 1, 0, "Update", &Update::instance());
+    qmlRegisterSingletonInstance("DownloadManager", 1, 0, "DownloadManager", &DownloadManager::instance());
  
 
     engine.load(QUrl(QStringLiteral("qrc:/qt/qml/wuthering waves convene export/ui/main.qml")));
