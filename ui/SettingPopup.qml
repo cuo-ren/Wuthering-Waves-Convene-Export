@@ -17,6 +17,13 @@ Popup {
         anchors.fill: parent
         onClicked: focus = true
     }
+    Image{
+        anchors.fill:parent
+        width:parent.width
+        height:parent.height - header.height
+
+        source: "../resource/bg.jpg"
+    }
     FolderDialog {
         id: folderDialog
         title: qsTr("选择文件夹")
@@ -38,6 +45,8 @@ Popup {
     property int parentY: 0
     signal refresh()
     signal gamePathChanged()
+
+    padding: 0
 
     ListModel{
         id: myModel
@@ -103,14 +112,74 @@ Popup {
                 anchors.left: parent.left
                 anchors.margins: 10
             }
-            Button{
-                id: closeBtn
-                width: 20
-                height: 20
+
+            Item{
+                //关闭按钮
+                id: closeButton
+                width: 30
+                height: 30
                 anchors.right:parent.right
                 anchors.margins: 10
-                onClicked: settingsPopup.close()
+
+                Rectangle {
+                    id: closehoverOverlay
+                    anchors.fill: parent
+                    radius: width / 2
+                    color: "black"//"#00000033"  // 半透明黑色
+                    opacity:0.3
+                    visible: false
+                }
+
+                Image{
+                    id:closeButtonImage
+                    anchors.fill:parent
+                    source: "../resource/closebtn.svg"
+                    fillMode: Image.PreserveAspectFit
+
+                    transformOrigin: Item.Center
+                    property int targetRotation: 0
+                    property bool isAnimating: false
+
+                    RotationAnimation {
+                        id: closeButtonrotateAnim
+                        target: closeButtonImage
+                        property: "rotation"
+                        duration: 200
+                        onStarted: closeButtonImage.isAnimating = true
+                        onStopped: {
+                            closeButtonImage.isAnimating = false
+
+                            // 自动对齐到最近的整90°
+                            let snapped = Math.round(closeButtonImage.rotation / 90) * 90
+                            closeButtonImage.rotation = snapped
+                            closeButtonImage.targetRotation = snapped
+                        }
+                    }
+                }
+
+                MouseArea{
+                    anchors.fill:parent
+                    hoverEnabled: true
+                    onClicked: {settingsPopup.close()}
+                    onEntered: {
+                        closehoverOverlay.visible = true
+                        closeButtonImage.targetRotation += 90
+                        closeButtonrotateAnim.from = closeButtonImage.rotation
+                        closeButtonrotateAnim.to = closeButtonImage.targetRotation
+                        closeButtonrotateAnim.start()
+                    }
+                    onExited: {
+                        closehoverOverlay.visible = false
+                        closeButtonImage.targetRotation += 90
+                        closeButtonrotateAnim.from = closeButtonImage.rotation
+                        closeButtonrotateAnim.to = closeButtonImage.targetRotation
+                        closeButtonrotateAnim.start()
+                    }
+                    onPressed: closehoverOverlay.opacity = 0.2
+                    onReleased: closehoverOverlay.opacity = 0.3
+                }
             }
+
         }
         //分割线
 
@@ -119,7 +188,6 @@ Popup {
             height:1
             color:"lightgrey"
         }
-
 
         //设置主体
         Flickable{
@@ -160,26 +228,50 @@ Popup {
                         anchors.verticalCenter: parent.verticalCenter
                         anchors.left: parent.left
                     }
-                    ComboBox{
+                    MyComboBox{
                         id: languageSettingCombobox
+                        height: 25
                         model: myModel
                         textRole: "name"
                         anchors.left:languageSettingText.right
                         anchors.margins: 10
                         anchors.verticalCenter: parent.verticalCenter
+
+                        property string lastText: ""
+
+                        borderCommonColor: "grey"
+                        borderPressedColor: "darkgrey"
+
+                        canvasCommonColor: "grey"
+                        canvasPressedColor: "darkgrey"
+
+                        textCommonColor: "black"
+                        textPressedColor: "black"
+
+                        popupColor: "lightgrey"
+                        popupBorderColor: "grey"
+
+                        highlightColor: "grey"
+                        commonColor: "transparent"
+
+                        optionsTextCommonColor: textCommonColor
+                        optionsTextPressedColor: textPressedColor
+
                         onActivated:{
-                            console.log("修改当前语言设置 " + "当前语言 " + currentText)
-                            if(!LanguageManager.switchLanguage(myModel.get(currentIndex).key)){
-                                var supportLanguages = Global.supportLanguages
-                                var usedLang = supportLanguages.indexOf(ConfigManager.getValue("language"))
-                                languageSettingCombobox.currentIndex = usedLang
-                            }else{
-                                settingsPopup.refresh()
+                            if(currentText != lastText){
+                                lastText = currentText
+                                console.log("修改当前语言设置 " + "当前语言 " + currentText)
+                                if(!LanguageManager.switchLanguage(myModel.get(currentIndex).key)){
+                                    var supportLanguages = Global.supportLanguages
+                                    var usedLang = supportLanguages.indexOf(ConfigManager.getValue("language"))
+                                    languageSettingCombobox.currentIndex = usedLang
+                                }else{
+                                    settingsPopup.refresh()
+                                }
                             }
                         }
                     }
                 }
-
 
                 Item {
                     id: gameFolderSetting
@@ -198,7 +290,7 @@ Popup {
 
                         anchors.left: parent.left
                     }
-                    TextField {
+                    MyTextField {
                         id: gameFolderSettingTextField
                         height: 25
                         anchors.left: gameFolderSettingText.right
@@ -208,6 +300,16 @@ Popup {
                         placeholderText: qsTr("请输入或选择文件夹路径")
                         verticalAlignment:  Text.AlignVCenter
                         leftPadding: 5
+
+                        selectionColor: "grey"
+                        selectedTextColor: "white"
+
+                        background: Rectangle {
+                            implicitWidth: 200
+                            implicitHeight: 40
+                            color: gameFolderSettingTextField.enabled ? "transparent" : "#353637"
+                            border.color: gameFolderSettingTextField.enabled ? "darkgrey" : "transparent"
+                        }
 
                         onEditingFinished: {
                             var path = ConfigManager.getValue("path")
@@ -223,6 +325,7 @@ Popup {
                     Button {
                         id: gameFolderSettingOpenBtn
                         height: 25
+                        width: 20
                         anchors.left: gameFolderSettingTextField.right
                         anchors.verticalCenter: parent.verticalCenter
                         text: "..."
@@ -408,7 +511,7 @@ Popup {
                     //height: 60
                     //height: contentHeight
                     width: parent.width
-                    text: qsTr("作者: 氧化铜<br>版本：beta v3.0<br>Github: <a href = 'https://github.com/cuo-ren/Wuthering-Waves-Convene-Export' >github.com/cuo-ren/Wuthering-Waves-Convene-Export</a>")
+                    text: qsTr("作者：氧化铜<br>版本：%1<br>Github：<a href = 'https://github.com/cuo-ren/Wuthering-Waves-Convene-Export' >github.com/cuo-ren/Wuthering-Waves-Convene-Export</a>").arg(Global.version["version"])
                     anchors.left: parent.left
                     anchors.margins: 80
                     font.pixelSize: 12

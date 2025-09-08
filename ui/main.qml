@@ -249,7 +249,7 @@ Window {
             }
             usedText: qsTr("设置")
         }
-        ComboBox{
+        MyComboBox{
             id: uidList
             width: 150
             height: 25
@@ -259,6 +259,20 @@ Window {
             anchors.topMargin: 10
             anchors.rightMargin: 10
 
+            borderCommonColor: "grey"
+            borderPressedColor: "darkgrey"
+
+            canvasCommonColor: "grey"
+            canvasPressedColor: "darkgrey"
+
+            textCommonColor: "black"
+            textPressedColor: "black"
+
+            popupColor: "lightgrey"
+            popupBorderColor: "grey"
+
+            highlightColor: "grey"
+            commonColor: "transparent"
             property string lastUid: ""
 
             ListModel{

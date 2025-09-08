@@ -7,6 +7,11 @@ Item {
     
     required property url path
 
+    Rectangle{
+        anchors.fill: parent
+        color:"lightgrey"
+    }
+
     Text {
         id: title
         text: qsTr("鸣潮唤取记录导出分析工具")
@@ -38,7 +43,7 @@ Item {
         Image{
             id:closeButtonImage
             anchors.fill:parent
-            source: path + "/resource/closebtn.svg"
+            source: "../resource/closebtn.svg"
             fillMode: Image.PreserveAspectFit
 
             transformOrigin: Item.Center
@@ -106,7 +111,7 @@ Item {
         Image{
             id: minimizedButtonImage
             anchors.fill:parent
-            source: path + "/resource/minimized.svg"
+            source: "../resource/minimized.svg"
             fillMode: Image.PreserveAspectFit
         }
 

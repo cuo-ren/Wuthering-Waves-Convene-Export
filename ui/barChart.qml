@@ -269,7 +269,7 @@ Item {
                             anchors.horizontalCenter: parent.horizontalCenter
 
                             visible: !hiddenImage
-                            source: path + "background5.png"
+                            source: "../resource/background5.png"
 
                             Image {
                                 id: previewImage

@@ -104,6 +104,12 @@
     <None Include="ui\HoverDropdownButton.qml">
       <Filter>Resource Files\ui</Filter>
     </None>
+    <None Include="ui\MyTextField.qml">
+      <Filter>Resource Files\ui</Filter>
+    </None>
+    <None Include="ui\MyComboBox.qml">
+      <Filter>Resource Files\ui</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="include\config.h">

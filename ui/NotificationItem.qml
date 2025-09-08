@@ -53,7 +53,7 @@ Item {
             }
             Image {
                 id: closebtn
-                source: path + "/resource/closebtn.svg"
+                source: "../resource/closebtn.svg"
                 anchors.fill: parent
                 anchors.margins: 7
             }

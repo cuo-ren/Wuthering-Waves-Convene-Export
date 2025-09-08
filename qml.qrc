@@ -13,5 +13,10 @@
         <file>translations/zh-Hant.qm</file>
         <file>resource/bg.jpg</file>
         <file>ui/HoverDropdownButton.qml</file>
+        <file>resource/closebtn.svg</file>
+        <file>resource/minimized.svg</file>
+        <file>resource/background5.png</file>
+        <file>ui/MyTextField.qml</file>
+        <file>ui/MyComboBox.qml</file>
     </qresource>
 </RCC>

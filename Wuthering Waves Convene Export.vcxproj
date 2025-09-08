@@ -151,6 +151,8 @@
     <None Include="ui\Loading.qml" />
     <None Include="ui\main.qml" />
     <None Include="ui\MyButton.qml" />
+    <None Include="ui\MyComboBox.qml" />
+    <None Include="ui\MyTextField.qml" />
     <None Include="ui\NotificationItem.qml" />
     <None Include="ui\SettingPopup.qml" />
   </ItemGroup>
