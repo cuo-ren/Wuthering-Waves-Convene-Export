@@ -351,7 +351,7 @@ Window {
         }
         BarChart{
             id: barChart
-            path: Global.path
+            path: Global.path + "/resource/"
             anchors.top: parent.top
             anchors.horizontalCenter: parent.horizontalCenter
             height: parent.height - row.height - 10
@@ -462,7 +462,7 @@ Window {
         barChart.chartTitle = name
         var gacha_data = Data.getBarChartData(key)
         for(var i = 0; i < gacha_data.length; i++){
-            barChart.gacha_data.append({"ItemName":gacha_data[i]["ItemName"],"source":Global.path +"/resource/" +gacha_data[i]["source"] + ".png","count":gacha_data[i]["count"],"isOffTarget":gacha_data[i]["isOffTarget"]})
+            barChart.gacha_data.append({"ItemName":gacha_data[i]["ItemName"],"source":gacha_data[i]["source"] + ".png","count":gacha_data[i]["count"],"isOffTarget":gacha_data[i]["isOffTarget"]})
         }
     }
 
@@ -481,17 +481,17 @@ Window {
         for(var i = 0; i < gacha_data.length; i++){
             if(i>=barChart.gacha_data.count){
                 //多余部分
-                barChart.gacha_data.append({"ItemName":gacha_data[i]["ItemName"],"source":Global.path +"/resource/" +gacha_data[i]["source"] + ".png","count":gacha_data[i]["count"],"isOffTarget":gacha_data[i]["isOffTarget"]})
+                barChart.gacha_data.append({"ItemName":gacha_data[i]["ItemName"],"source":gacha_data[i]["source"] + ".png","count":gacha_data[i]["count"],"isOffTarget":gacha_data[i]["isOffTarget"]})
                 continue;
             }
             var item = barChart.gacha_data.get(i)
             //全部相等，继续遍历
-            if(item.ItemName == gacha_data[i]["ItemName"] && item.source == Global.path +"/resource/" +gacha_data[i]["source"] + ".png" && item.count == gacha_data[i]["count"] && item.isOffTarget == gacha_data[i]["isOffTarget"]){
+            if(item.ItemName == gacha_data[i]["ItemName"] && item.source == gacha_data[i]["source"] + ".png" && item.count == gacha_data[i]["count"] && item.isOffTarget == gacha_data[i]["isOffTarget"]){
                 continue;
             }
             else{
                 //最后一项
-                barChart.gacha_data.setProperty(i,"source",Global.path +"/resource/" +gacha_data[i]["source"] + ".png")
+                barChart.gacha_data.setProperty(i,"source",gacha_data[i]["source"] + ".png")
                 barChart.gacha_data.setProperty(i,"ItemName",gacha_data[i]["ItemName"])
                 barChart.gacha_data.setProperty(i,"count",gacha_data[i]["count"])
                 barChart.gacha_data.setProperty(i,"isOffTarget",gacha_data[i]["isOffTarget"])

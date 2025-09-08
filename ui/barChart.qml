@@ -1,6 +1,7 @@
 import QtQuick
 //import Qt.labs.animation
 import QtQuick.Controls
+import Update
 
 Item {
     id: chart
@@ -9,7 +10,7 @@ Item {
     visible: true
 
     property alias gacha_data: myModel
-    required property url path
+    required property url path//资源路径
     property string chartTitle: qsTr("卡池名称")
     property string key: "0"
     property alias contentWidth: root.contentWidth
@@ -206,7 +207,7 @@ Item {
                         anchors.horizontalCenter: parent.horizontalCenter
                         Image {
                             id: name
-                            source: path + "/resource/" + "wai.png"
+                            source: path + "wai.png"
                             anchors.bottom: itemCount.top
                             anchors.horizontalCenter: parent.horizontalCenter
                             anchors.margins: 10
@@ -268,11 +269,11 @@ Item {
                             anchors.horizontalCenter: parent.horizontalCenter
 
                             visible: !hiddenImage
-                            source: path + "/resource/background5.png"
+                            source: path + "background5.png"
 
                             Image {
                                 id: previewImage
-                                source: model.source
+                                source: path + model.source
 
                                 anchors.fill: parent
 
@@ -283,9 +284,18 @@ Item {
 
                                 onStatusChanged : {
                                     if(this.status == Image.Error){
-                                        this.source = path + "/resource/" + "unknown.png"
+                                        Update.getImage(model.source)
+                                        this.source = path + "unknown.png"
                                     }
                                 }
+                                Connections {
+                                        target: Update
+                                        function onGetImageSuccessed(filename){
+                                            if (filename === model.source) {
+                                                previewImage.source = path + filename
+                                            }
+                                        }
+                                    }
                             }
                         }
                         Text {
