@@ -19,5 +19,7 @@
         <file>ui/MyTextField.qml</file>
         <file>ui/MyComboBox.qml</file>
         <file>ui/TextInputPopup.qml</file>
+        <file>resource/unknown.png</file>
+        <file>resource/wai.png</file>
     </qresource>
 </RCC>

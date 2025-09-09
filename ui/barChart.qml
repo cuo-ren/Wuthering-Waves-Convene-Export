@@ -207,7 +207,7 @@ Item {
                         anchors.horizontalCenter: parent.horizontalCenter
                         Image {
                             id: name
-                            source: path + "wai.png"
+                            source: "../resource/wai.png"
                             anchors.bottom: itemCount.top
                             anchors.horizontalCenter: parent.horizontalCenter
                             anchors.margins: 10
@@ -285,7 +285,7 @@ Item {
                                 onStatusChanged : {
                                     if(this.status == Image.Error){
                                         DownloadManager.enqueue(model.source)
-                                        this.source = path + "unknown.png"
+                                        this.source = "../resource/unknown.png"
                                     }
                                 }
                                 Connections {
