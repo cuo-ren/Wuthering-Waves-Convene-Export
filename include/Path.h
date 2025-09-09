@@ -67,7 +67,7 @@ public:
 		return false;
 	}
 
-	Q_INVOKABLE QVariant FindGameLog() {
+	Q_INVOKABLE QVariant findGameLog() {
 		std::filesystem::path fsPath = std::filesystem::u8path(ConfigManager::instance().get<std::string>("path") + "/Client/Saved/Logs/Client.log");
 
 		if (!std::filesystem::exists(fsPath) and !findGamePath()) {

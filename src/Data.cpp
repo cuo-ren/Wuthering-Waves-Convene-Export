@@ -571,24 +571,24 @@ Q_INVOKABLE QVariantList Data::getBarChartData(QString key) {
 
 Q_INVOKABLE void Data::update_data(int mode, QString input_url) {
 	qInfo().noquote() << "准备更新数据";
-	qInfo().noquote() << "正在检测游戏日志";
-	std::string logPath = ConfigManager::instance().get<std::string>("path") + "/Client/Saved/Logs/Client.log";
-	std::filesystem::path fsPath = std::filesystem::u8path(logPath);
-
-	if(!std::filesystem::exists(fsPath)) {
-		qWarning().noquote() << "游戏目录错误：" << QString::fromStdString(ConfigManager::instance().get<std::string>("path") + "/Client/Saved/Logs/Client.log");
-		emit logNotFound();
-		return;
-	}
-	else {
-		qDebug().noquote() << "成功检测日志目录";
-	}
 	
 	QtConcurrent::run([this, mode, input_url]() {
 		try {
 			json gacha_listCopy = gacha_list;
 			json urls = json::object();
 			if (mode == 1) {
+				qInfo().noquote() << "正在检测游戏日志";
+				std::string logPath = ConfigManager::instance().get<std::string>("path") + "/Client/Saved/Logs/Client.log";
+				std::filesystem::path fsPath = std::filesystem::u8path(logPath);
+
+				if (!std::filesystem::exists(fsPath)) {
+					qWarning().noquote() << "游戏目录错误：" << QString::fromStdString(ConfigManager::instance().get<std::string>("path") + "/Client/Saved/Logs/Client.log");
+					emit logNotFound();
+					return;
+				}
+				else {
+					qDebug().noquote() << "成功检测日志目录";
+				}
 				//使用日志文件
 				urls = findGachaUrls();
 				//未找到url

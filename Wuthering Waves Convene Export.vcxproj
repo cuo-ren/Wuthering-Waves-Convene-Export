@@ -155,6 +155,7 @@
     <None Include="ui\MyTextField.qml" />
     <None Include="ui\NotificationItem.qml" />
     <None Include="ui\SettingPopup.qml" />
+    <None Include="ui\TextInputPopup.qml" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">

@@ -315,7 +315,11 @@ Item {
     Timer {
         id: openTimer
         interval: 80; repeat: false
-        onTriggered: if (root.hovered && !menuPopup.opened) menuPopup.open()
+        onTriggered: {
+            if (root.hovered && !menuPopup.opened && root.menuModel.count > 0) {
+                menuPopup.open()
+            }
+        }
     }
 
     Timer {

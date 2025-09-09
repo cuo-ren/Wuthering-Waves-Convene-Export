@@ -297,7 +297,7 @@ Popup {
                         anchors.verticalCenter: parent.verticalCenter
                         anchors.margins: 10
                         width: 300
-                        placeholderText: qsTr("请输入或选择文件夹路径")
+                        placeholderText: qsTr("请输入或选择游戏文件夹路径")
                         verticalAlignment:  Text.AlignVCenter
                         leftPadding: 5
 
@@ -343,7 +343,7 @@ Popup {
                         text: qsTr("自动查找")
 
                         onClicked: {
-                            if(Path.FindGameLog()){
+                            if(Path.findGameLog()){
                                 settingsPopup.updatePath()
                                 settingsPopup.gamePathChanged()
                             }
@@ -481,7 +481,10 @@ Popup {
 
                         onClicked: {
                             var urlList = ConfigManager.QgetUrlList()
-                            if(urlList.length == 1){
+                            if(urlList.length == 0){
+                                Notifier.notify(2,qsTr("暂无url"))
+                            }
+                            else if(urlList.length == 1){
                                 copyUrl.text = urlList[0]
                                 copyUrl.cursorPosition = 0
                                 copyUrl.moveCursorSelection(urlList[0].length, TextInput.SelectCharacters)

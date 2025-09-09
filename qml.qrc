@@ -18,5 +18,6 @@
         <file>resource/background5.png</file>
         <file>ui/MyTextField.qml</file>
         <file>ui/MyComboBox.qml</file>
+        <file>ui/TextInputPopup.qml</file>
     </qresource>
 </RCC>
