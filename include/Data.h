@@ -39,8 +39,10 @@ signals:
     void updateComplete(json merged_list, std::string uid);
     void wrongInput();
     void qUpdateComplete();
+    void updateFail();
     void uidChanged(QString uid);
     void exportCompleted();
+    void exportFail();
 
 public slots:
     void onUpdateComplete(json merged_list, std::string uid);

@@ -585,165 +585,173 @@ Q_INVOKABLE void Data::update_data(int mode, QString input_url) {
 	}
 	
 	QtConcurrent::run([this, mode, input_url]() {
-		json gacha_listCopy = gacha_list;
-		json urls = json::object();
-		if (mode == 1) {
-			//使用日志文件
-			urls = findGachaUrls();
-			//未找到url
-			if (urls.size() == 0) {
-				Notifier::instance().notify(2, tr("未找到url"));
-				emit qUpdateComplete();
-				return;
-			}
-		}
-		else if (mode == 2) {
-			std::string url = input_url.toStdString();
-			try {
-				std::map<std::string, std::string> params_dict = get_params(url);
-				//判断url是否有效
-				std::vector<std::string> required_keys = {
-					"svr_id",  "record_id", "resources_id","lang","player_id"
-				};
-				for (auto& key : required_keys) {
-					if (params_dict.count(key) == 0) {
-						qWarning().noquote() << "输入的url有误:" << input_url;
-						emit wrongInput();
-						return;
-					}
+		try {
+			json gacha_listCopy = gacha_list;
+			json urls = json::object();
+			if (mode == 1) {
+				//使用日志文件
+				urls = findGachaUrls();
+				//未找到url
+				if (urls.size() == 0) {
+					Notifier::instance().notify(2, tr("未找到url"));
+					emit qUpdateComplete();
+					return;
 				}
-
-				urls[params_dict["player_id"]] = {
-						{"url", url},
-						{"svr_id", params_dict["svr_id"]},
-						{"lang", params_dict["lang"]},
-						{"svr_area", params_dict["svr_area"]},
-						{"record_id", params_dict["record_id"]},
-						{"resources_id", params_dict["resources_id"]},
-						{"platform", params_dict["platform"]}
-				};
-				std::vector<std::string> temp;
-				temp.push_back(urls[params_dict["player_id"]]["url"]);
-				ConfigManager::instance().setUrlList(temp);
 			}
-			catch (const std::exception& e) {
-				qWarning().noquote() << "输入的url解析失败:" << input_url;
-				return;
-			}
-		}
-		//更新逻辑
-		json new_gacha_list = json::object();
-		//卡池配置文件
-		json gacha_type = Global::instance().get_gacha_type();
-		std::string last_uid;
-		//对每一个url更新数据
-		for (auto& [uid, params] : urls.items()) {
-			//新建uid字段
-			new_gacha_list[uid] = json::object();
-			qDebug().noquote() << "正在获取数据:" << QString::fromStdString(uid);
-			emit prossessChanged(tr("正在获取数据:") + QString::fromStdString(uid));
-			//新建info
-			new_gacha_list[uid]["info"] = json{ {"lang",urls[uid]["lang"].get<std::string>()} ,{"update_time",get_timestamp()} };
-			//检测旧数据的语言代码和当前的语言代码是否一致
-			if (gacha_listCopy.contains(uid) and gacha_listCopy[uid]["info"]["lang"].get<std::string>() != urls[uid]["lang"].get<std::string>()) {
-				qWarning().noquote() << "当前url的语言和数据语言不一致 当前选择语言：" << QString::fromStdString(urls[uid]["lang"].get<std::string>()) << "数据语言：" << QString::fromStdString(gacha_listCopy[uid]["info"]["lang"].get<std::string>());
-				qWarning().noquote() << "采用原数据语言 " << QString::fromStdString(gacha_listCopy[uid]["info"]["lang"].get<std::string>());
-				Notifier::instance().notify(2, "当前url的语言和数据语言不一致!采用原数据语言");
-				urls[uid]["lang"] = gacha_listCopy[uid]["info"]["lang"].get<std::string>();
-				new_gacha_list[uid]["info"]["lang"] = gacha_listCopy[uid]["info"]["lang"].get<std::string>();
-			}
-
-			//检测语言是否支持
-			std::vector<std::string> support_lang = Global::instance().get_support_languages();
-			if (std::find(support_lang.begin(), support_lang.end(), new_gacha_list[uid]["info"]["lang"].get<std::string>()) == support_lang.end()) {
-				qWarning().noquote() << "当前语言不支持 采用简体中文";
-				Notifier::instance().notify(2, "当前语言不支持 采用简体中文");
-				urls[uid]["lang"] = "zh-Hans";
-				new_gacha_list[uid]["info"]["lang"] = "zh-Hans";
-			}
-
-			//新建data
-			new_gacha_list[uid]["data"] = json::object();
-			//创建卡池列表
-			for (auto& gacha_key : gacha_type["data"]) {
-				new_gacha_list[uid]["data"][gacha_key["key"]] = json::array();
-			}
-			//遍历卡池
-			for (auto& gacha_key : gacha_type["data"]) {
-				//当选择跳过时跳过卡池
-				if (gacha_key["skip"].get<bool>() and ConfigManager::instance().get<bool>("skip")) {
-					qDebug().noquote() << "跳过更新卡池：" << QString::fromStdString(gacha_key["name"]);
-					continue;
-				}
-				QString loading_text = QString::fromStdString(uid) + ":" + tr("正在获取数据：") + QString::fromStdString(LanguageManager::instance().getValue(gacha_key["name"]));
-				qDebug().noquote() << loading_text;
-				emit prossessChanged(loading_text);
-				//获取数据
-				json new_data = get_gacha_data_retry(urls[uid]["resources_id"].get<std::string>(), gacha_key["key"].get<std::string>(), uid, urls[uid]["record_id"].get<std::string>(), urls[uid]["svr_id"].get<std::string>(), urls[uid]["lang"], urls[uid]["svr_area"]);
-				//数据获取失败
-				if (new_data["code"] != 0) {
-					qWarning().noquote() << QString::fromStdString(uid) << ": 数据获取失败 code :" << QString::number(new_data["code"].get<int>());
-					Notifier::instance().notify(2, "api已过期，请进入游戏刷新");
-					break;
-				}
-				//数据获取成功，自动切换uid
-				last_uid = uid;
-				//整理数据
-				for (auto it = new_data["data"].rbegin(); it != new_data["data"].rend(); ++it) {
-					//整理时间字符串为纯数字
-					std::string time_str = "";
-					for (char c : (*it)["time"].get<std::string>()) {
-						try {
-							std::string temp = "";
-							temp += c;
-							std::stoi(temp);
-							time_str += c;
-						}
-						catch (...) {
-							continue;
-						}
-					}
-					std::string item_name = "";
-					std::string type_name = "";
-
-					if (urls[uid]["lang"] == "zh-Hans" or urls[uid]["lang"] == "zh-Hant" or urls[uid]["lang"] == "ja" or urls[uid]["lang"] == "th") {
-						//简体繁体中文，日文，泰文 去掉空格
-						for (char c : (*it)["name"].get<std::string>()) {
-							if (c != ' ') {
-								item_name += c;
-							}
-						}
-						for (char c : (*it)["resourceType"].get<std::string>()) {
-							if (c != ' ') {
-								type_name += c;
-							}
-						}
-					}
-					else {
-						//其余语言不去掉空格
-						item_name = (*it)["name"].get<std::string>();
-						type_name = (*it)["resourceType"].get<std::string>();
-					}
-
-					json item = {
-						{"name",item_name},
-						{"id",(*it)["resourceId"]},
-						{"type",type_name},
-						{"qualityLevel",(*it)["qualityLevel"]},
-						{"time",time_str.substr(0,4) + '-' + time_str.substr(4,2) + '-' + time_str.substr(6,2) + ' ' + time_str.substr(8,2) + ':' + time_str.substr(10,2) + ':' + time_str.substr(12,2)}
+			else if (mode == 2) {
+				std::string url = input_url.toStdString();
+				try {
+					std::map<std::string, std::string> params_dict = get_params(url);
+					//判断url是否有效
+					std::vector<std::string> required_keys = {
+						"svr_id",  "record_id", "resources_id","lang","player_id"
 					};
-					new_gacha_list[uid]["data"][gacha_key["key"]].push_back(item);
+					for (auto& key : required_keys) {
+						if (params_dict.count(key) == 0) {
+							qWarning().noquote() << "输入的url有误:" << input_url;
+							emit wrongInput();
+							return;
+						}
+					}
+
+					urls[params_dict["player_id"]] = {
+							{"url", url},
+							{"svr_id", params_dict["svr_id"]},
+							{"lang", params_dict["lang"]},
+							{"svr_area", params_dict["svr_area"]},
+							{"record_id", params_dict["record_id"]},
+							{"resources_id", params_dict["resources_id"]},
+							{"platform", params_dict["platform"]}
+					};
+					std::vector<std::string> temp;
+					temp.push_back(urls[params_dict["player_id"]]["url"]);
+					ConfigManager::instance().setUrlList(temp);
 				}
-				//一组数据获取完毕，等待一秒
-				QThread::sleep(1);
+				catch (const std::exception& e) {
+					qWarning().noquote() << "输入的url解析失败:" << input_url;
+					Notifier::instance().notify(3, tr("更新失败"));
+					emit updateFail();
+					return;
+				}
 			}
-			gacha_listCopy = merge(uid, gacha_listCopy, new_gacha_list);
+			//更新逻辑
+			json new_gacha_list = json::object();
+			//卡池配置文件
+			json gacha_type = Global::instance().get_gacha_type();
+			std::string last_uid;
+			//对每一个url更新数据
+			for (auto& [uid, params] : urls.items()) {
+				//新建uid字段
+				new_gacha_list[uid] = json::object();
+				qDebug().noquote() << "正在获取数据:" << QString::fromStdString(uid);
+				emit prossessChanged(tr("正在获取数据:") + QString::fromStdString(uid));
+				//新建info
+				new_gacha_list[uid]["info"] = json{ {"lang",urls[uid]["lang"].get<std::string>()} ,{"update_time",get_timestamp()} };
+				//检测旧数据的语言代码和当前的语言代码是否一致
+				if (gacha_listCopy.contains(uid) and gacha_listCopy[uid]["info"]["lang"].get<std::string>() != urls[uid]["lang"].get<std::string>()) {
+					qWarning().noquote() << "当前url的语言和数据语言不一致 当前选择语言：" << QString::fromStdString(urls[uid]["lang"].get<std::string>()) << "数据语言：" << QString::fromStdString(gacha_listCopy[uid]["info"]["lang"].get<std::string>());
+					qWarning().noquote() << "采用原数据语言 " << QString::fromStdString(gacha_listCopy[uid]["info"]["lang"].get<std::string>());
+					Notifier::instance().notify(2, "当前url的语言和数据语言不一致!采用原数据语言");
+					urls[uid]["lang"] = gacha_listCopy[uid]["info"]["lang"].get<std::string>();
+					new_gacha_list[uid]["info"]["lang"] = gacha_listCopy[uid]["info"]["lang"].get<std::string>();
+				}
+
+				//检测语言是否支持
+				std::vector<std::string> support_lang = Global::instance().get_support_languages();
+				if (std::find(support_lang.begin(), support_lang.end(), new_gacha_list[uid]["info"]["lang"].get<std::string>()) == support_lang.end()) {
+					qWarning().noquote() << "当前语言不支持 采用简体中文";
+					Notifier::instance().notify(2, "当前语言不支持 采用简体中文");
+					urls[uid]["lang"] = "zh-Hans";
+					new_gacha_list[uid]["info"]["lang"] = "zh-Hans";
+				}
+
+				//新建data
+				new_gacha_list[uid]["data"] = json::object();
+				//创建卡池列表
+				for (auto& gacha_key : gacha_type["data"]) {
+					new_gacha_list[uid]["data"][gacha_key["key"]] = json::array();
+				}
+				//遍历卡池
+				for (auto& gacha_key : gacha_type["data"]) {
+					//当选择跳过时跳过卡池
+					if (gacha_key["skip"].get<bool>() and ConfigManager::instance().get<bool>("skip")) {
+						qDebug().noquote() << "跳过更新卡池：" << QString::fromStdString(gacha_key["name"]);
+						continue;
+					}
+					QString loading_text = QString::fromStdString(uid) + ":" + tr("正在获取数据：") + QString::fromStdString(LanguageManager::instance().getValue(gacha_key["name"]));
+					qDebug().noquote() << loading_text;
+					emit prossessChanged(loading_text);
+					//获取数据
+					json new_data = get_gacha_data_retry(urls[uid]["resources_id"].get<std::string>(), gacha_key["key"].get<std::string>(), uid, urls[uid]["record_id"].get<std::string>(), urls[uid]["svr_id"].get<std::string>(), urls[uid]["lang"], urls[uid]["svr_area"]);
+					//数据获取失败
+					if (new_data["code"] != 0) {
+						qWarning().noquote() << QString::fromStdString(uid) << ": 数据获取失败 code :" << QString::number(new_data["code"].get<int>());
+						Notifier::instance().notify(2, "api已过期，请进入游戏刷新");
+						break;
+					}
+					//数据获取成功，自动切换uid
+					last_uid = uid;
+					//整理数据
+					for (auto it = new_data["data"].rbegin(); it != new_data["data"].rend(); ++it) {
+						//整理时间字符串为纯数字
+						std::string time_str = "";
+						for (char c : (*it)["time"].get<std::string>()) {
+							try {
+								std::string temp = "";
+								temp += c;
+								std::stoi(temp);
+								time_str += c;
+							}
+							catch (...) {
+								continue;
+							}
+						}
+						std::string item_name = "";
+						std::string type_name = "";
+
+						if (urls[uid]["lang"] == "zh-Hans" or urls[uid]["lang"] == "zh-Hant" or urls[uid]["lang"] == "ja" or urls[uid]["lang"] == "th") {
+							//简体繁体中文，日文，泰文 去掉空格
+							for (char c : (*it)["name"].get<std::string>()) {
+								if (c != ' ') {
+									item_name += c;
+								}
+							}
+							for (char c : (*it)["resourceType"].get<std::string>()) {
+								if (c != ' ') {
+									type_name += c;
+								}
+							}
+						}
+						else {
+							//其余语言不去掉空格
+							item_name = (*it)["name"].get<std::string>();
+							type_name = (*it)["resourceType"].get<std::string>();
+						}
+
+						json item = {
+							{"name",item_name},
+							{"id",(*it)["resourceId"]},
+							{"type",type_name},
+							{"qualityLevel",(*it)["qualityLevel"]},
+							{"time",time_str.substr(0,4) + '-' + time_str.substr(4,2) + '-' + time_str.substr(6,2) + ' ' + time_str.substr(8,2) + ':' + time_str.substr(10,2) + ':' + time_str.substr(12,2)}
+						};
+						new_gacha_list[uid]["data"][gacha_key["key"]].push_back(item);
+					}
+					//一组数据获取完毕，等待一秒
+					QThread::sleep(1);
+				}
+				gacha_listCopy = merge(uid, gacha_listCopy, new_gacha_list);
+			}
+			save(gacha_listCopy);
+			emit updateComplete(gacha_listCopy, last_uid);
 		}
-		save(gacha_listCopy);
-		emit updateComplete(gacha_listCopy, last_uid);
+		catch (const std::exception& e) {
+			qCritical() << "线程崩溃 " << QString::fromStdString(e.what());
+			Notifier::instance().notify(3, tr("更新失败"));
+			Notifier::instance().notify(3, tr("线程崩溃 %1").arg(QString::fromStdString(e.what())));
+			emit updateFail();
+		}
 	});
-	
-	
 }
 
 json Data::findGachaUrls() {
@@ -1054,95 +1062,103 @@ Q_INVOKABLE void Data::exportToExcel() {
 	makedirs("./export/excel");
 
 	QtConcurrent::run([this]() {
-		XLDocument doc;
-		std::string uid = ConfigManager::instance().get<std::string>("active_uid");
-		doc.create("./export/excel/" + LanguageManager::instance().getValue((std::string)"fileName") + "_" + uid + "_" + std::to_string(get_timestamp()) + ".xlsx", XLForceOverwrite);
+		try {
+			XLDocument doc;
+			std::string uid = ConfigManager::instance().get<std::string>("active_uid");
+			doc.create("./export/excel/" + LanguageManager::instance().getValue((std::string)"fileName") + "_" + uid + "_" + std::to_string(get_timestamp()) + ".xlsx", XLForceOverwrite);
 
-		ExcelStyles styles = create_styles(doc); // 初始化样式
+			ExcelStyles styles = create_styles(doc); // 初始化样式
 
-		json gacha_type = Global::instance().get_gacha_type();
+			json gacha_type = Global::instance().get_gacha_type();
 
-		for (auto& [key, items] : gacha_list[uid]["data"].items()) {
-			// 获取中文卡池名，默认使用 key
-			std::string pool_name = key;
-			for (const auto& t : gacha_type["data"]) {
-				if (t.contains("key") && t["key"] == key && t.contains("name")) {
-					pool_name = LanguageManager::instance().getValue(t["name"]);
-					break;
+			for (auto& [key, items] : gacha_list[uid]["data"].items()) {
+				// 获取中文卡池名，默认使用 key
+				std::string pool_name = key;
+				for (const auto& t : gacha_type["data"]) {
+					if (t.contains("key") && t["key"] == key && t.contains("name")) {
+						pool_name = LanguageManager::instance().getValue(t["name"]);
+						break;
+					}
 				}
-			}
 
-			try {
-				doc.workbook().addWorksheet(pool_name);
-			}
-			catch (const std::exception& e) {
-				std::cout << e.what() << std::endl;
-			}
-			XLWorksheet ws = doc.workbook().worksheet(pool_name);
-			// 创建表头
-			std::vector<std::string> headers = {
-				tr("时间").toStdString(),
-				tr("名称").toStdString(),
-				tr("类型").toStdString(),
-				tr("星级").toStdString(),
-				tr("总抽数").toStdString(),
-				tr("保底内抽数").toStdString()
-			};
-			// 设置表头
-			for (size_t i = 0; i < headers.size(); ++i) {
-				auto cell = ws.cell(XLCellReference(1, i + 1));
-				cell.value() = headers[i];
-				cell.setCellFormat(styles.titleStyle);
-			}
+				try {
+					doc.workbook().addWorksheet(pool_name);
+				}
+				catch (const std::exception& e) {
+					std::cout << e.what() << std::endl;
+				}
+				XLWorksheet ws = doc.workbook().worksheet(pool_name);
+				// 创建表头
+				std::vector<std::string> headers = {
+					tr("时间").toStdString(),
+					tr("名称").toStdString(),
+					tr("类型").toStdString(),
+					tr("星级").toStdString(),
+					tr("总抽数").toStdString(),
+					tr("保底内抽数").toStdString()
+				};
+				// 设置表头
+				for (size_t i = 0; i < headers.size(); ++i) {
+					auto cell = ws.cell(XLCellReference(1, i + 1));
+					cell.value() = headers[i];
+					cell.setCellFormat(styles.titleStyle);
+				}
 
-			// 设置内容样式
-			int total_count = 0;
-			int since5 = 0;
-			for (auto& item : items) {
-				total_count += 1;
-				since5 += 1;
-				int row = total_count + 1;
+				// 设置内容样式
+				int total_count = 0;
+				int since5 = 0;
+				for (auto& item : items) {
+					total_count += 1;
+					since5 += 1;
+					int row = total_count + 1;
 
-				ws.cell(row, 1).value() = item["time"].get<std::string>();
-				ws.cell(row, 2).value() = item["name"].get<std::string>();
-				ws.cell(row, 3).value() = item["type"].get<std::string>();
-				ws.cell(row, 4).value() = item["qualityLevel"].get<int>();
-				ws.cell(row, 5).value() = total_count;
-				ws.cell(row, 6).value() = since5;
+					ws.cell(row, 1).value() = item["time"].get<std::string>();
+					ws.cell(row, 2).value() = item["name"].get<std::string>();
+					ws.cell(row, 3).value() = item["type"].get<std::string>();
+					ws.cell(row, 4).value() = item["qualityLevel"].get<int>();
+					ws.cell(row, 5).value() = total_count;
+					ws.cell(row, 6).value() = since5;
 
-				// 设置样式
-				XLStyleIndex style;
-				if (item["qualityLevel"] == 5) {
-					style = styles.star5Style;
-					since5 = 0;
+					// 设置样式
+					XLStyleIndex style;
+					if (item["qualityLevel"] == 5) {
+						style = styles.star5Style;
+						since5 = 0;
+					}
+					else if (item["qualityLevel"] == 4) {
+						style = styles.star4Style;
+					}
+					else {
+						style = styles.star3Style;
+					}
+					for (int col = 1; col <= 6; ++col) {
+						ws.cell(row, col).setCellFormat(style);
+					}
 				}
-				else if (item["qualityLevel"] == 4) {
-					style = styles.star4Style;
+				// 设置列宽
+				std::unordered_map<std::string, double> column_widths = {
+					{ "A", 25 },
+					{ "B", 20 },
+					{ "F", 15 }
+				};
+				for (const auto& [col_letter, width] : column_widths) {
+					uint16_t col_index = XLCellReference::columnAsNumber(col_letter);
+					ws.column(col_index).setWidth(width);
 				}
-				else {
-					style = styles.star3Style;
-				}
-				for (int col = 1; col <= 6; ++col) {
-					ws.cell(row, col).setCellFormat(style);
-				}
+				doc.save();
 			}
-			// 设置列宽
-			std::unordered_map<std::string, double> column_widths = {
-				{ "A", 25 },
-				{ "B", 20 },
-				{ "F", 15 }
-			};
-			for (const auto& [col_letter, width] : column_widths) {
-				uint16_t col_index = XLCellReference::columnAsNumber(col_letter);
-				ws.column(col_index).setWidth(width);
-			}
+			// 删除默认工作表
+			doc.workbook().deleteSheet("Sheet1");
 			doc.save();
+			doc.close();
+			emit exportCompleted();
 		}
-		// 删除默认工作表
-		doc.workbook().deleteSheet("Sheet1");
-		doc.save();
-		doc.close();
-		emit exportCompleted();
+		catch (const std::exception& e) {
+			qCritical() << "线程崩溃 " << QString::fromStdString(e.what());
+			Notifier::instance().notify(3, tr("导出失败"));
+			Notifier::instance().notify(3, tr("线程崩溃 %1").arg(QString::fromStdString(e.what())));
+			emit exportFail();
+		}
 	});
 }
 
@@ -1218,59 +1234,68 @@ Q_INVOKABLE void Data::exportToCsv() {
 	makedirs("./export/csv");
 
 	QtConcurrent::run([this]() {
-		json gacha_type = Global::instance().get_gacha_type();
-		std::string uid = ConfigManager::instance().get<std::string>("active_uid");
+		try {
+			json gacha_type = Global::instance().get_gacha_type();
+			std::string uid = ConfigManager::instance().get<std::string>("active_uid");
 
-		std::time_t now = std::time(nullptr);
-		std::string filename = "./export/csv/" + LanguageManager::instance().getValue((std::string)"fileName") + "_" + uid + "_" + std::to_string(now) + ".csv";
-		std::filesystem::path fsPath = std::filesystem::u8path(filename);
-		
-		std::ofstream file(fsPath, std::ios::binary);
-		if (!file.is_open()) {
-			qCritical().noquote() << "文件打开失败! " << "path:" << QString::fromUtf8(filename);
-			Notifier::instance().notify(3, "文件创建失败! ");
-			return;
-		}
+			std::time_t now = std::time(nullptr);
+			std::string filename = "./export/csv/" + LanguageManager::instance().getValue((std::string)"fileName") + "_" + uid + "_" + std::to_string(now) + ".csv";
+			std::filesystem::path fsPath = std::filesystem::u8path(filename);
 
-		// 写入UTF-8 BOM
-		const unsigned char bom[] = { 0xEF, 0xBB, 0xBF };
-		file.write(reinterpret_cast<const char*>(bom), sizeof(bom));
-
-		// 写入表头
-		file << tr("卡池,时间,名称,类型,星级,总抽数,保底内抽数\n").toStdString();
-
-		for (auto& [key, items] : gacha_list[uid]["data"].items()) {
-			// 获取中文卡池名，默认使用 key
-			std::string pool_name = key;
-			for (const auto& t : gacha_type["data"]) {
-				if (t.contains("key") && t["key"] == key && t.contains("name")) {
-					pool_name = LanguageManager::instance().getValue(t["name"]);
-					break;
-				}
+			std::ofstream file(fsPath, std::ios::binary);
+			if (!file.is_open()) {
+				qCritical().noquote() << "创建文件失败! " << "path:" << QString::fromUtf8(filename);
+				Notifier::instance().notify(3, tr("创建文件失败! "));
+				emit exportFail();
+				return;
 			}
 
-			int total_count = 0;
-			int pity_count = 0;
+			// 写入UTF-8 BOM
+			const unsigned char bom[] = { 0xEF, 0xBB, 0xBF };
+			file.write(reinterpret_cast<const char*>(bom), sizeof(bom));
 
-			for (const auto& item : items) {
-				++total_count;
-				++pity_count;
+			// 写入表头
+			file << tr("卡池,时间,名称,类型,星级,总抽数,保底内抽数\n").toStdString();
 
-				// 写入一行
-				file << pool_name << ','
-					<< item.value("time", "") << ','
-					<< item.value("name", "") << ','
-					<< item.value("type", "") << ','
-					<< item.value("qualityLevel", 0) << ','
-					<< total_count << ','
-					<< pity_count << '\n';
+			for (auto& [key, items] : gacha_list[uid]["data"].items()) {
+				// 获取中文卡池名，默认使用 key
+				std::string pool_name = key;
+				for (const auto& t : gacha_type["data"]) {
+					if (t.contains("key") && t["key"] == key && t.contains("name")) {
+						pool_name = LanguageManager::instance().getValue(t["name"]);
+						break;
+					}
+				}
 
-				if (item.value("qualityLevel", 0) == 5) {
-					pity_count = 0; // 五星重置保底计数
+				int total_count = 0;
+				int pity_count = 0;
+
+				for (const auto& item : items) {
+					++total_count;
+					++pity_count;
+
+					// 写入一行
+					file << pool_name << ','
+						<< item.value("time", "") << ','
+						<< item.value("name", "") << ','
+						<< item.value("type", "") << ','
+						<< item.value("qualityLevel", 0) << ','
+						<< total_count << ','
+						<< pity_count << '\n';
+
+					if (item.value("qualityLevel", 0) == 5) {
+						pity_count = 0; // 五星重置保底计数
+					}
 				}
 			}
+			emit exportCompleted();
 		}
-		emit exportCompleted();
+		catch (const std::exception& e) {
+			qCritical() << "线程崩溃 " << QString::fromStdString(e.what());
+			Notifier::instance().notify(3, tr("导出失败"));
+			Notifier::instance().notify(3, tr("线程崩溃 %1").arg(QString::fromStdString(e.what())));
+			emit exportFail();
+		}
 	});
 }
 
@@ -1278,54 +1303,62 @@ Q_INVOKABLE void Data::exportToUIGF3() {
 	makedirs("./export/UIGFv3");
 
 	QtConcurrent::run([this]() {
-		json gacha_type = Global::instance().get_gacha_type();
-		std::string uid = ConfigManager::instance().get<std::string>("active_uid");
+		try {
+			json gacha_type = Global::instance().get_gacha_type();
+			std::string uid = ConfigManager::instance().get<std::string>("active_uid");
 
-		json uigf3;
+			json uigf3;
 
-		uigf3["info"] = {
-			{"uid", uid},
-			{"lang", gacha_list[uid]["info"]["lang"]},
-			{"export_timestamp", get_timestamp()},
-			{"export_time", current_time_str()},
-			{"export_app", Global::instance().getInfo()["name"].get<std::string>() + ".exe"},
-			{"export_app_version", Global::instance().getInfo()["version"]},
-			{"uigf_version", "v3.0"},
-			{"region_time_zone", gacha_list[uid]["info"]["timezone"]}
-		};		
+			uigf3["info"] = {
+				{"uid", uid},
+				{"lang", gacha_list[uid]["info"]["lang"]},
+				{"export_timestamp", get_timestamp()},
+				{"export_time", current_time_str()},
+				{"export_app", Global::instance().getInfo()["name"].get<std::string>() + ".exe"},
+				{"export_app_version", Global::instance().getInfo()["version"]},
+				{"uigf_version", "v3.0"},
+				{"region_time_zone", gacha_list[uid]["info"]["timezone"]}
+			};
 
-		uigf3["list"] = json::array();
+			uigf3["list"] = json::array();
 
-		for (auto& [key, items] : gacha_list[uid]["data"].items()) {
-			// 找中文卡池名
-			std::string pool_name = key;
+			for (auto& [key, items] : gacha_list[uid]["data"].items()) {
+				// 找中文卡池名
+				std::string pool_name = key;
 
-			for (const auto& t : gacha_type["data"]) {
-				if (t.contains("key") && t["key"] == key && t.contains("name")) {
-					pool_name = LanguageManager::instance().getValue(t["name"]);
-					break;
+				for (const auto& t : gacha_type["data"]) {
+					if (t.contains("key") && t["key"] == key && t.contains("name")) {
+						pool_name = LanguageManager::instance().getValue(t["name"]);
+						break;
+					}
+				}
+
+				for (const auto& item : items) {
+					uigf3["list"].push_back({
+						{"uigf_gacha_type", key},
+						{"gacha_type", key},
+						{"item_id", std::to_string(item.value("id", 0))},
+						{"count", "1"},
+						{"time", item.value("time", "")},
+						{"name", item.value("name", "")},
+						{"item_type", item.value("type", "")},
+						{"rank_type", std::to_string(item.value("qualityLevel", 0))},
+						{"id", std::to_string(item.value("id", 0))}
+						});
 				}
 			}
 
-			for (const auto& item : items) {
-				uigf3["list"].push_back({
-					{"uigf_gacha_type", key},
-					{"gacha_type", key},
-					{"item_id", std::to_string(item.value("id", 0))},
-					{"count", "1"},
-					{"time", item.value("time", "")},
-					{"name", item.value("name", "")},
-					{"item_type", item.value("type", "")},
-					{"rank_type", std::to_string(item.value("qualityLevel", 0))},
-					{"id", std::to_string(item.value("id", 0))}
-					});
-			}
+			std::string filename = "./export/UIGFv3/UIGFv3_" + uid + "_" + std::to_string(uigf3["info"]["export_timestamp"].get<int>()) + ".json";
+			WriteJsonFile(filename, uigf3);
+
+			emit exportCompleted();
 		}
-
-		std::string filename = "./export/UIGFv3/UIGFv3_" + uid + "_" + std::to_string(uigf3["info"]["export_timestamp"].get<int>()) + ".json";
-		WriteJsonFile(filename, uigf3);
-
-		emit exportCompleted();
+		catch (const std::exception& e) {
+			qCritical() << "线程崩溃 " << QString::fromStdString(e.what());
+			Notifier::instance().notify(3, tr("导出失败"));
+			Notifier::instance().notify(3, tr("线程崩溃 %1").arg(QString::fromStdString(e.what())));
+			emit exportFail();
+		}
 	});
 }
 
@@ -1333,20 +1366,53 @@ Q_INVOKABLE void Data::exportToUIGF4(bool isTotal) {
 	makedirs("./export/UIGFv4");
 
 	QtConcurrent::run([this, isTotal]() {
-		json gacha_type = Global::instance().get_gacha_type();
-		std::string uid = ConfigManager::instance().get<std::string>("active_uid");
+		try {
+			json gacha_type = Global::instance().get_gacha_type();
+			std::string uid = ConfigManager::instance().get<std::string>("active_uid");
 
-		json export_data = {
-			{"info", {
-				{"export_timestamp", get_timestamp()},
-				{"export_app", Global::instance().getInfo()["name"].get<std::string>() + ".exe"},
-				{"export_app_version", Global::instance().getInfo()["version"]},
-				{"version", "v4.0"}
-			}},
-			{"aki", json::array()}
-		};
-		if (isTotal) {
-			for (auto& [uid, values] : gacha_list.items()) {
+			json export_data = {
+				{"info", {
+					{"export_timestamp", get_timestamp()},
+					{"export_app", Global::instance().getInfo()["name"].get<std::string>() + ".exe"},
+					{"export_app_version", Global::instance().getInfo()["version"]},
+					{"version", "v4.0"}
+				}},
+				{"aki", json::array()}
+			};
+			if (isTotal) {
+				for (auto& [uid, values] : gacha_list.items()) {
+					json uid_entry = {
+						{"uid", uid},
+						{"timezone", gacha_list[uid]["info"]["timezone"]},
+						{"lang", gacha_list[uid]["info"]["lang"]},
+						{"list", json::array()}
+					};
+
+					// 这里没用 record_id 和 counter，它们没实际作用，可以忽略
+
+					for (auto& [key, items] : values["data"].items()) {
+						for (const auto& item : items) {
+							uid_entry["list"].push_back({
+								{"gacha_id", key},
+								{"gacha_type", key},
+								{"item_id", std::to_string(item.value("id", 0))},
+								{"count", "1"},
+								{"time", item.value("time", "")},
+								{"name", item.value("name", "")},
+								{"item_type", item.value("type", "")},
+								{"rank_type", std::to_string(item.value("qualityLevel", 0))},
+								{"id", std::to_string(item.value("id", 0))}
+								});
+						}
+					}
+
+					export_data["aki"].push_back(uid_entry);
+				}
+				std::string filename = "./export/UIGFv4/UIGFv4_" + std::to_string(export_data["info"]["export_timestamp"].get<int>()) + ".json";
+				WriteJsonFile(filename, export_data);
+			}
+			else {
+				std::string uid = ConfigManager::instance().get<std::string>("active_uid");
 				json uid_entry = {
 					{"uid", uid},
 					{"timezone", gacha_list[uid]["info"]["timezone"]},
@@ -1356,7 +1422,7 @@ Q_INVOKABLE void Data::exportToUIGF4(bool isTotal) {
 
 				// 这里没用 record_id 和 counter，它们没实际作用，可以忽略
 
-				for (auto& [key, items] : values["data"].items()) {
+				for (auto& [key, items] : gacha_list[uid]["data"].items()) {
 					for (const auto& item : items) {
 						uid_entry["list"].push_back({
 							{"gacha_id", key},
@@ -1373,42 +1439,18 @@ Q_INVOKABLE void Data::exportToUIGF4(bool isTotal) {
 				}
 
 				export_data["aki"].push_back(uid_entry);
+
+				std::string filename = "./export/UIGFv4/UIGFv4_" + uid + "_" + std::to_string(export_data["info"]["export_timestamp"].get<int>()) + ".json";
+				WriteJsonFile(filename, export_data);
 			}
-			std::string filename = "./export/UIGFv4/UIGFv4_" + std::to_string(export_data["info"]["export_timestamp"].get<int>()) + ".json";
-			WriteJsonFile(filename, export_data);
+			emit exportCompleted();
 		}
-		else {
-			std::string uid = ConfigManager::instance().get<std::string>("active_uid");
-			json uid_entry = {
-				{"uid", uid},
-				{"timezone", gacha_list[uid]["info"]["timezone"]},
-				{"lang", gacha_list[uid]["info"]["lang"]},
-				{"list", json::array()}
-			};
-
-			// 这里没用 record_id 和 counter，它们没实际作用，可以忽略
-
-			for (auto& [key, items] : gacha_list[uid]["data"].items()) {
-				for (const auto& item : items) {
-					uid_entry["list"].push_back({
-						{"gacha_id", key},
-						{"gacha_type", key},
-						{"item_id", std::to_string(item.value("id", 0))},
-						{"count", "1"},
-						{"time", item.value("time", "")},
-						{"name", item.value("name", "")},
-						{"item_type", item.value("type", "")},
-						{"rank_type", std::to_string(item.value("qualityLevel", 0))},
-						{"id", std::to_string(item.value("id", 0))}
-						});
-				}
-			}
-
-			export_data["aki"].push_back(uid_entry);
-
-			std::string filename = "./export/UIGFv4/UIGFv4_" + uid + "_" + std::to_string(export_data["info"]["export_timestamp"].get<int>()) + ".json";
-			WriteJsonFile(filename, export_data);
+		catch (const std::exception& e) {
+			qCritical() << "线程崩溃 " << QString::fromStdString(e.what());
+			Notifier::instance().notify(3, tr("导出失败"));
+			Notifier::instance().notify(3, tr("线程崩溃 %1").arg(QString::fromStdString(e.what())));
+			emit exportFail();
 		}
-		emit exportCompleted();
 	});
 }
+

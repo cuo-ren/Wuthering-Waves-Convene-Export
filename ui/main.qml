@@ -155,7 +155,7 @@ Window {
                     Data.update_data(1)
                 }
                 else{
-                    if(Path.FindGameLog()){
+                    if(Path.findGamePath()){
                         flag = true
                         popup.updatePath()
                     }else{
@@ -431,8 +431,13 @@ Window {
             loading.visible = false
             updateData()
         }
+        function onUpdateFail(){
+            btn.disabled = false
+            loadingImage.stop()
+            loading.visible = false
+        }
         function onLogNotFound(){
-            notificationModel.append({ "text": qsTr("找不到游戏日志"), "duration": 3000, "color":"orange"})
+            Notifier.notify(2, qsTr("找不到游戏日志"))
             btn.disabled = false
             btn.flag = false
             loadingImage.stop()
@@ -443,7 +448,10 @@ Window {
         }
         function onExportCompleted(){
             btn2.disabled = false
-            Notifier.notify(0,"导出成功")
+            Notifier.notify(0, qsTr("导出成功"))
+        }
+        function onExportFail(){
+            btn2.disabled = false
         }
     }
 

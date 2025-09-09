@@ -8,7 +8,6 @@
 #define CPPHTTPLIB_OPENSSL_SUPPORT
 #include "httplib.h"
 
-
 class DownloadManager : public QObject {
     Q_OBJECT
 public:
@@ -50,7 +49,7 @@ private:
             }
             catch (std::exception& e) {
                 qCritical() << "线程崩溃 " << e.what();
-                Notifier::instance().notify(3, "线程崩溃 " + QString::fromStdString(e.what()));
+                Notifier::instance().notify(3, tr("线程崩溃 %1").arg(QString::fromStdString(e.what())));
                 QMetaObject::invokeMethod(this, [this, fileName]() {
                     activeCount--;
                     tryStartNext();
@@ -77,12 +76,17 @@ private:
         if (res && res->status == 200) {
             std::filesystem::path fsPath = std::filesystem::u8path(resourcePath + fileName.toStdString());
             std::ofstream ofs(fsPath, std::ios::binary | std::ios::trunc);
+            if (!ofs.is_open()) {
+                qWarning() << "创建文件失败 " << QString::fromStdString(fsPath.string());
+                Notifier::instance().notify(3, tr("下载文件 %1 失败 %2").arg(fileName).arg("无法创建文件"));
+                return false;
+            }
             ofs.write(res->body.data(), res->body.size());
             qInfo() << "下载完成";
             return true;
         }
         qWarning() << "下载失败: " << (res ? QString::fromStdString(std::to_string(res->status)) : "网络请求超时");
-        Notifier::instance().notify(3, "下载文件失败 " + (res ? QString::fromStdString(std::to_string(res->status)) : "网络请求超时"));
+        Notifier::instance().notify(3, tr("下载文件 %1 失败 %2").arg(fileName).arg(res ? QString::fromStdString(std::to_string(res->status)) : "网络请求超时"));
         return false;
     }
 

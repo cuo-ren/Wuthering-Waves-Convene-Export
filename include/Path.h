@@ -29,7 +29,7 @@ public:
         }
     }
 
-	bool FindGamePath() {
+	bool findGamePath() {
 		// 获取 APPDATA 环境变量
 		char* appdata = nullptr;
 		size_t len = 0;
@@ -70,7 +70,7 @@ public:
 	Q_INVOKABLE QVariant FindGameLog() {
 		std::filesystem::path fsPath = std::filesystem::u8path(ConfigManager::instance().get<std::string>("path") + "/Client/Saved/Logs/Client.log");
 
-		if (!std::filesystem::exists(fsPath) and !FindGamePath()) {
+		if (!std::filesystem::exists(fsPath) and !findGamePath()) {
 			//配置文件中的不存在且找不到游戏路径
 			Notifier::instance().notify(3, "查找游戏失败");
 			return false;
