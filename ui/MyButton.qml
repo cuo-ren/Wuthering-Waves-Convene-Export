@@ -24,8 +24,9 @@ Item {
     property bool isPressed: false
     property bool isHover: false
     property bool disabled: false
-    property string usedText: "按钮"
-    signal click()
+    property string text: "按钮"
+    property int radius: 5
+    signal clicked()
 
     states: [
         State {
@@ -89,11 +90,11 @@ Item {
         color: commonFillColor
         border.color: commonBorderColor
 
-        radius: 5
+        radius: root.radius
 
         Text {
             id: text
-            text: usedText
+            text: root.text
 
             width: parent.width
 
@@ -110,7 +111,7 @@ Item {
             cursorShape: containsMouse ? root.disabled ? Qt.ForbiddenCursor : Qt.PointingHandCursor:Qt.ArrowCursor
             onClicked: {
                 if(!root.disabled){
-                    root.click()
+                    root.clicked()
                 }
             }
             onHoveredChanged: root.isHover = containsMouse

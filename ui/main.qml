@@ -3,6 +3,7 @@ import QtQuick.Window 2.2
 import ConfigManager 1.0
 import QtQuick.Controls
 import QtQuick.Dialogs
+import QtQuick.Layouts
 import Global
 import Notifier
 import LanguageManager
@@ -41,10 +42,10 @@ Window {
         }
         onGamePathChanged: {
             if(Path.validatePath(ConfigManager.getValue("path"))){
-                btn.flag = true
+                updateBtn.flag = true
             }
             else{
-                btn.flag = false
+                updateBtn.flag = false
             }
         }
     }
@@ -129,9 +130,10 @@ Window {
         height: 70
 
         MyButton{
-            id: btn
+            id: updateBtn
             width: 100
             height: 40
+            radius: 5
 
             anchors.top: parent.top
             anchors.left:parent.left
@@ -146,16 +148,17 @@ Window {
             hoverBorderColor: "#409eff"
 
             property bool flag: false
+            text: flag ? qsTr("更新数据") : qsTr("查找游戏")
 
-            onClick: {
+            onClicked: {
                 if(flag){
-                    btn.disabled = true
+                    updateBtn.disabled = true
                     loading.visible = true
                     loadingImage.start()
                     Data.update_data(1)
                 }
                 else{
-                    if(Path.findGamePath()){
+                    if(Path.findGameLog()){
                         flag = true
                         popup.updatePath()
                     }else{
@@ -172,11 +175,10 @@ Window {
                     flag = false
                 }
             }
-
-            usedText: flag ? qsTr("更新数据") : qsTr("查找游戏")
         }
+
         HoverDropdownButton{
-            id: btn2
+            id: exportBtn
             width: 100
             height: 40
             radius: 5
@@ -187,7 +189,7 @@ Window {
             text: qsTr("导出数据")
 
             anchors.top: parent.top
-            anchors.left: btn.right
+            anchors.left: updateBtn.right
             anchors.topMargin: 10
             anchors.leftMargin: 10
 
@@ -212,12 +214,12 @@ Window {
             }
 
             onClicked: {
-                btn2.disabled = true
+                exportBtn.disabled = true
                 Data.exportToExcel()
             }
 
             onTriggered: function(index, item) {
-                btn2.disabled = true
+                exportBtn.disabled = true
                 switch(index){
                     case 0:Data.exportToExcel();break;
                     case 1:Data.exportToCsv();break;
@@ -225,38 +227,71 @@ Window {
                     case 3:Data.exportToUIGF4(false);break;
                 }
             }
-
         }
-        MyButton{
+        HoverDropdownButton{
             id: settingbtn
             width: 60
             height: 40
+            arrowSize: 5
+            menuWidth: 100
 
             anchors.top: parent.top
             anchors.right: parent.right
             anchors.topMargin: 10
             anchors.rightMargin: 20
 
-            commonFillColor: "white"
-            commonBorderColor: "grey"
-            commonTextColor: "grey"
+            text: qsTr("设置")
 
-            hoverFillColor: "grey"
-            hoverBorderColor: "grey"
+            menuModel:ListModel{
+                ListElement{ text : qsTr("使用url更新数据")}
+            }
 
-            onClick: {
+            bgCommonColor: "lightgrey"
+            borderCommonColor: "grey"
+            textCommonColor: "grey"
+            menuBgCommonColor: bgCommonColor
+            menuBorderCommonColor: borderCommonColor
+
+            borderHoverColor: "grey"
+            textHoverColor: "white"
+
+            menuBgHoverColor: menuBorderCommonColor
+            menuBorderHoverColor: "grey"
+            itemHoverColor: "grey"
+
+            onClicked: {
                 popup.open()
             }
-            usedText: qsTr("设置")
+
+            onTriggered: function(index, item) {
+                switch(index){
+                    case 0:urlInputPopup.open();break;
+                }
+            }
+
+            TextInputPopup{
+                id: urlInputPopup
+                parent:Overlay.overlay
+                width: root.width/2
+                height:root.height/2
+                onAccepted:(text)=> {
+                    console.log(text)
+                    updateBtn.disabled = true
+                    loading.visible = true
+                    loadingImage.start()
+                    Data.update_data(2,text)
+                }
+            }
         }
         MyComboBox{
             id: uidList
             width: 150
             height: 25
 
-            anchors.top: parent.top
+            //anchors.top: parent.top
             anchors.right: settingbtn.left
-            anchors.topMargin: 10
+            //anchors.topMargin: 10
+            anchors.verticalCenter: settingbtn.verticalCenter
             anchors.rightMargin: 10
 
             borderCommonColor: "grey"
@@ -326,8 +361,8 @@ Window {
         Item{
             id: loading
             visible: false
-            anchors.top:btn.bottom
-            anchors.left: btn.left
+            anchors.top: updateBtn.bottom
+            anchors.left: updateBtn.left
             anchors.margins: 3
 
             height: 10
@@ -423,23 +458,26 @@ Window {
             loadingText.text = text;
         }
         function onWrongInput(){
-            console.log("错误的输入");
+            Notifier.notify(2, qsTr("输入的url有误"))
+            updateBtn.disabled = false
+            loadingImage.stop()
+            loading.visible = false
         }
         function onQUpdateComplete(){
-            btn.disabled = false
+            updateBtn.disabled = false
             loadingImage.stop()
             loading.visible = false
             updateData()
         }
         function onUpdateFail(){
-            btn.disabled = false
+            updateBtn.disabled = false
             loadingImage.stop()
             loading.visible = false
         }
         function onLogNotFound(){
             Notifier.notify(2, qsTr("找不到游戏日志"))
-            btn.disabled = false
-            btn.flag = false
+            updateBtn.disabled = false
+            updateBtn.flag = false
             loadingImage.stop()
             loading.visible = false
         }
@@ -447,11 +485,11 @@ Window {
             uidList.initUidList(uid)
         }
         function onExportCompleted(){
-            btn2.disabled = false
+            exportBtn.disabled = false
             Notifier.notify(0, qsTr("导出成功"))
         }
         function onExportFail(){
-            btn2.disabled = false
+            exportBtn.disabled = false
         }
     }
 

@@ -2,6 +2,7 @@
 #include "global.h"
 #include "config.h"
 #include "LanguageManager.h"
+#include "DownloadManager.h"
 #include <regex>
 #include <QtConcurrent/QtConcurrent>
 #include <QFuture>

@@ -839,27 +839,42 @@ std::map<std::string, std::string> Data::get_params(const std::string& url) {
 json Data::get_gacha_data(const std::string cardPoolId, const std::string cardPoolType, const std::string playerId, const std::string recordId, const std::string serverId, const std::string lang, const std::string service_area) {
 
 	std::string url;
+	httplib::Headers headers;
 	if (service_area == "cn") {
 		//国服域名
 		url = "https://gmserver-api.aki-game2.com";
+		// 构造请求头
+		headers = {
+			{ "User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36 Edg/133.0.0.0" },
+			{ "Content-Type", "application/json" },
+			{ "referer", "https://aki-gm-resources.aki-game.com/" }
+		};
 	}
 	else {
 		//国际服域名
 		url = "https://gmserver-api.aki-game2.net";
+		// 构造请求头
+		headers = {
+			{ "User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36 Edg/133.0.0.0" },
+			{ "Content-Type", "application/json" },
+			{ "referer", "https://aki-gm-resources-oversea.aki-game.net/" }
+		};
 	}
 
 	httplib::Client cli(url);
 	cli.set_read_timeout(10, 0); // 10 秒超时
 
-	// 构造请求头
-	httplib::Headers headers = {
-		{ "User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36 Edg/133.0.0.0" },
-		{ "Content-Type", "application/json" },
-		{ "referer", "https://aki-gm-resources.aki-game.com/" }
-	};
+	//设置代理
+	std::string proxy = DownloadManager::instance().get_system_proxy();
+	if (!proxy.empty()) {
+		qDebug() << "检测到系统代理：" << QString::fromStdString(proxy);
+
+		auto r = DownloadManager::instance().parse_proxy(proxy);
+		qDebug() << "ip:" << r->first << "端口:" << r->second;
+		cli.set_proxy(r->first, r->second);
+	}
 
 	// 构造请求体（JSON）
-
 	json post_data = {
 		{"cardPoolId", cardPoolId},
 		{"cardPoolType", std::stoi(cardPoolType)},
