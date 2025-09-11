@@ -416,11 +416,12 @@ Popup {
 
                         anchors.left: parent.left
                     }
-                    Switch {
+                    MySwitch {
                         id: skipSettingSwitch
                         anchors.left: skipSettingText.right
                         anchors.verticalCenter: parent.verticalCenter
                         anchors.margins: 10
+                        text:""
                         onCheckedChanged: {
                             if(ConfigManager.getValue("skip") != checked){
                                 console.log("修改跳过一次性卡池设置 "+ "当前设置 " + checked)
@@ -447,11 +448,12 @@ Popup {
 
                         anchors.left: parent.left
                     }
-                    Switch {
+                    MySwitch {
                         id: updateSettingSwitch
                         anchors.left: updateSettingText.right
                         anchors.verticalCenter: parent.verticalCenter
                         anchors.margins: 10
+                        text: ""
                         onCheckedChanged: {
                             if(ConfigManager.getValue("update") != checked){
                                 console.log("修改自动更新设置 "+ "当前设置 " + checked)

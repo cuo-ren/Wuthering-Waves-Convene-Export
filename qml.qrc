@@ -22,5 +22,6 @@
         <file>resource/unknown.png</file>
         <file>resource/wai.png</file>
         <file>ui/TextView.qml</file>
+        <file>ui/MySwitch.qml</file>
     </qresource>
 </RCC>
