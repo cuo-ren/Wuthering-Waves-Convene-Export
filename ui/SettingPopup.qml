@@ -328,17 +328,28 @@ Popup {
                     }
 
                     // “...”按钮触发文件夹选择器
-                    Button {
+                    MyButton {
                         id: gameFolderSettingOpenBtn
                         height: 25
                         width: 20
+
+                        radius: 0
+
+                        commonFillColor: "transparent"
+                        commonBorderColor: "grey"
+                        commonTextColor: "grey"
+
+                        hoverFillColor: "grey"
+                        hoverBorderColor: "grey"
+
+                        anchors.leftMargin: -1
                         anchors.left: gameFolderSettingTextField.right
                         anchors.verticalCenter: parent.verticalCenter
-                        text: "..."
+                        text: "···"
                         onClicked: folderDialog.open()
                     }
 
-                    Button{
+                    MyButton{
                         id: gameFolderSettingFindBtn
                         width: 90
                         height: 35
@@ -347,6 +358,13 @@ Popup {
                         anchors.margins: 10
 
                         text: qsTr("自动查找")
+
+                        commonFillColor: "lightgrey"
+                        commonBorderColor: "grey"
+                        commonTextColor: "grey"
+
+                        hoverFillColor: "grey"
+                        hoverBorderColor: "grey"
 
                         onClicked: {
                             if(Path.findGameLog()){
@@ -468,7 +486,7 @@ Popup {
 
                         anchors.left: parent.left
                     }
-                    Button{
+                    MyButton{
                         width: 90
                         height: 35
                         anchors.left: urlSettingText.right
@@ -476,6 +494,13 @@ Popup {
                         anchors.margins: 10
 
                         text: qsTr("点击获取")
+
+                        commonFillColor: "lightgrey"
+                        commonBorderColor: "grey"
+                        commonTextColor: "grey"
+
+                        hoverFillColor: "grey"
+                        hoverBorderColor: "grey"
 
                         TextInput{
                             id: copyUrl
