@@ -30,7 +30,7 @@ Window {
     SettingPopup{
         id: popup
         parentWidth: root.width
-        parentHeight: root.width - header.height
+        parentHeight: root.height - header.height
         parentX: 0
         parentY: header.height
         modal: false
@@ -234,6 +234,7 @@ Window {
             height: 40
             arrowSize: 5
             menuWidth: 100
+            menuItemHeight: 28
 
             anchors.top: parent.top
             anchors.right: parent.right
@@ -272,8 +273,8 @@ Window {
             TextInputPopup{
                 id: urlInputPopup
                 parent:Overlay.overlay
-                width: root.width/2
-                height:root.height/2
+                width: root.width/3*2
+                height:root.height/3*2
                 onAccepted:(text)=> {
                     console.log(text)
                     updateBtn.disabled = true

@@ -101,6 +101,12 @@ Popup {
         width: parent.width
         spacing: 10
         //popup标题区域
+
+        Item{
+            width: parent.width
+            height: 1
+        }
+
         Item{
             id: titlerect
             width: parent.width
@@ -191,12 +197,12 @@ Popup {
 
         //设置主体
         Flickable{
-            flickableDirection:Flickable.VerticalFlick
             width: parent.width
             height: settingsPopup.height - titlerect.height - 1 - parent.spacing*2
-            contentHeight: col.height +10
+            contentWidth: availableWidth
+            contentHeight: col.height + 20
             clip: true
-
+            //ScrollBar.vertical.policy: ScrollBar.AlwaysOn
             MouseArea{
                 anchors.fill: parent
                 onClicked: focus = true
@@ -479,6 +485,15 @@ Popup {
                             visible: false
                         }
 
+                        TextView{
+                            id: textview
+                            title: qsTr("选择需要的url")
+                            parent: Overlay.overlay
+                            textModel: ListModel{
+                                id: urls
+                            }
+                        }
+
                         onClicked: {
                             var urlList = ConfigManager.QgetUrlList()
                             if(urlList.length == 0){
@@ -490,6 +505,28 @@ Popup {
                                 copyUrl.moveCursorSelection(urlList[0].length, TextInput.SelectCharacters)
                                 copyUrl.copy()
                                 Notifier.notify(0,qsTr("复制成功"))
+                            }
+                            else{
+                                urls.clear()
+                                for(var i = 0; i < urlList.length; i++){
+                                    try{
+                                        var urlObj = new URL(urlList[i])
+                                    }
+                                    catch(e){
+                                        Notifier.notify(2,"无效的url " + urlList[i])
+                                        continue
+                                    }
+                                    if(urlObj.searchParams.has("playId")){
+                                        urls.append({"text": urlObj.searchParams.get("playId"),"url": urlList[i]})
+                                    }
+                                    else if(urlObj.searchParams.has("player_id")){
+                                        urls.append({"text": urlObj.searchParams.get("player_id"),"url": urlList[i]})
+                                    }
+                                    else{
+                                        Notifier.notify(2,"无效的url " + urlList[i])
+                                    }
+                                }
+                                textview.open()
                             }
                         }
                     }

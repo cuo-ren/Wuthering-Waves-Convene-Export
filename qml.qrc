@@ -21,5 +21,6 @@
         <file>ui/TextInputPopup.qml</file>
         <file>resource/unknown.png</file>
         <file>resource/wai.png</file>
+        <file>ui/TextView.qml</file>
     </qresource>
 </RCC>

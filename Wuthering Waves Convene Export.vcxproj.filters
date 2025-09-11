@@ -113,6 +113,9 @@
     <None Include="ui\TextInputPopup.qml">
       <Filter>Resource Files\ui</Filter>
     </None>
+    <None Include="ui\TextView.qml">
+      <Filter>Resource Files\ui</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="include\config.h">

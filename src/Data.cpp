@@ -600,6 +600,7 @@ Q_INVOKABLE void Data::update_data(int mode, QString input_url) {
 			}
 			else if (mode == 2) {
 				std::string url = input_url.toStdString();
+				url.erase(std::remove_if(url.begin(), url.end(), ::isspace), url.end());
 				try {
 					std::map<std::string, std::string> params_dict = get_params(url);
 					//判断url是否有效

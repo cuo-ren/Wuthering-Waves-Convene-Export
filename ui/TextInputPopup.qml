@@ -15,10 +15,8 @@ Popup {
     signal accepted(string text)
     signal cancelled()
 
-    background: Rectangle {
-        color: "#ffffff"
-        radius: 8
-        border.color: "#cccccc"
+    background: Image{
+        source: "../resource/bg.jpg"
     }
 
     ColumnLayout {
