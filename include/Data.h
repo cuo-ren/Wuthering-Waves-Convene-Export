@@ -26,9 +26,9 @@ public:
         return instance;
     }
 
-    Q_INVOKABLE QVariantList getBarChartData(QString key);
+    Q_INVOKABLE QVariantList getBarChartData(const QString& key);
     Q_INVOKABLE QStringList getUidList();
-    Q_INVOKABLE void update_data(int mode, QString input_url = "");
+    Q_INVOKABLE void update_data(const int& mode, QString input_url = "");
     Q_INVOKABLE void exportToExcel();
     Q_INVOKABLE void exportToCsv();
     Q_INVOKABLE void exportToUIGF3();

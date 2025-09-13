@@ -499,7 +499,7 @@ bool Data::validate_datetime(const std::string& datetime) {
 		tm.tm_year == tm_check.tm_year;
 }
 
-Q_INVOKABLE QVariantList Data::getBarChartData(QString key) {
+Q_INVOKABLE QVariantList Data::getBarChartData(const QString& key) {
 	//检查uid
 	std::vector<std::string> uid_list;
 	for (auto& [uid, value] : gacha_list.items()) {
@@ -569,7 +569,7 @@ Q_INVOKABLE QVariantList Data::getBarChartData(QString key) {
 	return list;
 }
 
-Q_INVOKABLE void Data::update_data(int mode, QString input_url) {
+Q_INVOKABLE void Data::update_data(const int& mode, QString input_url) {
 	qInfo().noquote() << "准备更新数据";
 	
 	QtConcurrent::run([this, mode, input_url]() {

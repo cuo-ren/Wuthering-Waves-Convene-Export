@@ -111,4 +111,3 @@ Item {
         ScriptAction { script: closed() }
     }
 }
-

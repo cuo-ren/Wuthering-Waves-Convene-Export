@@ -223,7 +223,7 @@ Popup {
                 Item{
                     id: languageSetting
                     width: parent.width
-                    height: 20
+                    height: 35
                     Text {
                         id: languageSettingText
                         font.pixelSize: 14
@@ -391,19 +391,41 @@ Popup {
 
                         anchors.left: parent.left
                     }
-                    Button{
+                    MyButton{
                         width: 90
                         height: 35
+
+                        commonFillColor: "lightgrey"
+                        commonBorderColor: "grey"
+                        commonTextColor: "grey"
+
+                        hoverFillColor: "grey"
+                        hoverBorderColor: "grey"
+
                         anchors.left: dataSettingText.right
                         anchors.verticalCenter: parent.verticalCenter
                         anchors.margins: 10
+
+                        text: qsTr("数据管理")
+
+                        onClicked: {
+                            dataManagerPopup.data.append({ name: "文件1", time: "2025-09-01 12:30", uids: [{uid:115445398},{uid:2},{uid:3},{uid:4}], status: 0 })
+                            dataManagerPopup.data.append({ name: "文件1", time: "2025-09-01 12:30", uids: [{uid:115445398},{uid:2},{uid:3},{uid:4}], status: 1 })
+
+                            dataManagerPopup.open()
+                        }
+                    }
+                    DataManager{
+                        id: dataManagerPopup
+                        parent:Overlay.overlay
+                        title:qsTr("数据管理")
                     }
                 }
 
                 Item{
                     id: skipSetting
                     width:parent.width
-                    height: 20
+                    height: 35
                     Text {
                         id: skipSettingText
                         font.pixelSize: 14

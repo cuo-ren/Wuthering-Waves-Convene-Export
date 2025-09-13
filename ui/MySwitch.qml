@@ -85,4 +85,3 @@ Switch {
         leftPadding: control.indicator.width + control.spacing
     }
 }
-

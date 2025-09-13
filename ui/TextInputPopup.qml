@@ -76,4 +76,3 @@ Popup {
         NumberAnimation { property: "scale"; from: 1.0; to: 0.0; duration: 200; easing.type: Easing.OutCubic }
     }
 }
-

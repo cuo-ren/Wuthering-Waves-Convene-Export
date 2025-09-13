@@ -2,8 +2,8 @@ import QtQuick
 
 Item {
     id: root
-    width: 640
-    height: 480
+    width: 100
+    height: 40
 
     property color commonBorderColor: "blue"
     property color commonFillColor: "lightblue"

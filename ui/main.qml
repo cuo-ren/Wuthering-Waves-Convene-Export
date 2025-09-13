@@ -228,6 +228,7 @@ Window {
                 }
             }
         }
+
         HoverDropdownButton{
             id: settingbtn
             width: 60

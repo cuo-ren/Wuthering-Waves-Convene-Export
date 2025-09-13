@@ -50,7 +50,7 @@ public:
         return config;
     }
 
-    void OverrideConfig(json new_config) {
+    void OverrideConfig(const json& new_config) {
         //直接覆写json，不会触发信号
         config = new_config;
         save();
@@ -72,7 +72,7 @@ public:
         emit configChanged(QString::fromStdString("url"), QVariantList{});
     }
 
-    void setUrlList(std::vector<std::string>& urls) {
+    void setUrlList(const std::vector<std::string>& urls) {
         clearUrlList();
         QVariantList qurls;
         for (std::string url : urls) {
@@ -133,9 +133,9 @@ public:
         emit configChanged(QString::fromStdString("url"), QVariantList{});
     }
 
-    Q_INVOKABLE void QsetUrlList(QVariantList qurls) {
+    Q_INVOKABLE void QsetUrlList(const QVariantList& qurls) {
         clearUrlList();
-        for (QVariant& url : qurls) {
+        for (const QVariant& url : qurls) {
             if (url.metaType().id() != QMetaType::QString) {
                 continue;
             }
