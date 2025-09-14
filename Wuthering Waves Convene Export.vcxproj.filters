@@ -119,7 +119,10 @@
     <None Include="ui\MySwitch.qml">
       <Filter>Resource Files\ui</Filter>
     </None>
-    <None Include="ui\DataManager.qml">
+    <None Include="ui\BackupPopup.qml">
+      <Filter>Resource Files\ui</Filter>
+    </None>
+    <None Include="ui\DataPopup.qml">
       <Filter>Resource Files\ui</Filter>
     </None>
   </ItemGroup>

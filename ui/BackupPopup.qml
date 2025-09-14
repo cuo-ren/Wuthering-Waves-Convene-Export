@@ -26,16 +26,7 @@ Popup {
     exit: Transition {
         NumberAnimation { property: "scale"; from: 1.0; to: 0.0; duration: 200; easing.type: Easing.OutCubic }
     }
-    Connections{
-        target: Data
-        function onExportCompleted(){
-            exportBtn.disabled = false
-            Notifier.notify(0, qsTr("导出成功"))
-        }
-        function onExportFail(){
-            exportBtn.disabled = false
-        }
-    }
+
     MouseArea{
         z: -1
         hoverEnabled: true
@@ -55,7 +46,7 @@ Popup {
         property real col1Width: (width - col4Width - col5Width)/10*3.5//文件名
         property real col2Width: (width - col4Width - col5Width)/10*4//日期
         property real col3Width: (width - col4Width - col5Width)/10*2.5//uid
-        property real col4Width: width * 0.15 > 100 ? 100 : width * 0.2//状态
+        property real col4Width: width * 0.15 > 100 ? 100 : width * 0.15//状态
         property real col5Width: width * 0.2 > 150 ? 150 : width * 0.2//操作
 
         Item{Layout.fillWidth: true;height:1}
@@ -138,52 +129,7 @@ Popup {
             }
         }
         Item{Layout.fillWidth: true;height:10}
-        RowLayout {
-            Layout.fillWidth: true
-            spacing: 10
 
-            MyButton{
-                id: importBtn
-                width: 80
-                height: 32
-                radius: 5
-
-                commonFillColor: "#ECF5FF"
-                commonBorderColor: "#409eff"
-                commonTextColor: "#409eff"
-
-                hoverFillColor: "#409eff"
-                hoverBorderColor: "#409eff"
-
-                text: qsTr("导入数据")
-
-                onClicked: {
-                    //导入逻辑
-                }
-            }
-
-            MyButton{
-                id: exportBtn
-                width: 80
-                height: 32
-                radius: 5
-
-                text: qsTr("导出数据")
-
-                commonFillColor: "#F0F9EF"
-                commonBorderColor: "#67c23a"
-                commonTextColor: "#67c23a"
-
-                hoverFillColor: "#67c23a"
-                hoverBorderColor: "#67c23a"
-
-                onClicked: {
-                    exportBtn.disabled = true
-                    Data.exportToUIGF4(true)
-                }
-            }
-        }
-        Item{Layout.fillWidth: true;height:20}
         // 表头
         Row {
             width: parent.width

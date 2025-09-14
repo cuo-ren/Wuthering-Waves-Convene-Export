@@ -65,6 +65,7 @@ Popup {
         }
         var usedLang = supportLanguages.indexOf(ConfigManager.getValue("language"))
         languageSettingCombobox.currentIndex = usedLang
+        languageSettingCombobox.lastText = LanguageManager.getValue(ConfigManager.getValue("language"))
 
         //游戏路径设置
         var path = ConfigManager.getValue("path")
@@ -392,6 +393,7 @@ Popup {
                         anchors.left: parent.left
                     }
                     MyButton{
+                        id: backupPopupBtn
                         width: 90
                         height: 35
 
@@ -406,17 +408,46 @@ Popup {
                         anchors.verticalCenter: parent.verticalCenter
                         anchors.margins: 10
 
+                        text: qsTr("备份管理")
+
+                        onClicked: {
+                            backupPopup.data.append({ name: "文件1", time: "2025-09-01 12:30", uids: [{uid:115445398},{uid:2},{uid:3},{uid:4}], status: 0 })
+                            backupPopup.data.append({ name: "文件1", time: "2025-09-01 12:30", uids: [{uid:115445398},{uid:2},{uid:3},{uid:4}], status: 1 })
+
+                            backupPopup.open()
+                        }
+                    }
+                    BackupPopup{
+                        id: backupPopup
+                        parent:Overlay.overlay
+                        title:qsTr("备份管理")
+                    }
+                    MyButton{
+                        width: 90
+                        height: 35
+
+                        commonFillColor: "lightgrey"
+                        commonBorderColor: "grey"
+                        commonTextColor: "grey"
+
+                        hoverFillColor: "grey"
+                        hoverBorderColor: "grey"
+
+                        anchors.left: backupPopupBtn.right
+                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.margins: 10
+
                         text: qsTr("数据管理")
 
                         onClicked: {
-                            dataManagerPopup.data.append({ name: "文件1", time: "2025-09-01 12:30", uids: [{uid:115445398},{uid:2},{uid:3},{uid:4}], status: 0 })
-                            dataManagerPopup.data.append({ name: "文件1", time: "2025-09-01 12:30", uids: [{uid:115445398},{uid:2},{uid:3},{uid:4}], status: 1 })
+                            dataPopup.data.append({ time: "2025-09-01 12:30", uid: 115445398, timezone:8 })
+                            dataPopup.data.append({ time: "2025-09-01 12:30", uid: 2,timezone:-5 })
 
-                            dataManagerPopup.open()
+                            dataPopup.open()
                         }
                     }
-                    DataManager{
-                        id: dataManagerPopup
+                    DataPopup{
+                        id: dataPopup
                         parent:Overlay.overlay
                         title:qsTr("数据管理")
                     }

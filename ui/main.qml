@@ -488,7 +488,7 @@ Window {
         }
         function onExportCompleted(){
             exportBtn.disabled = false
-            Notifier.notify(0, qsTr("导出成功"))
+            //Notifier.notify(0, qsTr("导出成功"))
         }
         function onExportFail(){
             exportBtn.disabled = false

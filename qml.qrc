@@ -23,6 +23,7 @@
         <file>resource/wai.png</file>
         <file>ui/TextView.qml</file>
         <file>ui/MySwitch.qml</file>
-        <file>ui/DataManager.qml</file>
+        <file>ui/BackupPopup.qml</file>
+        <file>ui/DataPopup.qml</file>
     </qresource>
 </RCC>
