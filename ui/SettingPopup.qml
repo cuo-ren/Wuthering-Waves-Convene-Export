@@ -413,19 +413,8 @@ Popup {
                         text: qsTr("备份管理")
 
                         onClicked: {
-                            var backupInfo = Data.getBackupInfo()
+                            Data.getBackupInfo()
                             backupPopup.data.clear()
-                            for(var i = 0; i < backupInfo.length; i++){
-                                var uids = []
-                                for(var j = 0; j < backupInfo[i]["uids"].length; j++){
-                                    uids.push({"uid":backupInfo[i]["uids"][j]})
-                                }
-                                if(uids.length==0){
-                                    uids.push({"uid":"-"})
-                                }
-
-                                backupPopup.data.append({ name: backupInfo[i]["name"], time: backupInfo[i]["time"], uids: uids, status: backupInfo[i]["status"] })
-                            }
                             backupPopup.open()
                         }
                     }

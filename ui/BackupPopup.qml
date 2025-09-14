@@ -27,6 +27,38 @@ Popup {
         NumberAnimation { property: "scale"; from: 1.0; to: 0.0; duration: 200; easing.type: Easing.OutCubic }
     }
 
+    Connections{
+        target: Data
+        function onFoundBackup(info){
+            var uids = []
+            for(var j = 0; j < info["uids"].length; j++){
+                uids.push({"uid":info["uids"][j]})
+            }
+            if(uids.length==0){
+                uids.push({"uid":"-"})
+            }
+            backupPopup.data.append({ name: info["name"], time: info["time"], uids: uids, status: info["status"] })
+        }
+        function onBackupDeletedSuccessed(filename){
+            for (var i = 0; i < backupPopup.data.count; i++) {
+                var item = backupPopup.data.get(i)
+                if (item.name === filename) {
+                    backupPopup.data.remove(i)
+                    break
+                }
+            }
+        }
+        function onBackupDeletedFailed(filename){
+            for (var i = 0; i < backupPopup.data.count; i++) {
+                var item = backupPopup.data.get(i)
+                if (item.name === filename) {
+                    backupPopup.data.remove(i)
+                    break
+                }
+            }
+        }
+    }
+
     MouseArea{
         z: -1
         hoverEnabled: true
@@ -211,6 +243,10 @@ Popup {
             //ScrollBar.vertical: ScrollBar { policy: ScrollBar.OnDemand }
 
             model: dataManager.data
+
+            add: Transition {
+                NumberAnimation { properties: "opacity"; from: 0.0;to:1.0; duration: 200 }
+            }
 
             delegate: Row {
                 id: rowItem
@@ -398,7 +434,10 @@ Popup {
                             hoverFillColor: "red"
                             hoverBorderColor: "red"
                             text: qsTr("删除");
-                            onClicked: console.log("删除 " + time)
+                            onClicked: {
+                                console.log("删除备份 " + name)
+                                Data.removeBackupFile(name)
+                            }
                         }
                     }
                 }

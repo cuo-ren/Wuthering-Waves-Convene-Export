@@ -1528,61 +1528,94 @@ Q_INVOKABLE void Data::setTimezone(QString uid, int timezone) {
 	}
 }
 
-Q_INVOKABLE QVariantList Data::getBackupInfo() {
+Q_INVOKABLE void Data::getBackupInfo() {
 	std::string dir = file_path;
-	QVariantList result;
 
-	std::filesystem::path baseDir = std::filesystem::u8path(dir);
-	std::regex backup_pattern(R"(gacha_list_(\d+)\.json\.bak)");
+	QtConcurrent::run([this, dir]() {
+		try {
+			std::filesystem::path baseDir = std::filesystem::u8path(dir);
+			std::regex backup_pattern(R"(gacha_list_(\d+)\.json\.bak)");
 
-	for (const auto& entry : std::filesystem::directory_iterator(baseDir)) {
-		const std::filesystem::path& path = entry.path();
-		std::smatch match;
-		std::string filename = path.filename().u8string(); // 确保 UTF-8
+			for (const auto& entry : std::filesystem::directory_iterator(baseDir)) {
+				const std::filesystem::path& path = entry.path();
+				std::smatch match;
+				std::string filename = path.filename().u8string(); // 确保 UTF-8
 
-		if (std::filesystem::is_regular_file(path) && std::regex_match(filename, match, backup_pattern)) {
-			try {
-				std::uint64_t ts = std::stoull(match[1].str());
+				if (std::filesystem::is_regular_file(path) && std::regex_match(filename, match, backup_pattern)) {
+					try {
+						std::uint64_t ts = std::stoull(match[1].str());
 
-				QVariantMap fileInfo;
-				fileInfo["name"] = QString::fromStdString(filename);
-				fileInfo["time"] = QString::fromStdString(timestamp_to_str(ts));
+						QVariantMap fileInfo;
+						fileInfo["name"] = QString::fromStdString(filename);
+						fileInfo["time"] = QString::fromStdString(timestamp_to_str(ts));
 
-				json backupGachaList;
-				try {
-					backupGachaList = ReadJsonFile(file_path + "/" + filename);
-					json validate_result = validate_data(backupGachaList);
-					if (validate_result["code"] == 0) {
-						fileInfo["status"] = 0;
+						json backupGachaList;
+						try {
+							backupGachaList = ReadJsonFile(file_path + "/" + filename);
+							json validate_result = validate_data(backupGachaList);
+							if (validate_result["code"] == 0) {
+								fileInfo["status"] = 0;
+							}
+							else {
+								fileInfo["status"] = 1;
+							}
+						}
+						catch (const json::parse_error& e) {
+							fileInfo["status"] = 2;
+						}
+						catch (...) {
+							fileInfo["status"] = 2;
+						}
+
+						//解析 JSON 提取 uids
+						QVariantList uids;
+						if (fileInfo["status"] == 0) {
+							for (auto& [uid, value] : backupGachaList.items()) {
+								uids.append(QString::fromStdString(uid));
+							}
+						}
+
+						fileInfo["uids"] = uids;
+
+						emit foundBackup(fileInfo);
 					}
-					else {
-						fileInfo["status"] = 1;
+					catch (const std::exception& e) {
+						qWarning().noquote() << "解析备份文件失败:" << QString::fromStdString(filename) << e.what();
+						Notifier::instance().notify(3, tr("解析备份文件失败"));
 					}
 				}
-				catch (const json::parse_error& e) {
-					fileInfo["status"] = 2;
-				}
-				catch (...) {
-					fileInfo["status"] = 2;
-				}
-
-				//解析 JSON 提取 uids
-				QVariantList uids;
-				if (fileInfo["status"] == 0) {
-					for (auto& [uid, value] : backupGachaList.items()) {
-						uids.append(QString::fromStdString(uid));
-					}
-				}
-
-				fileInfo["uids"] = uids;
-
-				result.append(fileInfo);
-			}
-			catch (const std::exception& e) {
-				qWarning().noquote() << "解析备份文件失败:" << QString::fromStdString(filename) << e.what();
 			}
 		}
-	}
+		catch (const std::exception& e) {
+			qCritical() << "线程崩溃 " << QString::fromStdString(e.what());
+			Notifier::instance().notify(3, tr("查找备份失败"));
+			Notifier::instance().notify(3, tr("线程崩溃 %1").arg(QString::fromStdString(e.what())));
+		}
+	});
+}
 
-	return result;
+Q_INVOKABLE bool Data::removeBackupFile(const QString& fileName) {
+	try {
+		std::filesystem::path filePath = std::filesystem::u8path(file_path) / std::filesystem::u8path(fileName.toStdString());
+
+		if (std::filesystem::exists(filePath) && std::filesystem::is_regular_file(filePath)) {
+			std::filesystem::remove(filePath);
+			qInfo().noquote() << "已删除备份文件:"
+				<< QString::fromStdString(filePath.u8string()).replace("\\", "/");
+			Notifier::instance().notify(0, tr("删除成功"));
+			emit backupDeletedSuccessed(fileName);
+			return true;
+		}
+		else {
+			qWarning().noquote() << "文件不存在:"
+				<< QString::fromStdString(filePath.u8string()).replace("\\", "/");
+			Notifier::instance().notify(3, tr("文件不存在"));
+			emit backupDeletedFailed(fileName);
+		}
+	}
+	catch (const std::filesystem::filesystem_error& e) {
+		qWarning().noquote() << "删除备份文件失败:" << e.what();
+		Notifier::instance().notify(3, tr("删除失败"));
+	}
+	return false;
 }

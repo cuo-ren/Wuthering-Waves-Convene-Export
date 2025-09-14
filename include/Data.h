@@ -29,7 +29,8 @@ public:
     Q_INVOKABLE QVariantList getBarChartData(const QString& key);
     Q_INVOKABLE QStringList getUidList();
     Q_INVOKABLE QVariantList getDataInfo();
-    Q_INVOKABLE QVariantList getBackupInfo();
+    Q_INVOKABLE void getBackupInfo();
+    Q_INVOKABLE bool removeBackupFile(const QString& fileName);
     Q_INVOKABLE void deleteUid(QString uid);
     Q_INVOKABLE void setTimezone(QString uid,int timezone);
     Q_INVOKABLE void update_data(const int& mode, QString input_url = "");
@@ -48,6 +49,9 @@ signals:
     void uidChanged(QString uid);
     void exportCompleted();
     void exportFail();
+    void foundBackup(QVariantMap info);
+    void backupDeletedSuccessed(QString fileName);
+    void backupDeletedFailed(QString fileName);
 
 public slots:
     void onUpdateComplete(json merged_list, std::string uid);
