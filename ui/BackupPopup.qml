@@ -214,7 +214,8 @@ Popup {
 
             delegate: Row {
                 id: rowItem
-                width: parent.width
+                Layout.fillWidth: true
+                //width: parent.width
                 height: 40
                 spacing: 0
 

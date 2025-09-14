@@ -48,6 +48,10 @@ Window {
                 updateBtn.flag = false
             }
         }
+        onExportData: {
+            exportBtn.disabled = true
+            Data.exportToUIGF4(true)
+        }
     }
 
     // 通知容器（顶部居中）
@@ -488,7 +492,7 @@ Window {
         }
         function onExportCompleted(){
             exportBtn.disabled = false
-            //Notifier.notify(0, qsTr("导出成功"))
+            Notifier.notify(0, qsTr("导出成功"))
         }
         function onExportFail(){
             exportBtn.disabled = false

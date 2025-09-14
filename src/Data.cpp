@@ -1470,3 +1470,60 @@ Q_INVOKABLE void Data::exportToUIGF4(bool isTotal) {
 	});
 }
 
+Q_INVOKABLE QVariantList Data::getDataInfo() {
+	QVariantList list;
+	
+	for (auto& [uid, item] : gacha_list.items()) {
+		QVariantMap data;
+		data["uid"] = QString::fromStdString(uid);
+		data["time"] = QString::fromStdString(timestamp_to_str(item["info"]["update_time"]));
+		data["timezone"] = item["info"]["timezone"].get<int>();
+		list.append(data);
+	}
+
+	return list;
+}
+
+Q_INVOKABLE void Data::deleteUid(QString uid) {
+	if (gacha_list.contains(uid.toStdString())) {
+		gacha_list.erase(uid.toStdString());
+		save(gacha_list);
+
+		std::vector<std::string> uid_list;
+		for (auto& [uid, value] : gacha_list.items()) {
+			uid_list.push_back(uid);
+		}
+		std::string active_uid = ConfigManager::instance().get<std::string>("active_uid");
+
+		if (uid_list.size() == 0) {
+			//无数据
+			if (active_uid.length() != 0) {
+				ConfigManager::instance().set<std::string>("active_uid", "");
+				emit uidChanged("");
+				qDebug().noquote() << "active_uid变更为空";
+			}
+		}
+
+		if (active_uid.length() == 0 and uid_list.size() != 0) {
+			//没有活跃uid且存在uid，设置为第一个
+			active_uid = uid_list[0];
+			ConfigManager::instance().set<std::string>("active_uid", active_uid);
+			emit uidChanged(QString::fromStdString(active_uid));
+			qDebug().noquote() << "active_uid变更为:" << QString::fromStdString(active_uid);
+		}
+		if (std::find(uid_list.begin(), uid_list.end(), active_uid) == uid_list.end() and uid_list.size() != 0) {
+			//活跃uid不在列表中
+			active_uid = uid_list[0];
+			ConfigManager::instance().set<std::string>("active_uid", active_uid);
+			emit uidChanged(QString::fromStdString(active_uid));
+			qDebug().noquote() << "active_uid变更为:" << QString::fromStdString(active_uid);
+		}
+	}
+}
+
+Q_INVOKABLE void Data::setTimezone(QString uid, int timezone) {
+	if (gacha_list.contains(uid.toStdString())) {
+		gacha_list[uid.toStdString()]["info"]["timezone"] = timezone;
+		save(gacha_list);
+	}
+}

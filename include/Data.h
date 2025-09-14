@@ -28,6 +28,9 @@ public:
 
     Q_INVOKABLE QVariantList getBarChartData(const QString& key);
     Q_INVOKABLE QStringList getUidList();
+    Q_INVOKABLE QVariantList getDataInfo();
+    Q_INVOKABLE void deleteUid(QString uid);
+    Q_INVOKABLE void setTimezone(QString uid,int timezone);
     Q_INVOKABLE void update_data(const int& mode, QString input_url = "");
     Q_INVOKABLE void exportToExcel();
     Q_INVOKABLE void exportToCsv();

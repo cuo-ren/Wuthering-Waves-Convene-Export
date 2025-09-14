@@ -6,6 +6,7 @@ import LanguageManager
 import Global
 import Path
 import Notifier
+import Data
 
 Popup {
     function updatePath(){
@@ -45,6 +46,7 @@ Popup {
     property int parentY: 0
     signal refresh()
     signal gamePathChanged()
+    signal exportData()
 
     padding: 0
 
@@ -440,16 +442,25 @@ Popup {
                         text: qsTr("数据管理")
 
                         onClicked: {
-                            dataPopup.data.append({ time: "2025-09-01 12:30", uid: 115445398, timezone:8 })
-                            dataPopup.data.append({ time: "2025-09-01 12:30", uid: 2,timezone:-5 })
-
+                            var gachaInfo = Data.getDataInfo()
+                            dataPopup.data.clear()
+                            for(var i = 0; i < gachaInfo.length; i++){
+                                dataPopup.data.append({"uid":gachaInfo[i]["uid"],"time":gachaInfo[i]["time"],"timezone":gachaInfo[i]["timezone"]})
+                            }
                             dataPopup.open()
                         }
+
                     }
                     DataPopup{
                         id: dataPopup
                         parent:Overlay.overlay
                         title:qsTr("数据管理")
+                        onExportData: {
+                            settingsPopup.exportData()
+                        }
+                        onRefresh:{
+                            settingsPopup.refresh()
+                        }
                     }
                 }
 

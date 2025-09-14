@@ -15,6 +15,8 @@ Popup {
 
     property ListModel data: ListModel{}
     property string title:qsTr("标题")
+    signal exportData()
+    signal refresh()
 
     background: Image{
         source: "../resource/bg.jpg"
@@ -32,7 +34,6 @@ Popup {
         target: Data
         function onExportCompleted(){
             exportBtn.disabled = false
-            Notifier.notify(0, qsTr("导出成功"))
         }
         function onExportFail(){
             exportBtn.disabled = false
@@ -179,8 +180,8 @@ Popup {
                 hoverBorderColor: "#67c23a"
 
                 onClicked: {
+                    dataManager.exportData()
                     exportBtn.disabled = true
-                    Data.exportToUIGF4(true)
                 }
             }
         }
@@ -258,7 +259,8 @@ Popup {
 
             delegate: Row {
                 id: rowItem
-                width: parent.width
+                Layout.fillWidth: true
+                //width: parent.width
                 height: 40
                 spacing: 0
 
@@ -346,7 +348,8 @@ Popup {
                         onActivated:{
                             if(currentText != lastText){
                                 lastText = currentText
-                                console.log(currentText)
+                                console.log("更改时区设置 ",currentText)
+                                Data.setTimezone(uid,timezoneCombobox.model[currentIndex].value)
                             }
                         }
 
@@ -354,7 +357,7 @@ Popup {
                             for (var i = 0; i < model.length; ++i) {
                                     if (model[i].value === timezone) {
                                         timezoneCombobox.currentIndex = i
-
+                                        timezoneCombobox.lastText = model[i].name
                                         break
                                     }
                                 }
@@ -403,7 +406,12 @@ Popup {
                             hoverFillColor: "red"
                             hoverBorderColor: "red"
                             text: qsTr("删除");
-                            onClicked: console.log("删除 " + time)
+                            onClicked: {
+                                Data.deleteUid(uid)
+                                console.log("删除UID " + uid)
+                                dataManager.data.remove(index,1)
+                                dataManager.refresh()
+                            }
                         }
                     }
                 }
