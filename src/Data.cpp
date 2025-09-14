@@ -53,7 +53,7 @@ void Data::initGachaList() {
 		int count = 0;
 		while (true) {
 			count++;
-			json validate_result = validate_data();
+			json validate_result = validate_data(gacha_list);
 			if (validate_result["code"] == 0) {
 				qInfo().noquote() << "数据文件校验成功";
 				std::string hash = sha256_file_streaming(file_path + "/" + file_name + ".json") + sha256_file_streaming("./GachaType.json");
@@ -186,7 +186,7 @@ void Data::trim_backup_files(const std::string& dir, int max_backup_count) {
 	}
 }
 
-json Data::validate_data() {
+json Data::validate_data(const json& gacha_list) {
 	std::vector<std::pair<int, std::string>> ERROR_CODES = {
 		{-1,"未知错误"},
 		{0,"校验成功"},
@@ -1526,4 +1526,63 @@ Q_INVOKABLE void Data::setTimezone(QString uid, int timezone) {
 		gacha_list[uid.toStdString()]["info"]["timezone"] = timezone;
 		save(gacha_list);
 	}
+}
+
+Q_INVOKABLE QVariantList Data::getBackupInfo() {
+	std::string dir = file_path;
+	QVariantList result;
+
+	std::filesystem::path baseDir = std::filesystem::u8path(dir);
+	std::regex backup_pattern(R"(gacha_list_(\d+)\.json\.bak)");
+
+	for (const auto& entry : std::filesystem::directory_iterator(baseDir)) {
+		const std::filesystem::path& path = entry.path();
+		std::smatch match;
+		std::string filename = path.filename().u8string(); // 确保 UTF-8
+
+		if (std::filesystem::is_regular_file(path) && std::regex_match(filename, match, backup_pattern)) {
+			try {
+				std::uint64_t ts = std::stoull(match[1].str());
+
+				QVariantMap fileInfo;
+				fileInfo["name"] = QString::fromStdString(filename);
+				fileInfo["time"] = QString::fromStdString(timestamp_to_str(ts));
+
+				json backupGachaList;
+				try {
+					backupGachaList = ReadJsonFile(file_path + "/" + filename);
+					json validate_result = validate_data(backupGachaList);
+					if (validate_result["code"] == 0) {
+						fileInfo["status"] = 0;
+					}
+					else {
+						fileInfo["status"] = 1;
+					}
+				}
+				catch (const json::parse_error& e) {
+					fileInfo["status"] = 2;
+				}
+				catch (...) {
+					fileInfo["status"] = 2;
+				}
+
+				//解析 JSON 提取 uids
+				QVariantList uids;
+				if (fileInfo["status"] == 0) {
+					for (auto& [uid, value] : backupGachaList.items()) {
+						uids.append(QString::fromStdString(uid));
+					}
+				}
+
+				fileInfo["uids"] = uids;
+
+				result.append(fileInfo);
+			}
+			catch (const std::exception& e) {
+				qWarning().noquote() << "解析备份文件失败:" << QString::fromStdString(filename) << e.what();
+			}
+		}
+	}
+
+	return result;
 }

@@ -43,8 +43,8 @@ Popup {
         spacing: 0
 
         // 定义列宽
-        property real col1Width: (width - col4Width - col5Width)/10*3.5//文件名
-        property real col2Width: (width - col4Width - col5Width)/10*4//日期
+        property real col1Width: (width - col4Width - col5Width)/10*4//文件名
+        property real col2Width: (width - col4Width - col5Width)/10*3.5//日期
         property real col3Width: (width - col4Width - col5Width)/10*2.5//uid
         property real col4Width: width * 0.15 > 100 ? 100 : width * 0.15//状态
         property real col5Width: width * 0.2 > 150 ? 150 : width * 0.2//操作

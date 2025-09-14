@@ -29,6 +29,7 @@ public:
     Q_INVOKABLE QVariantList getBarChartData(const QString& key);
     Q_INVOKABLE QStringList getUidList();
     Q_INVOKABLE QVariantList getDataInfo();
+    Q_INVOKABLE QVariantList getBackupInfo();
     Q_INVOKABLE void deleteUid(QString uid);
     Q_INVOKABLE void setTimezone(QString uid,int timezone);
     Q_INVOKABLE void update_data(const int& mode, QString input_url = "");
@@ -63,7 +64,7 @@ private:
     };
 
     void initGachaList();
-    json validate_data();
+    json validate_data(const json& gacha_list);
     void save(json data);
     void trim_backup_files(const std::string& dir, int max_backup_count);
     bool validate_datetime(const std::string& datetime);

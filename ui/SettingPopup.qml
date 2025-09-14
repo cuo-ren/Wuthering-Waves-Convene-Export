@@ -413,9 +413,19 @@ Popup {
                         text: qsTr("备份管理")
 
                         onClicked: {
-                            backupPopup.data.append({ name: "文件1", time: "2025-09-01 12:30", uids: [{uid:115445398},{uid:2},{uid:3},{uid:4}], status: 0 })
-                            backupPopup.data.append({ name: "文件1", time: "2025-09-01 12:30", uids: [{uid:115445398},{uid:2},{uid:3},{uid:4}], status: 1 })
+                            var backupInfo = Data.getBackupInfo()
+                            backupPopup.data.clear()
+                            for(var i = 0; i < backupInfo.length; i++){
+                                var uids = []
+                                for(var j = 0; j < backupInfo[i]["uids"].length; j++){
+                                    uids.push({"uid":backupInfo[i]["uids"][j]})
+                                }
+                                if(uids.length==0){
+                                    uids.push({"uid":"-"})
+                                }
 
+                                backupPopup.data.append({ name: backupInfo[i]["name"], time: backupInfo[i]["time"], uids: uids, status: backupInfo[i]["status"] })
+                            }
                             backupPopup.open()
                         }
                     }
