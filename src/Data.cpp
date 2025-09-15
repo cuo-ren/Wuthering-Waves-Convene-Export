@@ -25,7 +25,8 @@ void Data::initGachaList() {
 	//读取hash值
 	std::string file_hash = ConfigManager::instance().get<std::string>("hash");
 	//确保json文件存在
-	if (!std::filesystem::exists(file_path + "/" + file_name + ".json")) {
+	std::filesystem::path filePath = std::filesystem::u8path(file_path) / std::filesystem::u8path(file_name + ".json");
+	if (!std::filesystem::exists(filePath)) {
 		qWarning().noquote() << "数据文件不存在";
 		WriteJsonFile(file_path + "/" + file_name + ".json", default_data);
 	}
@@ -212,6 +213,14 @@ json Data::validate_data(const json& gacha_list) {
 		{19,"时间非递增"}
 	};
 	//检测键是否为纯数字
+	if (!gacha_list.is_object()) {
+		json error114514 = {
+				{"code",-1},
+				{"data",{}}
+		};
+		qWarning().noquote() << "数据文件不是json";
+		return error114514;
+	}
 	for (auto& [uid, value] : gacha_list.items()) {
 		json error1 = {
 				{"code",1},
@@ -1519,6 +1528,9 @@ Q_INVOKABLE void Data::deleteUid(QString uid) {
 			qDebug().noquote() << "active_uid变更为:" << QString::fromStdString(active_uid);
 		}
 	}
+	else {
+		Notifier::instance().notify(2, tr("%1 不存在").arg(uid));
+	}
 }
 
 Q_INVOKABLE void Data::setTimezone(QString uid, int timezone) {
@@ -1526,14 +1538,19 @@ Q_INVOKABLE void Data::setTimezone(QString uid, int timezone) {
 		gacha_list[uid.toStdString()]["info"]["timezone"] = timezone;
 		save(gacha_list);
 	}
+	else {
+		Notifier::instance().notify(2, tr("%1 不存在").arg(uid));
+	}
 }
 
 Q_INVOKABLE void Data::getBackupInfo() {
+	//扫描备份文件并发生信号
 	std::string dir = file_path;
 
 	QtConcurrent::run([this, dir]() {
 		try {
 			std::filesystem::path baseDir = std::filesystem::u8path(dir);
+			qInfo() << "正在扫描备份文件" << QString::fromStdString(dir);
 			std::regex backup_pattern(R"(gacha_list_(\d+)\.json\.bak)");
 
 			for (const auto& entry : std::filesystem::directory_iterator(baseDir)) {
@@ -1550,26 +1567,36 @@ Q_INVOKABLE void Data::getBackupInfo() {
 						fileInfo["time"] = QString::fromStdString(timestamp_to_str(ts));
 
 						json backupGachaList;
+						json validate_result;
 						try {
+							qInfo() << "正在校验" << QString::fromStdString(filename);
 							backupGachaList = ReadJsonFile(file_path + "/" + filename);
-							json validate_result = validate_data(backupGachaList);
+							validate_result = validate_data(backupGachaList);
 							if (validate_result["code"] == 0) {
+								qInfo() << QString::fromStdString(filename) << "文件正常";
 								fileInfo["status"] = 0;
 							}
-							else {
+							else if (validate_result["code"] != -1) {
 								fileInfo["status"] = 1;
+								qWarning() << QString::fromStdString(filename) << "文件异常";
+							}
+							else {
+								fileInfo["status"] = 2;
+								qWarning() << QString::fromStdString(filename) << "文件损坏";
 							}
 						}
 						catch (const json::parse_error& e) {
 							fileInfo["status"] = 2;
+							qWarning() << QString::fromStdString(filename) << "文件损坏";
 						}
 						catch (...) {
 							fileInfo["status"] = 2;
+							qWarning() << QString::fromStdString(filename) << "文件损坏";
 						}
 
 						//解析 JSON 提取 uids
 						QVariantList uids;
-						if (fileInfo["status"] == 0) {
+						if (fileInfo["status"] == 0 or (fileInfo["status"] == 1 and validate_result["code"] != -1 and validate_result["code"] != 1)) {
 							for (auto& [uid, value] : backupGachaList.items()) {
 								uids.append(QString::fromStdString(uid));
 							}
@@ -1610,7 +1637,7 @@ Q_INVOKABLE bool Data::removeBackupFile(const QString& fileName) {
 			qWarning().noquote() << "文件不存在:"
 				<< QString::fromStdString(filePath.u8string()).replace("\\", "/");
 			Notifier::instance().notify(3, tr("文件不存在"));
-			emit backupDeletedFailed(fileName);
+			emit backupHadDeleted(fileName);
 		}
 	}
 	catch (const std::filesystem::filesystem_error& e) {
@@ -1618,4 +1645,40 @@ Q_INVOKABLE bool Data::removeBackupFile(const QString& fileName) {
 		Notifier::instance().notify(3, tr("删除失败"));
 	}
 	return false;
+}
+
+Q_INVOKABLE void Data::recoveryBackup(const QString& fileName) {
+	//不进行校验，确保数据无误
+	qInfo().noquote() << "正在恢复备份" << fileName;
+	std::filesystem::path filePath = std::filesystem::u8path(file_path) / std::filesystem::u8path(fileName.toStdString());
+	json backupData = json::object();
+	//确保data目录存在
+	makedirs(file_path);
+	//确保json文件存在
+	if (!std::filesystem::exists(filePath)) {
+		qWarning().noquote() << "无法打开备份";
+		Notifier::instance().notify(3, tr("无法打开备份"));
+		emit recoveryFailed();
+		return;
+	}
+	//读取数据
+	try {
+		backupData = ReadJsonFile(file_path + "/" + fileName.toStdString());
+	}
+	catch (const json::parse_error& e) {
+		qWarning().noquote() << "备份文件解析失败 " << e.what();
+		Notifier::instance().notify(3, "备份文件解析失败");
+		emit recoveryFailed();
+		return;
+	}
+	catch (...) {
+		qWarning().noquote() << "备份文件读取失败 ";
+		Notifier::instance().notify(3, "备份文件读取失败");
+		emit recoveryFailed();
+		return;
+	}
+	gacha_list = backupData;
+	save(backupData);
+	Notifier::instance().notify(0, tr("恢复备份成功"));
+	emit recoverySuccessed();
 }

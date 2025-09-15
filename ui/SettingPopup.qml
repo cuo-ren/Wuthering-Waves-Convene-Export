@@ -422,6 +422,9 @@ Popup {
                         id: backupPopup
                         parent:Overlay.overlay
                         title:qsTr("备份管理")
+                        onRefresh:{
+                            settingsPopup.refresh()
+                        }
                     }
                     MyButton{
                         width: 90

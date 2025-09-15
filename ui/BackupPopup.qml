@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls.Basic
 import QtQuick.Layouts
 import Data
+import Notifier
 
 Popup {
     id: dataManager
@@ -14,6 +15,7 @@ Popup {
 
     property ListModel data: ListModel{}
     property string title:qsTr("标题")
+    signal refresh()
 
     background: Image{
         source: "../resource/bg.jpg"
@@ -48,7 +50,7 @@ Popup {
                 }
             }
         }
-        function onBackupDeletedFailed(filename){
+        function onBackupHadDeleted(filename){
             for (var i = 0; i < backupPopup.data.count; i++) {
                 var item = backupPopup.data.get(i)
                 if (item.name === filename) {
@@ -56,6 +58,13 @@ Popup {
                     break
                 }
             }
+        }
+        function onRecoveryFailed(){
+            ;
+        }
+        function onRecoverySuccessed(){
+            dataManager.data.clear()
+            Data.getBackupInfo()
         }
     }
 
@@ -414,10 +423,12 @@ Popup {
 
                             text: qsTr("恢复");
                             onClicked: {
-
-                                console.log("恢复 " + time)
+                                console.log("恢复 " + name)
                                 if(status !=0 ){
-                                    console.log("异常数据不能恢复")
+                                    Notifier.notify(2,qsTr("非正常数据无法恢复"))
+                                }
+                                else{
+                                    Data.recoveryBackup(name)
                                 }
                             }
                         }

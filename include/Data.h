@@ -31,6 +31,7 @@ public:
     Q_INVOKABLE QVariantList getDataInfo();
     Q_INVOKABLE void getBackupInfo();
     Q_INVOKABLE bool removeBackupFile(const QString& fileName);
+    Q_INVOKABLE void recoveryBackup(const QString& fileName);
     Q_INVOKABLE void deleteUid(QString uid);
     Q_INVOKABLE void setTimezone(QString uid,int timezone);
     Q_INVOKABLE void update_data(const int& mode, QString input_url = "");
@@ -51,7 +52,9 @@ signals:
     void exportFail();
     void foundBackup(QVariantMap info);
     void backupDeletedSuccessed(QString fileName);
-    void backupDeletedFailed(QString fileName);
+    void backupHadDeleted(QString fileName);
+    void recoveryFailed();
+    void recoverySuccessed();
 
 public slots:
     void onUpdateComplete(json merged_list, std::string uid);
