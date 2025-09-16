@@ -60,6 +60,10 @@ public:
 				}
 				catch (const std::exception& e) {
 					// json 解析或文件读取异常，跳过
+					qWarning() << QString::fromStdString(e.what());
+					continue;
+				}
+				catch (...) {
 					continue;
 				}
 			}

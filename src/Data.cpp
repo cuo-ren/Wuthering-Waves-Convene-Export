@@ -637,7 +637,7 @@ Q_INVOKABLE void Data::update_data(const int& mode, QString input_url) {
 					temp.push_back(urls[params_dict["player_id"]]["url"]);
 					ConfigManager::instance().setUrlList(temp);
 				}
-				catch (const std::exception& e) {
+				catch (...) {
 					qWarning().noquote() << "输入的url解析失败:" << input_url;
 					Notifier::instance().notify(3, tr("更新失败"));
 					emit updateFail();
@@ -1587,7 +1587,7 @@ Q_INVOKABLE void Data::getBackupInfo() {
 						}
 						catch (const json::parse_error& e) {
 							fileInfo["status"] = 2;
-							qWarning() << QString::fromStdString(filename) << "文件损坏";
+							qWarning() << QString::fromStdString(filename) << "文件损坏" << QString::fromStdString(e.what());
 						}
 						catch (...) {
 							fileInfo["status"] = 2;
@@ -1681,4 +1681,185 @@ Q_INVOKABLE void Data::recoveryBackup(const QString& fileName) {
 	save(backupData);
 	Notifier::instance().notify(0, tr("恢复备份成功"));
 	emit recoverySuccessed();
+}
+
+Q_INVOKABLE void Data::importUIGF(const QString& path) {
+	json uigf;
+	try {
+		uigf = ReadJsonFile(path.toStdString());
+	}
+	catch (const std::runtime_error& e) {
+		Notifier::instance().notify(3, tr("打开文件失败"));
+		qWarning() << "打开文件失败" << path << QString::fromStdString(e.what());;
+		return;
+	}
+	catch (const json::parse_error& e) {
+		Notifier::instance().notify(3, tr("解析数据失败"));
+		qWarning() << "解析数据失败" << path << QString::fromStdString(e.what());
+		return;
+	}
+	catch (const std::exception& e) {
+		Notifier::instance().notify(3, tr("解析数据失败"));
+		qWarning() << "解析数据失败" << path << QString::fromStdString(e.what());
+		return;
+	}
+	catch (...) {
+		Notifier::instance().notify(3, tr("解析数据失败"));
+		qWarning() << "解析数据失败" << path;
+		return;
+	}
+
+	int uigf_version;
+	
+	try {
+		if (uigf["info"].contains("uigf_version")) {
+			uigf_version = 3;
+		}
+		else if (uigf["info"].contains("version")) {
+			uigf_version = 4;
+		}
+		else {
+			Notifier::instance().notify(3, tr("无法判断UIGF版本"));
+			qWarning() << "判断UIGF版本失败" << path;
+			return;
+		}
+	}
+	catch (...) {
+		Notifier::instance().notify(3, tr("无法判断UIGF版本"));
+		qWarning() << "导入失败" << path;
+		return;
+	}
+	try {
+		if (uigf_version == 3) {
+			importUIGF3(uigf);
+		}
+		else if (uigf_version == 4) {
+			importUIGF4(uigf);
+		}
+	}
+	catch (...) {
+		Notifier::instance().notify(3, tr("导入失败"));
+		qWarning() << "导入失败" << path;
+		return;
+	}
+}
+
+Q_INVOKABLE void Data::importUIGF3(const json& uigf) {
+	//获取uid
+	std::string uid = uigf["info"]["uid"].get<std::string>();
+	json data;
+
+	data[uid] = { {"info",json::object()}, {"data",json::object()} };
+	data[uid]["info"]["lang"] = uigf["info"]["lang"].get<std::string>();
+	//校验lang
+	std::vector<std::string> support_languages = Global::instance().get_support_languages();
+	if (std::find(support_languages.begin(), support_languages.end(), data[uid]["info"]["lang"].get<std::string>()) == support_languages.end()) {
+		qWarning() << "导入的数据语言不支持";
+		Notifier::instance().notify(2, tr("导入的数据语言不支持"));
+		return;
+	}
+	data[uid]["info"]["update_time"] = uigf["info"]["export_timestamp"].get<int>();
+	data[uid]["info"]["timezone"] = uigf["info"]["region_time_zone"].get<int>();
+
+	std::vector<std::string> import_gacha_type;
+	for (auto& item : uigf["list"]) {
+		if (std::find(import_gacha_type.begin(), import_gacha_type.end(), item["gacha_type"].get<std::string>()) == import_gacha_type.end()) {
+			//创建新卡池id
+			import_gacha_type.push_back(item["gacha_type"].get<std::string>());
+			data[uid]["data"][item["gacha_type"]] = json::array();
+		}
+		//校验星级
+		int qualityLevel = stoi(item["rank_type"].get<std::string>());
+		if (qualityLevel < 3 or qualityLevel>5) {
+			Notifier::instance().notify(3, tr("导入的数据有误"));
+			return;
+		}
+		//校验时间
+		if (!validate_datetime(item["time"].get<std::string>())) {
+			qWarning().noquote() << "导入的时间格式不符合要求";
+			Notifier::instance().notify(3, tr("导入的时间格式不符合要求"));
+			return;
+		}
+		//校验类型
+		if (item["item_type"] != LanguageManager::instance().getValueByCode(data[uid]["info"]["lang"].get<std::string>(), "Weapon") and item["item_type"] != LanguageManager::instance().getValueByCode(data[uid]["info"]["lang"].get<std::string>(), "Resonator")) {
+			qWarning().noquote() << "导入的类型不符合要求";
+			Notifier::instance().notify(3, tr("导入的类型不符合要求 %1").arg(QString::fromStdString(item["type"])));
+			return;
+		}
+		json it = {
+			{"id",stoi(item["item_id"].get<std::string>())},
+			{"name",item["name"].get<std::string>()},
+			{"qualityLevel",qualityLevel},
+			{"time",item["time"].get<std::string>()},
+			{"type",item["item_type"].get<std::string>()}
+		};
+		data[uid]["data"][item["gacha_type"]].push_back(it);
+	}
+	gacha_list[uid] = data[uid];
+	save(gacha_list);
+	Notifier::instance().notify(0, tr("导入成功"));
+}
+
+Q_INVOKABLE void Data::importUIGF4(const json& uigf) {
+	json data;
+	for (auto& user : uigf["aki"]) {
+		std::string uid = user["uid"].get<std::string>();
+		data[uid] = { {"info",json::object()}, {"data",json::object()} };
+		data[uid]["info"]["lang"] = user["lang"].get<std::string>();
+		//校验lang
+		std::vector<std::string> support_languages = Global::instance().get_support_languages();
+		if (std::find(support_languages.begin(), support_languages.end(), data[uid]["info"]["lang"].get<std::string>()) == support_languages.end()) {
+			qWarning() << "导入的数据语言不支持";
+			Notifier::instance().notify(2, tr("%1 导入的数据语言不支持").arg(QString::fromStdString(uid)));
+			data.erase(uid);
+			continue;
+		}
+		data[uid]["info"]["update_time"] = uigf["info"]["export_timestamp"];
+		data[uid]["info"]["timezone"] = user["timezone"];
+
+		std::vector<std::string> import_gacha_type;
+		for (auto& item : user["list"]) {
+			if (std::find(import_gacha_type.begin(), import_gacha_type.end(), item["gacha_type"].get<std::string>()) == import_gacha_type.end()) {
+				//创建新卡池id
+				import_gacha_type.push_back(item["gacha_type"].get<std::string>());
+				data[uid]["data"][item["gacha_type"]] = json::array();
+			}
+			//校验星级
+			int qualityLevel = stoi(item["rank_type"].get<std::string>());
+			if (qualityLevel < 3 or qualityLevel>5) {
+				Notifier::instance().notify(3, tr("%1 导入的数据有误").arg(QString::fromStdString(uid)));
+				data.erase(uid);
+				break;
+			}
+			//校验时间
+			if (!validate_datetime(item["time"].get<std::string>())) {
+				qWarning().noquote() << "导入的时间格式不符合要求";
+				Notifier::instance().notify(3, tr("%1 导入的时间格式不符合要求").arg(QString::fromStdString(uid)));
+				data.erase(uid);
+				break;
+			}
+			//校验类型
+			if (item["item_type"] != LanguageManager::instance().getValueByCode(data[uid]["info"]["lang"].get<std::string>(), "Weapon") and item["item_type"] != LanguageManager::instance().getValueByCode(data[uid]["info"]["lang"].get<std::string>(), "Resonator")) {
+				qWarning().noquote() << "导入的类型不符合要求";
+				Notifier::instance().notify(3, tr("%1 导入的类型不符合要求 %2").arg(QString::fromStdString(uid)).arg(QString::fromStdString(item["type"])));
+				data.erase(uid);
+				break;
+			}
+			json it = {
+				{"id",stoi(item["item_id"].get<std::string>())},
+				{"name",item["name"].get<std::string>()},
+				{"qualityLevel",qualityLevel},
+				{"time",item["time"].get<std::string>()},
+				{"type",item["item_type"].get<std::string>()}
+			};
+			data[uid]["data"][item["gacha_type"]].push_back(it);
+		}
+	}
+	int cnt = 0;
+	for (auto& [userid, value] : data.items()) {
+		gacha_list[userid] = data[userid];
+		cnt++;
+	}
+	save(gacha_list);
+	Notifier::instance().notify(0, tr("导入成功，共导入%1个用户").arg(QString::number(cnt)));
 }

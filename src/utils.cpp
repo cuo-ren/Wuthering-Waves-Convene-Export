@@ -187,7 +187,7 @@ json ReadJsonFile(const std::string& path) {
 		file >> data;
 	}
 	catch (const json::parse_error& e) {
-		qWarning().noquote() << "json解析失败: " << e.what();
+		qWarning().noquote() << "json解析失败: " << QString::fromStdString(e.what());
 		throw;
 	}
 	catch (...) {
@@ -217,11 +217,11 @@ void WriteJsonFile(const std::string& path, const json& data) {
 		Notifier::instance().notify(3, "json解析失败 ");
 	}
 	catch (const std::ios_base::failure& e) {
-		qCritical().noquote() << "文件写入失败! " << "path:" << QString::fromUtf8(path);
+		qCritical().noquote() << "文件写入失败!" << "path:" << QString::fromUtf8(path) << QString::fromStdString(e.what());
 		Notifier::instance().notify(3, "文件写入失败!");
 	}
 	catch (...) {
-		qCritical().noquote() << "文件写入发生未知错误 " << "path:" << QString::fromUtf8(path);
+		qCritical().noquote() << "文件写入发生未知错误" << "path:" << QString::fromUtf8(path);
 		Notifier::instance().notify(3, "文件写入发生未知错误");
 	}
 }

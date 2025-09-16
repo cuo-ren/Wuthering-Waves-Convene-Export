@@ -172,13 +172,13 @@ private:
             config = ReadJsonFile(configPath);
         }
         catch (const std::runtime_error& e) {
-            qWarning().noquote() << "配置文件打开失败，正在创建";
+            qWarning().noquote() << "配置文件打开失败，正在创建" << QString::fromStdString(e.what());
             Notifier::instance().notify(3, "配置文件读取失败");
             config = default_config;
             save();
         }
         catch (const json::parse_error& e) {
-            std::cerr << "配置文件json解析失败，正在创建" << std::endl;
+            qWarning() << "配置文件json解析失败，正在创建" << QString::fromStdString(e.what());
             Notifier::instance().notify(3, "配置文件读取失败");
             config = default_config;
             save();

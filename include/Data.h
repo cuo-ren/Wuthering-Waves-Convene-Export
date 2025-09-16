@@ -39,6 +39,9 @@ public:
     Q_INVOKABLE void exportToCsv();
     Q_INVOKABLE void exportToUIGF3();
     Q_INVOKABLE void exportToUIGF4(bool isTotal);
+    Q_INVOKABLE void importUIGF(const QString& path);
+    Q_INVOKABLE void importUIGF3(const json& uigf);
+    Q_INVOKABLE void importUIGF4(const json& uigf);
 
 signals:
     void prossessChanged(QString text);
