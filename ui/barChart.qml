@@ -11,7 +11,7 @@ Item {
 
     property alias gacha_data: myModel
     required property url path//资源路径
-    property string chartTitle: qsTr("卡池名称")
+    property string chartTitle: qsTr("")
     property string key: "0"
     property alias contentWidth: root.contentWidth
     property alias chartClip: root.clip

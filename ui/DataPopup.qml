@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls.Basic
 import QtQuick.Layouts
+import QtQuick.Dialogs
 import Data
 import Notifier
 
@@ -143,7 +144,21 @@ Popup {
         RowLayout {
             Layout.fillWidth: true
             spacing: 10
-
+            FileDialog {
+                id: fileDialog
+                title: qsTr("选择文件")
+                onAccepted: {
+                    var  filepath = selectedFile.toString()
+                    filepath = filepath.replace("file:///", "")
+                    Data.importUIGF(filepath)
+                    var gachaInfo = Data.getDataInfo()
+                    dataManager.data.clear()
+                    for(var i = 0; i < gachaInfo.length; i++){
+                        dataManager.data.append({"uid":gachaInfo[i]["uid"],"time":gachaInfo[i]["time"],"timezone":gachaInfo[i]["timezone"]})
+                    }
+                    dataManager.refresh()
+                }
+            }
             MyButton{
                 id: importBtn
                 width: 80
@@ -160,7 +175,7 @@ Popup {
                 text: qsTr("导入数据")
 
                 onClicked: {
-                    //导入逻辑
+                    fileDialog.open()
                 }
             }
 

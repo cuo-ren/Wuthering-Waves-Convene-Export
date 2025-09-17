@@ -1761,12 +1761,17 @@ Q_INVOKABLE void Data::importUIGF3(const json& uigf) {
 	data[uid]["info"]["update_time"] = uigf["info"]["export_timestamp"].get<int>();
 	data[uid]["info"]["timezone"] = uigf["info"]["region_time_zone"].get<int>();
 
-	std::vector<std::string> import_gacha_type;
+	json gacha_type = Global::instance().get_gacha_type();
+	std::vector<std::string> gacha_type_list = Global::instance().get_gacha_type_key();
+
+	for (auto& gacha_key : gacha_type["data"]) {
+		data[uid]["data"][gacha_key["key"]] = json::array();
+	}
+
 	for (auto& item : uigf["list"]) {
-		if (std::find(import_gacha_type.begin(), import_gacha_type.end(), item["gacha_type"].get<std::string>()) == import_gacha_type.end()) {
-			//创建新卡池id
-			import_gacha_type.push_back(item["gacha_type"].get<std::string>());
-			data[uid]["data"][item["gacha_type"]] = json::array();
+		if (std::find(gacha_type_list.begin(), gacha_type_list.end(), item["gacha_type"].get<std::string>()) == gacha_type_list.end()) {
+			Notifier::instance().notify(3, tr("导入的数据有误"));
+			return;
 		}
 		//校验星级
 		int qualityLevel = stoi(item["rank_type"].get<std::string>());
@@ -1817,12 +1822,17 @@ Q_INVOKABLE void Data::importUIGF4(const json& uigf) {
 		data[uid]["info"]["update_time"] = uigf["info"]["export_timestamp"];
 		data[uid]["info"]["timezone"] = user["timezone"];
 
-		std::vector<std::string> import_gacha_type;
+		json gacha_type = Global::instance().get_gacha_type();
+		std::vector<std::string> gacha_type_list = Global::instance().get_gacha_type_key();
+
+		for (auto& gacha_key : gacha_type["data"]) {
+			data[uid]["data"][gacha_key["key"]] = json::array();
+		}
 		for (auto& item : user["list"]) {
-			if (std::find(import_gacha_type.begin(), import_gacha_type.end(), item["gacha_type"].get<std::string>()) == import_gacha_type.end()) {
-				//创建新卡池id
-				import_gacha_type.push_back(item["gacha_type"].get<std::string>());
-				data[uid]["data"][item["gacha_type"]] = json::array();
+			if (std::find(gacha_type_list.begin(), gacha_type_list.end(), item["gacha_type"].get<std::string>()) == gacha_type_list.end()) {
+				Notifier::instance().notify(3, tr("%1 导入的数据有误").arg(QString::fromStdString(uid)));
+				data.erase(uid);
+				break;
 			}
 			//校验星级
 			int qualityLevel = stoi(item["rank_type"].get<std::string>());
@@ -1860,6 +1870,8 @@ Q_INVOKABLE void Data::importUIGF4(const json& uigf) {
 		gacha_list[userid] = data[userid];
 		cnt++;
 	}
-	save(gacha_list);
+	if (cnt != 0) {
+		save(gacha_list);
+	}
 	Notifier::instance().notify(0, tr("导入成功，共导入%1个用户").arg(QString::number(cnt)));
 }

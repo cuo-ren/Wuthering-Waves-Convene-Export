@@ -39,6 +39,11 @@ Window {
             if(myModel.count != 0){
                 initData(myModel.get(0)["key"],myModel.get(0)["name"])
             }
+            else{
+                barChart.key = "0"
+                barChart.gacha_data.clear()
+                barChart.chartTitle = ""
+            }
         }
         onGamePathChanged: {
             if(Path.validatePath(ConfigManager.getValue("path"))){
@@ -331,6 +336,11 @@ Window {
                     initButtonGroup()
                     if(myModel.count != 0){
                         initData(myModel.get(0)["key"],myModel.get(0)["name"])
+                    }
+                    else{
+                        barChart.key = "0"
+                        barChart.gacha_data.clear()
+                        barChart.chartTitle = ""
                     }
                 }
             }
