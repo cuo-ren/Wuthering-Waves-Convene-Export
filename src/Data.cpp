@@ -893,6 +893,7 @@ json Data::get_gacha_data(const std::string cardPoolId, const std::string cardPo
 		{"recordId", recordId},
 		{"serverId", serverId}
 	};
+	qDebug() << "Data:" << post_data.dump(2);
 
 	// 发起 POST 请求
 	auto res = cli.Post("/gacha/record/query", headers, post_data.dump(), "application/json");
@@ -903,6 +904,7 @@ json Data::get_gacha_data(const std::string cardPoolId, const std::string cardPo
 		return { {"code", -2} };
 	}
 	try {
+		qDebug() << QString::fromStdString(res->body);
 		json result = json::parse(res->body);
 		return result;
 	}

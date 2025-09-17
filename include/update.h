@@ -3,6 +3,7 @@
 #include "config.h"
 #include <QtConcurrent/QtConcurrent>
 #include <QFuture>
+#include "DownloadManager.h"
 #define CPPHTTPLIB_OPENSSL_SUPPORT
 #include "httplib.h"
 
@@ -20,42 +21,77 @@ public:
 		return instance;
 	}
 
-	Q_INVOKABLE void getImage(QString fileName) {
+    Q_INVOKABLE void checkUpdate() {
+        json info = Global::instance().getInfo();
+        std::string version = info["version"].get<std::string>();
+        std::string new_version;
 
-        QtConcurrent::run([this, fileName]() {
-            httplib::Client cli("https://raw.githubusercontent.com");
-            cli.set_read_timeout(10, 0);
-            std::string proxy = get_system_proxy();
+        std::string url;
+        httplib::Headers headers;
 
-            if (!proxy.empty()) {
-                qDebug() << "设置了系统代理：" << QString::fromStdString(proxy);
+        //release url
+        url = "https://api.github.com";
 
-                auto r = parse_proxy(proxy);
-                qDebug() << "ip:" << r->first << "端口:" << r->second;
-                cli.set_proxy(r->first, r->second);
+        headers = {
+            { "User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36 Edg/133.0.0.0" },
+            { "Accept", "application/json" }
+        };
+
+        httplib::Client cli(url);
+        cli.set_read_timeout(10, 0); // 10 秒超时
+
+        //设置代理
+        std::string proxy = DownloadManager::instance().get_system_proxy();
+        if (!proxy.empty()) {
+            qDebug() << "检测到系统代理：" << QString::fromStdString(proxy);
+
+            auto r = DownloadManager::instance().parse_proxy(proxy);
+            qDebug() << "ip:" << r->first << "端口:" << r->second;
+            cli.set_proxy(r->first, r->second);
+        }
+
+        // 发起 GET 请求
+        auto res = cli.Get("/repos/cuo-ren/Wuthering-Waves-Convene-Export/releases", headers);
+
+        if (!res || res->status != 200) {
+            qWarning().noquote() << "网络异常 状态码：" << (res ? QString::fromStdString(std::to_string(res->status)) : "连接失败");
+            Notifier::instance().notify(2, "网络异常" + (res ? QString::fromStdString(std::to_string(res->status)) : "连接失败"));
+            return;
+            //return { {"code", -2} };
+        }
+        try {
+            json result = json::parse(res->body);
+            for (auto& it : result) {
+                qDebug()<< it["tag_name"].get<std::string>();
+                if (it["prerelease"].get<bool>() or it["draft"].get<bool>()) {
+                    continue;
+                }
+                else {
+                    new_version = it["tag_name"].get<std::string>();
+                    break;
+                }
             }
-
-            qInfo() << "开始下载文件 " + fileName;
-            auto res = cli.Get("/cuo-ren/Wuthering-Waves-Convene-Export/refs/heads/main/resource/" + fileName.toStdString());
-
-            if (res && res->status == 200) {
-                std::filesystem::path fsPath = std::filesystem::u8path(resourcePath + fileName.toStdString());
-                std::ofstream ofs(fsPath, std::ios::binary | std::ios::trunc);
-                ofs.write(res->body.data(), res->body.size());
-                ofs.close();
-                qInfo() << "下载完成";
-                emit getImageSuccessed(fileName);
-            }
-            else {
-                qWarning() << "下载失败: " << (res ? QString::fromStdString(std::to_string(res->status)) : "网络请求超时");
-            }
-        });
-	}
+            
+            //return result;
+        }
+        catch (...) {
+            qWarning().noquote() << "响应解析失败";
+            Notifier::instance().notify(3, tr("响应解析失败"));
+            return;
+            //return { {"code", -3} };
+        }
+        qDebug() << version << new_version;
+        if (new_version == version) {
+            Notifier::instance().notify(0, tr("无需更新"));
+        }
+        else {
+            Notifier::instance().notify(0, tr("存在更新"));
+        }
+    }
 signals:
-    void getImageSuccessed(QString fileName);
+
 
 private:
-    std::string resourcePath = "./resource/";
 
     std::string get_system_proxy() {
         HKEY hKey;

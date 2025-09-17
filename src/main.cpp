@@ -12,6 +12,7 @@
 #include "Data.h"
 #include "Path.h"
 #include "DownloadManager.h"
+#include "update.h"
 
 int main(int argc, char *argv[])
 {
@@ -40,6 +41,7 @@ int main(int argc, char *argv[])
     Data::instance();
     Path::instance();
     DownloadManager::instance();
+    Update::instance();
 
     //翻译模块
     QTranslator translator;
@@ -59,6 +61,7 @@ int main(int argc, char *argv[])
     qmlRegisterSingletonInstance("Data", 1, 0, "Data", &Data::instance());
     qmlRegisterSingletonInstance("Path", 1, 0, "Path", &Path::instance());
     qmlRegisterSingletonInstance("DownloadManager", 1, 0, "DownloadManager", &DownloadManager::instance());
+    qmlRegisterSingletonInstance("Update", 1, 0, "Update", &Update::instance());
 
     engine.load(QUrl(QStringLiteral("qrc:/qt/qml/wuthering waves convene export/ui/main.qml")));
 

@@ -9,6 +9,7 @@ import Notifier
 import LanguageManager
 import Data
 import Path
+import Update
 
 Window {
     id: root
@@ -514,6 +515,7 @@ Window {
     }
 
     Component.onCompleted:{
+        Update.checkUpdate()
         initButtonGroup()
         if(myModel.count != 0){
             initData(myModel.get(0)["key"],myModel.get(0)["name"])
@@ -546,7 +548,9 @@ Window {
         //重新加载
         initButtonGroup()
         if(myModel.count == 0){
-            //更新后还是无数据，之间返回
+            barChart.key = "0"
+            barChart.gacha_data.clear()
+            barChart.chartTitle = ""
             return
         }
         if(barChart.key == "0"){
@@ -572,8 +576,8 @@ Window {
                 barChart.gacha_data.setProperty(i,"count",gacha_data[i]["count"])
                 barChart.gacha_data.setProperty(i,"isOffTarget",gacha_data[i]["isOffTarget"])
                 //如果有别的数据，清除
-                for(var j = i + 1; j < barChart.gacha_data.count; j++){
-                    barChart.gacha_data.remove(i+1,1)
+                if(i+1<barChart.gacha_data.count){
+                    barChart.gacha_data.remove(i+1,barChart.gacha_data.count-i-1)
                 }
                 continue;
             }
