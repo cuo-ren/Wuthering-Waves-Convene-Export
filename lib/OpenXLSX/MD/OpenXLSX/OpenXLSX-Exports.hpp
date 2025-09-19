@@ -9,10 +9,10 @@
 #  ifndef OPENXLSX_EXPORT
 #    ifdef OpenXLSX_EXPORTS
         /* We are building this library */
-#      define OPENXLSX_EXPORT 
+#      define OPENXLSX_EXPORT __declspec(dllexport)
 #    else
         /* We are using this library */
-#      define OPENXLSX_EXPORT 
+#      define OPENXLSX_EXPORT __declspec(dllimport)
 #    endif
 #  endif
 

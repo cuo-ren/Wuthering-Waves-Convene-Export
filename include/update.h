@@ -4,6 +4,7 @@
 #include <QtConcurrent/QtConcurrent>
 #include <QFuture>
 #include "DownloadManager.h"
+#include "miniz.h"
 #define CPPHTTPLIB_OPENSSL_SUPPORT
 #include "httplib.h"
 
@@ -87,6 +88,198 @@ public:
         else {
             Notifier::instance().notify(0, tr("存在更新"));
         }
+    }
+    /*
+    bool download_file(const std::string& filename, const std::string& save_path) {
+        // 提取 host，不需要 https 时直接写死
+        httplib::Client cli("https://github.com");
+        cli.set_follow_location(true); // 支持 301/302 跳转
+
+        std::ofstream ofs(save_path, std::ios::binary);
+        if (!ofs) {
+            std::cerr << "无法打开输出文件: " << save_path << std::endl;
+            return false;
+        }
+
+        bool ok = false;
+
+        // 目标路径 (如 /update.zip)
+        std::string target = "/" + filename;
+
+        // 执行 GET 请求（流式写入）
+        auto res = cli.Get(
+            "/cuo-ren/Wuthering-Waves-Convene-Export/releases/download/betav2.1/Wuthering.Waves.Convene.Export.zip",
+            [&](const char* data, size_t len) {
+                ofs.write(data, len);
+                return true; // 返回 true 继续下载
+            },
+            [&](uint64_t current, uint64_t total) {
+                if (total > 0) {
+                    int percent = static_cast<int>(100.0 * current / total);
+                    std::cout << "\rDownloading " << filename
+                        << " [" << percent << "%]" << std::flush;
+                }
+            }
+        );
+
+        ofs.close();
+        std::cout << std::endl;
+
+        if (res && res->status == 200) {
+            std::cout << "下载完成: " << save_path << std::endl;
+            ok = true;
+        }
+        else {
+            std::cerr << "下载失败, HTTP status = "
+                << (res ? std::to_string(res->status) : "connection error")
+                << std::endl;
+        }
+
+        return ok;
+    }
+    */
+    bool download_file(const std::string& filename, const std::string& save_path) {
+        httplib::Client cli("https://github.com");
+        cli.set_follow_location(true); // 支持 301/302 跳转
+        cli.set_read_timeout(10, 0); // 10 秒超时
+
+        //设置代理
+        std::string proxy = DownloadManager::instance().get_system_proxy();
+        if (!proxy.empty()) {
+            qDebug() << "检测到系统代理：" << QString::fromStdString(proxy);
+
+            auto r = DownloadManager::instance().parse_proxy(proxy);
+            qDebug() << "ip:" << r->first << "端口:" << r->second;
+            cli.set_proxy(r->first, r->second);
+        }
+
+        std::ofstream ofs(save_path, std::ios::binary);
+        if (!ofs) {
+            std::cerr << "无法打开输出文件: " << save_path << std::endl;
+            return false;
+        }
+
+        std::string target = "/" + filename;
+        auto start_time = std::chrono::steady_clock::now();
+        uint64_t current_bytes = 0;
+
+        auto res = cli.Get(
+            "/cuo-ren/Wuthering-Waves-Convene-Export/releases/download/betav2.1/Wuthering.Waves.Convene.Export.zip", // 请求路径
+            [&](const char* data, size_t len) { // ContentReceiver
+                ofs.write(data, len);
+                current_bytes += len;
+                return true; // 继续下载
+            },
+            [&](uint64_t current, uint64_t total) { // DownloadProgress
+                auto now = std::chrono::steady_clock::now();
+                double elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - start_time).count() / 1000.0;
+                double speed = (elapsed > 0) ? (current / elapsed) : 0.0; // bytes per sec
+
+                std::string speed_str;
+                if (speed > 1024 * 1024)
+                    speed_str = std::to_string(speed / 1024.0 / 1024.0).substr(0, 5) + " MB/s";
+                else if (speed > 1024)
+                    speed_str = std::to_string(speed / 1024.0).substr(0, 5) + " KB/s";
+                else
+                    speed_str = std::to_string(speed).substr(0, 5) + " B/s";
+
+                int percent = (total > 0) ? static_cast<int>(100.0 * current / total) : 0;
+
+                std::cout << "\rDownloading " << filename
+                    << " [" << percent << "%] "
+                    << speed_str << std::flush;
+
+                return true; // 继续下载
+            }
+        );
+
+        ofs.close();
+        std::cout << std::endl;
+
+        if (res && res->status == 200) {
+            std::cout << "下载完成: " << save_path << std::endl;
+            return true;
+        }
+        else {
+            std::cerr << "下载失败, HTTP status = "
+                << (res ? std::to_string(res->status) : "connection error")
+                << std::endl;
+            return false;
+        }
+    }
+    bool unzip(const std::string& zipPath, const std::string& outDir) {
+        std::filesystem::path zippath = std::filesystem::u8path(zipPath);
+        mz_zip_archive zip{};
+        if (!mz_zip_reader_init_file(&zip, zippath.u8string().c_str(), 0)) {
+            std::cerr << "打开ZIP失败: " << zipPath << "\n";
+            return false;
+        }
+
+        const uint64_t MAX_TOTAL_SIZE = 1024ull * 1024ull * 1024ull; // 1GB
+        uint64_t totalUncompressedSize = 0;
+
+        std::filesystem::path base = std::filesystem::weakly_canonical(std::filesystem::u8path(outDir));
+        std::filesystem::create_directories(base);
+
+        int fileCount = (int)mz_zip_reader_get_num_files(&zip);
+        for (int i = 0; i < fileCount; i++) {
+            mz_zip_archive_file_stat st;
+            if (!mz_zip_reader_file_stat(&zip, i, &st)) continue;
+
+            // 检查总大小限制
+            if (totalUncompressedSize + st.m_uncomp_size > MAX_TOTAL_SIZE) {
+                std::cerr << "解压总大小超过 1GB，停止解压\n";
+                break;
+            }
+
+            std::filesystem::path outPath = base / st.m_filename;
+
+            // ===== 路径穿越检查 =====
+            std::filesystem::path canon = std::filesystem::weakly_canonical(outPath.parent_path());
+            if (canon.u8string().compare(0, base.u8string().size(), base.u8string()) != 0) {
+                std::cerr << "检测到路径穿越攻击，跳过: " << st.m_filename << "\n";
+                continue;
+            }
+
+            if (mz_zip_reader_is_file_a_directory(&zip, i)) {
+                std::filesystem::create_directories(outPath);
+            }
+            else {
+                std::filesystem::create_directories(outPath.parent_path());
+                if (!mz_zip_reader_extract_to_file(&zip, i, outPath.u8string().c_str(), 0)) {
+                    std::cerr << "解压失败: " << st.m_filename << "\n";
+                }
+                else {
+                    totalUncompressedSize += st.m_uncomp_size;
+                }
+            }
+        }
+
+        mz_zip_reader_end(&zip);
+        std::cerr << "解压完成，总大小: " << totalUncompressedSize / (1024 * 1024) << " MB\n";
+        return true;
+    }
+
+    bool move_files(const std::string& srcDir, const std::string& dstDir) {
+        try {
+            std::filesystem::path srcpath= std::filesystem::u8path(srcDir);
+            std::filesystem::create_directories(srcpath);
+
+            for (const auto& entry : std::filesystem::directory_iterator(srcpath)) {
+                std::filesystem::path srcPath = entry.path();
+                std::filesystem::path dstPath = std::filesystem::u8path(dstDir) / srcPath.filename();
+
+                if (std::filesystem::exists(dstPath)) {
+                    std::filesystem::remove_all(dstPath); // 覆盖
+                }
+                std::filesystem::rename(srcPath, dstPath);
+            }
+        }
+        catch (const std::filesystem::filesystem_error& e) {
+            std::cerr << "移动文件失败: " << e.what() << std::endl;
+            return false;
+        }
+        return true;
     }
 signals:
 
