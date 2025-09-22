@@ -580,8 +580,13 @@ Q_INVOKABLE QVariantList Data::getBarChartData(const QString& key) {
 
 Q_INVOKABLE void Data::update_data(const int& mode, QString input_url) {
 	qInfo().noquote() << "准备更新数据";
+
+	if (updateDataFuture.isRunning()) {
+		qWarning() << "正在更新数据，跳过本次请求";
+		return;
+	}
 	
-	QtConcurrent::run([this, mode, input_url]() {
+	updateDataFuture = QtConcurrent::run([this, mode, input_url]() {
 		try {
 			json gacha_listCopy = gacha_list;
 			json urls = json::object();
@@ -877,7 +882,7 @@ json Data::get_gacha_data(const std::string cardPoolId, const std::string cardPo
 	//设置代理
 	std::string proxy = DownloadManager::instance().get_system_proxy();
 	if (!proxy.empty()) {
-		qDebug() << "检测到系统代理：" << QString::fromStdString(proxy);
+		qInfo() << "检测到系统代理：" << QString::fromStdString(proxy);
 
 		auto r = DownloadManager::instance().parse_proxy(proxy);
 		qDebug() << "ip:" << r->first << "端口:" << r->second;

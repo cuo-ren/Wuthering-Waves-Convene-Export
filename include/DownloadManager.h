@@ -171,7 +171,7 @@ private:
         std::string proxy = get_system_proxy();
 
         if (!proxy.empty()) {
-            qDebug() << "检测到系统代理：" << QString::fromStdString(proxy);
+            qInfo() << "检测到系统代理：" << QString::fromStdString(proxy);
 
             auto r = parse_proxy(proxy);
             qDebug() << "ip:" << r->first << "端口:" << r->second;

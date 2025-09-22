@@ -23,71 +23,78 @@ public:
 	}
 
     Q_INVOKABLE void checkUpdate() {
-        json info = Global::instance().getInfo();
-        std::string version = info["version"].get<std::string>();
-        std::string new_version;
-
-        std::string url;
-        httplib::Headers headers;
-
-        //release url
-        url = "https://api.github.com";
-
-        headers = {
-            { "User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36 Edg/133.0.0.0" },
-            { "Accept", "application/json" }
-        };
-
-        httplib::Client cli(url);
-        cli.set_read_timeout(10, 0); // 10 秒超时
-
-        //设置代理
-        std::string proxy = DownloadManager::instance().get_system_proxy();
-        if (!proxy.empty()) {
-            qDebug() << "检测到系统代理：" << QString::fromStdString(proxy);
-
-            auto r = DownloadManager::instance().parse_proxy(proxy);
-            qDebug() << "ip:" << r->first << "端口:" << r->second;
-            cli.set_proxy(r->first, r->second);
-        }
-
-        // 发起 GET 请求
-        auto res = cli.Get("/repos/cuo-ren/Wuthering-Waves-Convene-Export/releases", headers);
-
-        if (!res || res->status != 200) {
-            qWarning().noquote() << "网络异常 状态码：" << (res ? QString::fromStdString(std::to_string(res->status)) : "连接失败");
-            Notifier::instance().notify(2, "网络异常" + (res ? QString::fromStdString(std::to_string(res->status)) : "连接失败"));
+        if (checkUpdateFuture.isRunning()) {
+            qWarning() << "更新检查线程已存在，跳过";
             return;
-            //return { {"code", -2} };
         }
-        try {
-            json result = json::parse(res->body);
-            for (auto& it : result) {
-                qDebug()<< it["tag_name"].get<std::string>();
-                if (it["prerelease"].get<bool>() or it["draft"].get<bool>()) {
-                    continue;
-                }
-                else {
-                    new_version = it["tag_name"].get<std::string>();
-                    break;
+        checkUpdateFuture = QtConcurrent::run([this]() {
+            //获取当前版本
+            json info = Global::instance().getInfo();
+            std::string version = info["version"].get<std::string>();
+            std::string new_version;
+
+            std::string url;
+            httplib::Headers headers;
+
+            //release url
+            url = "https://api.github.com";
+            //headers
+            headers = {
+                { "User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36 Edg/133.0.0.0" },
+                { "Accept", "application/json" }
+            };
+
+            httplib::Client cli(url);
+            cli.set_read_timeout(10, 0); // 10 秒超时
+
+            //设置代理
+            std::string proxy = DownloadManager::instance().get_system_proxy();
+            if (!proxy.empty()) {
+                qInfo() << "检测到系统代理：" << QString::fromStdString(proxy);
+
+                auto r = DownloadManager::instance().parse_proxy(proxy);
+                qDebug() << "ip:" << r->first << "端口:" << r->second;
+                cli.set_proxy(r->first, r->second);
+            }
+
+            // 发起 GET 请求
+            auto res = cli.Get("/repos/cuo-ren/Wuthering-Waves-Convene-Export/releases", headers);
+            //连接失败
+            if (!res || res->status != 200) {
+                qWarning().noquote() << "网络异常 状态码：" << (res ? QString::fromStdString(std::to_string(res->status)) : "连接失败");
+                Notifier::instance().notify(2, "网络异常" + (res ? QString::fromStdString(std::to_string(res->status)) : "连接失败"));
+                emit checkUpdateFailed();
+                return;
+            }
+            try {
+                json result = json::parse(res->body);
+                for (auto& it : result) {
+                    qDebug() << it["tag_name"].get<std::string>();
+                    if (it["prerelease"].get<bool>() or it["draft"].get<bool>()) {
+                        continue;
+                    }
+                    else {
+                        new_version = it["tag_name"].get<std::string>();
+                        break;
+                    }
                 }
             }
-            
-            //return result;
-        }
-        catch (...) {
-            qWarning().noquote() << "响应解析失败";
-            Notifier::instance().notify(3, tr("响应解析失败"));
-            return;
-            //return { {"code", -3} };
-        }
-        qDebug() << version << new_version;
-        if (new_version == version) {
-            Notifier::instance().notify(0, tr("无需更新"));
-        }
-        else {
-            Notifier::instance().notify(0, tr("存在更新"));
-        }
+            catch (...) {
+                qWarning().noquote() << "响应解析失败";
+                Notifier::instance().notify(3, tr("响应解析失败"));
+                emit checkUpdateFailed();
+                return;
+            }
+            qDebug() << version << new_version;
+            if (new_version == version) {
+                Notifier::instance().notify(0, tr("无需更新"));
+                emit hasNewVersion(false);
+            }
+            else {
+                Notifier::instance().notify(0, tr("存在更新"));
+                emit hasNewVersion(true, QString::fromStdString(new_version));
+            }
+        });
     }
     /*
     bool download_file(const std::string& filename, const std::string& save_path) {
@@ -281,10 +288,39 @@ public:
         }
         return true;
     }
-signals:
+    /*
+    void loadLanguageJson(const QString& path) {
+        QFile file(path);
+        if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            qFatal().noquote() << "语言文件打开失败:" << path;
+            return;
+        }
 
+        QTextStream in(&file);
+        QString content = in.readAll();
+        file.close();
+
+        try {
+            languageJson = json::parse(content.toStdString());
+        }
+        catch (const json::parse_error& e) {
+            qFatal().noquote() << "语言文件解析失败:" << e.what();
+        }
+        for (auto& [langCode, item] : languageJson.items()) {
+            QVariantMap temp;
+            for (auto& [key, value] : item.items()) {
+                temp[QString::fromStdString(key)] = QString::fromStdString(value);
+            }
+            languageVariantMap[QString::fromStdString(langCode)] = temp;
+        }
+    }
+    */
+signals:
+    void hasNewVersion(bool flag,QString version = "");
+    void checkUpdateFailed();
 
 private:
+    QFuture<void> checkUpdateFuture;
 
     std::string get_system_proxy() {
         HKEY hKey;

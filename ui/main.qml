@@ -515,7 +515,6 @@ Window {
     }
 
     Component.onCompleted:{
-        Update.checkUpdate()
         initButtonGroup()
         if(myModel.count != 0){
             initData(myModel.get(0)["key"],myModel.get(0)["name"])

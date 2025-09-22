@@ -51,9 +51,6 @@ int main(int argc, char *argv[])
     else {
         qWarning().noquote() << "加载翻译失败";
     }
-    UINT codePage = GetACP();
-    std::cout << "当前系统 ANSI 代码页: " << codePage << "\n";    Update::instance().unzip("./测试.zip", "./测试/");
-    Update::instance().move_files("./测试", "./");
     QQmlApplicationEngine engine;
     langMgr.init(&engine, &app);
     qmlRegisterSingletonInstance("LanguageManager", 1, 0, "LanguageManager", &langMgr);

@@ -72,6 +72,7 @@ private:
         XLStyleIndex star4Style;
         XLStyleIndex star5Style;
     };
+    QFuture<void> updateDataFuture;
 
     void initGachaList();
     json validate_data(const json& gacha_list);

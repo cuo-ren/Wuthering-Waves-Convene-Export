@@ -27,7 +27,7 @@ Item {
     property string text: "按钮"
     property int radius: 5
     signal clicked()
-
+/*
     states: [
         State {
             name: "common"
@@ -80,21 +80,23 @@ Item {
     ]
 
     state: root.disabled ? "disabled" : (!isHover ? "common" : isPressed ? "pressed" : "hover")
-
+*/
     Rectangle{
         id: rec
 
         width: root.width
         height: root.height
 
-        color: commonFillColor
-        border.color: commonBorderColor
+        color: root.disabled ? disabledFillColor : (!isHover ? commonFillColor : isPressed ? pressedFillColor : hoverFillColor)
+        border.color: root.disabled ? disabledBorderColor : (!isHover ? commonBorderColor : isPressed ? pressedBorderColor : hoverBorderColor)
 
         radius: root.radius
 
         Text {
             id: text
             text: root.text
+
+            color: root.disabled ? disabledTextColor : (!isHover ? commonTextColor : isPressed ? pressedTextColor : hoverTextColor)
 
             width: parent.width
 

@@ -7,6 +7,7 @@ import Global
 import Path
 import Notifier
 import Data
+import Update
 
 Popup {
     function updatePath(){
@@ -59,7 +60,10 @@ Popup {
         skipSettingSwitch.checked = ConfigManager.getValue("skip")
         //自动更新设置
         updateSettingSwitch.checked = ConfigManager.getValue("update")
-
+        //检查更新
+        if(updateSettingSwitch.checked){
+            Update.checkUpdate()
+        }
         //语言设置
         var supportLanguages = Global.supportLanguages
         for(var i = 0; i < supportLanguages.length; i++){
@@ -527,13 +531,102 @@ Popup {
                             }
                         }
                     }
-                    Button{
+                    MyButton{
+                        id: checkUpdateBtn
                         width: 90
                         height: 35
+
                         anchors.left: updateSettingSwitch.right
                         anchors.verticalCenter: parent.verticalCenter
-                        anchors.margins: 10
+                        anchors.margins: 20
+
                         text: qsTr("检查更新")
+
+                        state:"noUpdate"
+
+                        states: [
+                            State {
+                                name: "noUpdate"
+                                PropertyChanges {
+                                    target: checkUpdateBtn
+                                    commonFillColor: "#ECF5FF"
+                                    commonBorderColor: "#409eff"
+                                    commonTextColor: "#409eff"
+
+                                    hoverFillColor: "#409eff"
+                                    hoverBorderColor: "#409eff"
+
+                                    text: qsTr("检查更新")
+                                    disabled: false
+                                }
+                            },
+                            State {
+                                name: "hasUpdate"
+                                PropertyChanges {
+                                    target: checkUpdateBtn
+                                    commonFillColor: "#F0F9EF"
+                                    commonBorderColor: "#67c23a"
+                                    commonTextColor: "#67c23a"
+
+                                    hoverFillColor: "#67c23a"
+                                    hoverBorderColor: "#67c23a"
+
+                                    text: qsTr("下载更新")
+                                    disabled: false
+                                }
+                            },
+                            State {
+                                name: "Downloading"
+                                PropertyChanges {
+                                    target: checkUpdateBtn
+
+                                    text: qsTr("正在下载")
+                                    disabled: true
+                                }
+                            },
+                            State {
+                                name: "update"
+                                PropertyChanges {
+                                    target: checkUpdateBtn
+                                    commonFillColor: "#F0F9EF"
+                                    commonBorderColor: "#67c23a"
+                                    commonTextColor: "#67c23a"
+
+                                    hoverFillColor: "#67c23a"
+                                    hoverBorderColor: "#67c23a"
+
+                                    text: qsTr("立即更新")
+                                    disabled: false
+                                }
+                            }
+                        ]
+
+                        Connections{
+                            target: Update
+                            function onCheckUpdateFailed(){
+                                checkUpdateBtn.state = "noUpdate"
+                            }
+                            function onHasNewVersion(flag,version){
+                                if(flag){
+                                    checkUpdateBtn.state = "hasUpdate"
+                                }
+                                else{
+                                    checkUpdateBtn.state = "noUpdate"
+                                }
+                            }
+                        }
+
+                        onClicked: {
+                            if(this.state == "noUpdate"){
+                                Update.checkUpdate()
+                            }else if(this.state == "hasUpdate"){
+                                this.state = "update"
+                            }else if(this.state == "Downloading"){
+                                this.state ="noUpdate"
+                            }else if(this.state == "update"){
+                                this.state = "Downloading"
+                            }
+                        }
                     }
                 }
 
