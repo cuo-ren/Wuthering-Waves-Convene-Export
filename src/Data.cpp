@@ -614,7 +614,7 @@ Q_INVOKABLE void Data::update_data(const int& mode, QString input_url) {
 			}
 			else if (mode == 2) {
 				std::string url = input_url.toStdString();
-				url.erase(std::remove_if(url.begin(), url.end(), ::isspace), url.end());
+				url = QString::fromStdString(url).trimmed().toStdString();
 				try {
 					std::map<std::string, std::string> params_dict = get_params(url);
 					//判断url是否有效
@@ -909,7 +909,7 @@ json Data::get_gacha_data(const std::string cardPoolId, const std::string cardPo
 		return { {"code", -2} };
 	}
 	try {
-		qDebug() << QString::fromStdString(res->body);
+		qDebug().noquote() << QString::fromStdString(res->body);
 		json result = json::parse(res->body);
 		return result;
 	}

@@ -14,7 +14,8 @@ class Update : public QObject {
 public:
 	explicit Update(QObject* parent = nullptr)
 		: QObject(parent) {
-		;
+        QObject::connect(this, &Update::updateInfo,
+            this, &Update::onUpdateInfo);
 	}
 
 	static Update& instance() {
@@ -27,6 +28,8 @@ public:
             qWarning() << "更新检查线程已存在，跳过";
             return;
         }
+        qInfo() << "开始检查更新";
+        new_version_info = json::object();
         checkUpdateFuture = QtConcurrent::run([this]() {
             //获取当前版本
             json info = Global::instance().getInfo();
@@ -53,12 +56,13 @@ public:
                 qInfo() << "检测到系统代理：" << QString::fromStdString(proxy);
 
                 auto r = DownloadManager::instance().parse_proxy(proxy);
-                qDebug() << "ip:" << r->first << "端口:" << r->second;
+                qDebug().noquote() << "ip:" << r->first << "端口:" << r->second;
                 cli.set_proxy(r->first, r->second);
             }
 
             // 发起 GET 请求
             auto res = cli.Get("/repos/cuo-ren/Wuthering-Waves-Convene-Export/releases", headers);
+            json newVersionInfo;
             //连接失败
             if (!res || res->status != 200) {
                 qWarning().noquote() << "网络异常 状态码：" << (res ? QString::fromStdString(std::to_string(res->status)) : "连接失败");
@@ -68,13 +72,19 @@ public:
             }
             try {
                 json result = json::parse(res->body);
+                qDebug() << QString::fromStdString(res->body);
                 for (auto& it : result) {
-                    qDebug() << it["tag_name"].get<std::string>();
                     if (it["prerelease"].get<bool>() or it["draft"].get<bool>()) {
+                        //排除预览版，草稿
+                        continue;
+                    }
+                    else if (std::find(old_versions.begin(), old_versions.end(), it["tag_name"].get<std::string>()) != old_versions.end()) {
+                        //排除旧版本
                         continue;
                     }
                     else {
                         new_version = it["tag_name"].get<std::string>();
+                        newVersionInfo = it;
                         break;
                     }
                 }
@@ -85,135 +95,18 @@ public:
                 emit checkUpdateFailed();
                 return;
             }
-            qDebug() << version << new_version;
+
             if (new_version == version) {
                 Notifier::instance().notify(0, tr("无需更新"));
-                emit hasNewVersion(false);
+                emit updateInfo(false);
             }
             else {
                 Notifier::instance().notify(0, tr("存在更新"));
-                emit hasNewVersion(true, QString::fromStdString(new_version));
+                emit updateInfo(true, QString::fromStdString(new_version), newVersionInfo);
             }
         });
     }
-    /*
-    bool download_file(const std::string& filename, const std::string& save_path) {
-        // 提取 host，不需要 https 时直接写死
-        httplib::Client cli("https://github.com");
-        cli.set_follow_location(true); // 支持 301/302 跳转
 
-        std::ofstream ofs(save_path, std::ios::binary);
-        if (!ofs) {
-            std::cerr << "无法打开输出文件: " << save_path << std::endl;
-            return false;
-        }
-
-        bool ok = false;
-
-        // 目标路径 (如 /update.zip)
-        std::string target = "/" + filename;
-
-        // 执行 GET 请求（流式写入）
-        auto res = cli.Get(
-            "/cuo-ren/Wuthering-Waves-Convene-Export/releases/download/betav2.1/Wuthering.Waves.Convene.Export.zip",
-            [&](const char* data, size_t len) {
-                ofs.write(data, len);
-                return true; // 返回 true 继续下载
-            },
-            [&](uint64_t current, uint64_t total) {
-                if (total > 0) {
-                    int percent = static_cast<int>(100.0 * current / total);
-                    std::cout << "\rDownloading " << filename
-                        << " [" << percent << "%]" << std::flush;
-                }
-            }
-        );
-
-        ofs.close();
-        std::cout << std::endl;
-
-        if (res && res->status == 200) {
-            std::cout << "下载完成: " << save_path << std::endl;
-            ok = true;
-        }
-        else {
-            std::cerr << "下载失败, HTTP status = "
-                << (res ? std::to_string(res->status) : "connection error")
-                << std::endl;
-        }
-
-        return ok;
-    }
-    */
-    bool download_file(const std::string& filename, const std::string& save_path) {
-        httplib::Client cli("https://github.com");
-        cli.set_follow_location(true); // 支持 301/302 跳转
-        cli.set_read_timeout(10, 0); // 10 秒超时
-
-        //设置代理
-        std::string proxy = DownloadManager::instance().get_system_proxy();
-        if (!proxy.empty()) {
-            qDebug() << "检测到系统代理：" << QString::fromStdString(proxy);
-
-            auto r = DownloadManager::instance().parse_proxy(proxy);
-            qDebug() << "ip:" << r->first << "端口:" << r->second;
-            cli.set_proxy(r->first, r->second);
-        }
-
-        std::ofstream ofs(save_path, std::ios::binary);
-        if (!ofs) {
-            std::cerr << "无法打开输出文件: " << save_path << std::endl;
-            return false;
-        }
-
-        std::string target = "/" + filename;
-        auto start_time = std::chrono::steady_clock::now();
-        uint64_t current_bytes = 0;
-
-        auto res = cli.Get(
-            "/cuo-ren/Wuthering-Waves-Convene-Export/releases/download/betav2.1/Wuthering.Waves.Convene.Export.zip", // 请求路径
-            [&](const char* data, size_t len) { // ContentReceiver
-                ofs.write(data, len);
-                current_bytes += len;
-                return true; // 继续下载
-            },
-            [&](uint64_t current, uint64_t total) { // DownloadProgress
-                auto now = std::chrono::steady_clock::now();
-                double elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - start_time).count() / 1000.0;
-                double speed = (elapsed > 0) ? (current / elapsed) : 0.0; // bytes per sec
-
-                std::string speed_str;
-                if (speed > 1024 * 1024)
-                    speed_str = std::to_string(speed / 1024.0 / 1024.0).substr(0, 5) + " MB/s";
-                else if (speed > 1024)
-                    speed_str = std::to_string(speed / 1024.0).substr(0, 5) + " KB/s";
-                else
-                    speed_str = std::to_string(speed).substr(0, 5) + " B/s";
-
-                int percent = (total > 0) ? static_cast<int>(100.0 * current / total) : 0;
-
-                std::cout << "\rDownloading " << filename
-                    << " [" << percent << "%] "
-                    << speed_str << std::flush;
-
-                return true; // 继续下载
-            }
-        );
-
-        ofs.close();
-        std::cout << std::endl;
-
-        if (res && res->status == 200) {
-            std::cout << "下载完成: " << save_path << std::endl;
-            return true;
-        }
-        else {
-            std::cerr << "下载失败, HTTP status = "
-                << (res ? std::to_string(res->status) : "connection error")
-                << std::endl;
-            return false;
-        }
-    }
     bool unzip(const std::string& zipPath, const std::string& outDir) {
         std::filesystem::path zippath = std::filesystem::u8path(zipPath);
         mz_zip_archive zip{};
@@ -316,11 +209,98 @@ public:
     }
     */
 signals:
+    void updateInfo(bool flag, QString version = "",json info = json::object());
     void hasNewVersion(bool flag,QString version = "");
     void checkUpdateFailed();
 
 private:
+    std::vector<std::string> old_versions = { "betav0.1","betav0.2","betav1.0","betav2.0","betav2.1" };
+
     QFuture<void> checkUpdateFuture;
+
+    json new_version_info = json::object();
+
+    void onUpdateInfo(bool flag, QString version = "", json info = json::object()) {
+        emit hasNewVersion(flag, version);
+        new_version_info = info;
+    }
+
+    bool download_file(const std::string& filename, const std::string& save_path,const std::string url) {
+        makedirs(save_path);
+
+        httplib::Client cli("https://github.com");
+
+        cli.set_follow_location(true); // 支持 301/302 跳转
+        cli.set_read_timeout(10, 0); // 10 秒超时
+
+        //设置代理
+        std::string proxy = DownloadManager::instance().get_system_proxy();
+        if (!proxy.empty()) {
+            qDebug() << "检测到系统代理：" << QString::fromStdString(proxy);
+
+            auto r = DownloadManager::instance().parse_proxy(proxy);
+            qDebug() << "ip:" << r->first << "端口:" << r->second;
+            cli.set_proxy(r->first, r->second);
+        }
+
+        std::ofstream ofs(std::filesystem::u8path(save_path)/filename, std::ios::binary);
+        if (!ofs) {
+            qWarning() << "无法打开输出文件: " << QString::fromStdString(save_path);
+            return false;
+        }
+
+        auto start_time = std::chrono::steady_clock::now();
+        uint64_t current_bytes = 0;
+
+        std::string url_copy = url;
+        if (url.find("https://github.com") == std::string::npos) {
+            qWarning() << "url不正确" << QString::fromStdString(url);
+            return false;
+        }
+        url_copy = url_copy.substr(url_copy.find("https://github.com") + 19);
+        url_copy = QString::fromStdString(url_copy).trimmed().toStdString();
+
+        auto res = cli.Get(
+            url_copy, // 请求路径
+            [&](const char* data, size_t len) { // ContentReceiver
+                ofs.write(data, len);
+                current_bytes += len;
+                return true; // 继续下载
+            },
+            [&](uint64_t current, uint64_t total) { // DownloadProgress
+                auto now = std::chrono::steady_clock::now();
+                double elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - start_time).count() / 1000.0;
+                double speed = (elapsed > 0) ? (current / elapsed) : 0.0; // bytes per sec
+
+                std::string speed_str;
+                if (speed > 1024 * 1024)
+                    speed_str = std::to_string(speed / 1024.0 / 1024.0).substr(0, 5) + " MB/s";
+                else if (speed > 1024)
+                    speed_str = std::to_string(speed / 1024.0).substr(0, 5) + " KB/s";
+                else
+                    speed_str = std::to_string(speed).substr(0, 5) + " B/s";
+
+                int percent = (total > 0) ? static_cast<int>(100.0 * current / total) : 0;
+
+                qInfo() << "\rDownloading " << filename << " [" << percent << "%] " << speed_str;
+
+                return true; // 继续下载
+            }
+        );
+
+        ofs.close();
+
+        if (!res || res->status != 200) {
+            qWarning().noquote() << "网络异常 状态码：" << (res ? QString::fromStdString(std::to_string(res->status)) : "连接失败");
+            Notifier::instance().notify(2, "网络异常" + (res ? QString::fromStdString(std::to_string(res->status)) : "连接失败"));
+            return false;
+        }
+        else {
+            qInfo() << "下载完成";
+            return true;
+        }
+    }
+
 
     std::string get_system_proxy() {
         HKEY hKey;
