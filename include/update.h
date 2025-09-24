@@ -28,13 +28,15 @@ public:
             qWarning() << "更新检查线程已存在，跳过";
             return;
         }
+
         qInfo() << "开始检查更新";
         new_version_info = json::object();
+
         checkUpdateFuture = QtConcurrent::run([this]() {
             //获取当前版本
             json info = Global::instance().getInfo();
             std::string version = info["version"].get<std::string>();
-            std::string new_version;
+            std::string new_version = "";
 
             std::string url;
             httplib::Headers headers;
@@ -96,13 +98,14 @@ public:
                 return;
             }
 
-            if (new_version == version) {
+            if (new_version == version or new_version == "") {
                 Notifier::instance().notify(0, tr("无需更新"));
                 emit updateInfo(false);
             }
             else {
                 Notifier::instance().notify(0, tr("存在更新"));
                 emit updateInfo(true, QString::fromStdString(new_version), newVersionInfo);
+                qDebug()<<new_version;
             }
         });
     }
@@ -208,15 +211,36 @@ public:
         }
     }
     */
+
+    Q_INVOKABLE void getUpdateFile() {
+        if (getUpdateFileFuture.isRunning()) {
+            qWarning() << "下载更新进程已存在，跳过";
+            return;
+        }
+
+        qInfo() << "开始下载文件";
+
+        getUpdateFileFuture = QtConcurrent::run([this]() {
+            qDebug() << "调用download";
+            try {
+                download_file(new_version_info["assets"][0]["name"], "upload", new_version_info["assets"][0]["browser_download_url"]);
+            }
+            catch (std::exception& e) {
+                qWarning() << e.what();
+            }
+            });
+    }
 signals:
     void updateInfo(bool flag, QString version = "",json info = json::object());
     void hasNewVersion(bool flag,QString version = "");
     void checkUpdateFailed();
+    void refreshText(QString text);
 
 private:
-    std::vector<std::string> old_versions = { "betav0.1","betav0.2","betav1.0","betav2.0","betav2.1" };
+    std::vector<std::string> old_versions = { "betav0.1","betav0.2","betav1.0","betav2.0" };
 
     QFuture<void> checkUpdateFuture;
+    QFuture<void> getUpdateFileFuture;
 
     json new_version_info = json::object();
 
@@ -226,12 +250,19 @@ private:
     }
 
     bool download_file(const std::string& filename, const std::string& save_path,const std::string url) {
+        qDebug() << "执行download";        
         makedirs(save_path);
 
         httplib::Client cli("https://github.com");
 
         cli.set_follow_location(true); // 支持 301/302 跳转
         cli.set_read_timeout(10, 0); // 10 秒超时
+        httplib::Headers headers;
+
+        headers = {
+            { "User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36 Edg/133.0.0.0" }
+        };
+
 
         //设置代理
         std::string proxy = DownloadManager::instance().get_system_proxy();
@@ -257,11 +288,14 @@ private:
             qWarning() << "url不正确" << QString::fromStdString(url);
             return false;
         }
-        url_copy = url_copy.substr(url_copy.find("https://github.com") + 19);
+        url_copy = url_copy.substr(url_copy.find("https://github.com") + 19-1);
         url_copy = QString::fromStdString(url_copy).trimmed().toStdString();
+
+        qDebug() << url_copy;
 
         auto res = cli.Get(
             url_copy, // 请求路径
+            headers,
             [&](const char* data, size_t len) { // ContentReceiver
                 ofs.write(data, len);
                 current_bytes += len;
@@ -282,7 +316,8 @@ private:
 
                 int percent = (total > 0) ? static_cast<int>(100.0 * current / total) : 0;
 
-                qInfo() << "\rDownloading " << filename << " [" << percent << "%] " << speed_str;
+                qInfo() << "Downloading " << filename << " [" << percent << "%] " << speed_str;
+                emit refreshText(tr("下载中 %1%% %2").arg(percent).arg(speed_str));
 
                 return true; // 继续下载
             }
@@ -293,6 +328,19 @@ private:
         if (!res || res->status != 200) {
             qWarning().noquote() << "网络异常 状态码：" << (res ? QString::fromStdString(std::to_string(res->status)) : "连接失败");
             Notifier::instance().notify(2, "网络异常" + (res ? QString::fromStdString(std::to_string(res->status)) : "连接失败"));
+
+            // 删除已写入的无效文件
+            std::filesystem::path file_path = std::filesystem::u8path(save_path) / filename;
+            if (std::filesystem::exists(file_path)) {
+                std::error_code ec;
+                std::filesystem::remove(file_path, ec);
+                if (ec) {
+                    qWarning() << "删除失败文件时出错:" << QString::fromStdString(ec.message());
+                }
+                else {
+                    qInfo() << "已删除无效文件:" << QString::fromStdString(file_path.u8string());
+                }
+            }
             return false;
         }
         else {

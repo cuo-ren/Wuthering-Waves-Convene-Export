@@ -25,5 +25,10 @@
         <file>ui/MySwitch.qml</file>
         <file>ui/BackupPopup.qml</file>
         <file>ui/DataPopup.qml</file>
+        <file>resource/error.svg</file>
+        <file>resource/info.svg</file>
+        <file>resource/refresh.svg</file>
+        <file>resource/success.svg</file>
+        <file>resource/warning.svg</file>
     </qresource>
 </RCC>

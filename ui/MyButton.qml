@@ -24,6 +24,8 @@ Item {
     property bool isPressed: false
     property bool isHover: false
     property bool disabled: false
+
+    property url source:""
     property string text: "按钮"
     property int radius: 5
     signal clicked()
@@ -92,16 +94,29 @@ Item {
 
         radius: root.radius
 
+        Image{
+            id: icon
+            width: parent.height - 20
+            height: parent.height - 20
+            anchors.left: parent.left
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.margins: 10
+            source: root.source === "" ? undefined : root.source
+        }
+
         Text {
             id: text
             text: root.text
 
             color: root.disabled ? disabledTextColor : (!isHover ? commonTextColor : isPressed ? pressedTextColor : hoverTextColor)
 
-            width: parent.width
+            width: parent.width - 0 - icon.width
 
-            anchors.centerIn: parent
-            horizontalAlignment: Text.AlignHCenter
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.left: root.source === "" ? undefined : icon.right
+            anchors.margins: 10
+            anchors.centerIn: root.source === "" ? parent: undefined
+            horizontalAlignment: root.source === "" ? Text.AlignHCenter : Text.AlignLeft
 
             wrapMode: Text.WordWrap
         }

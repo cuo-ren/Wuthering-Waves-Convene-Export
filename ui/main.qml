@@ -81,6 +81,7 @@ Window {
                 // 把 model 的 role 映射到组件属性上（更稳妥）
                 notifactiontext: model.text
                 notifactioncolor: model.color
+                source: model.icon
                 duration: model.duration
                 path: Global.path
                 enterDelay: index * 80   // 每条错开 80ms 入场
@@ -93,10 +94,10 @@ Window {
         target: Notifier;
         function onMessageOccurred(mode,message){
             switch(mode){
-                case 0: notificationModel.append({ "text": message, "duration": 3000, "color":"green"});break;
-                case 1: notificationModel.append({ "text": message, "duration": 3000, "color":"blue"}); break;
-                case 2: notificationModel.append({ "text": message, "duration": 3000, "color":"orange"}); break;
-                case 3: notificationModel.append({ "text": message, "duration": 3000, "color":"red"}); break;
+                case 0: notificationModel.append({ "text": message, "duration": 3000, "color":"green", "icon":"../resource/success.svg"});break;
+                case 1: notificationModel.append({ "text": message, "duration": 3000, "color":"blue", "icon":"../resource/info.svg"}); break;
+                case 2: notificationModel.append({ "text": message, "duration": 3000, "color":"orange", "icon":"../resource/warning.svg"}); break;
+                case 3: notificationModel.append({ "text": message, "duration": 3000, "color":"red", "icon":"../resource/error.svg"}); break;
                 default:break;
             }
         }
@@ -157,10 +158,12 @@ Window {
             hoverFillColor: "#409eff"
             hoverBorderColor: "#409eff"
 
+            source: "../resource/refresh.svg"
+
             property bool flag: false
             text: flag ? qsTr("更新数据") : qsTr("查找游戏")
 
-            onClicked: {
+            onClicked: {/*
                 if(flag){
                     updateBtn.disabled = true
                     loading.visible = true
@@ -174,7 +177,11 @@ Window {
                     }else{
                         folderDialog.open()
                     }
-                }
+                }*/
+                Notifier.notify(0, "成功");
+                Notifier.notify(1, "通知");
+                Notifier.notify(2, "警告");
+                Notifier.notify(3, "错误");
             }
 
             Component.onCompleted: {

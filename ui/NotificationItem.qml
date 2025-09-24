@@ -3,12 +3,13 @@ import QtQuick 2.15
 Item {
     id: notificationItem
     width: parent ? parent.width : 300
-    height: 40//rect.implicitHeight
+    height: label.contentHeight + 10 < 40 ? 40 : label.contentHeight + 10
 
     property string notifactiontext: "通知文本"
     property int duration: 3000
     property int enterDelay: 0
     property color notifactioncolor: "blue"
+    property url source: ""
     property url path
     signal closed()
 
@@ -20,17 +21,28 @@ Item {
         border.color: notifactioncolor
         opacity: 0
 
-        Text {
-            id: label
+        Image{
+            id: icon
+            width: 30
+            height: 30
             anchors.left: parent.left
             anchors.verticalCenter: parent.verticalCenter
             anchors.margins: 10
+            source: notificationItem.source === "" ? undefined : notificationItem.source
+        }
 
-            width: parent.width - closebtn.width -10
+        Text {
+            id: label
+            anchors.left: icon.left
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.margins: 10
+
+            width: parent.width - closebtn.width -10 - icon.width - 10
             text: notifactiontext
             color: "white"
             font.pixelSize: 14
             verticalAlignment: Text.AlignVCenter
+            horizontalAlignment: Text.AlignHCenter
             wrapMode: Text.WordWrap
         }
         Item{
@@ -38,8 +50,8 @@ Item {
             anchors.verticalCenter: parent.verticalCenter
             anchors.margins: 10
 
-            width: parent.height
-            height: parent.height
+            width: 30
+            height: 30
 
             Rectangle{
                 id: closebtnoverlay

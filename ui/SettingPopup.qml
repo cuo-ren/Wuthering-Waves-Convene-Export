@@ -614,13 +614,18 @@ Popup {
                                     checkUpdateBtn.state = "noUpdate"
                                 }
                             }
+                            function onRefreshText(text){
+                                checkUpdateBtn.text = text
+                            }
                         }
 
                         onClicked: {
                             if(this.state == "noUpdate"){
                                 Update.checkUpdate()
                             }else if(this.state == "hasUpdate"){
-                                this.state = "update"
+                                console.log("开始下载")
+                              //  this.state = "Downloading"
+                                Update.dl()
                             }else if(this.state == "Downloading"){
                                 this.state ="noUpdate"
                             }else if(this.state == "update"){
