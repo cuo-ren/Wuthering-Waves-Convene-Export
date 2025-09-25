@@ -1,0 +1,7 @@
+{
+"url":"https://github.com/cuo-ren/Wuthering-Waves-Convene-Export/releases/download/betav2.1/Wuthering.Waves.Convene.Export.zip",
+"updater":["./updater.exe"],
+"files":[
+"./export"
+]
+}

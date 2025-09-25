@@ -625,7 +625,7 @@ Popup {
                             }else if(this.state == "hasUpdate"){
                                 console.log("开始下载")
                               //  this.state = "Downloading"
-                                Update.dl()
+                                Update.getUpdateFile()
                             }else if(this.state == "Downloading"){
                                 this.state ="noUpdate"
                             }else if(this.state == "update"){
