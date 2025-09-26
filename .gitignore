@@ -1,14 +1,14 @@
 # Visual Studio build files
-*.obj
-*.pdb
-*.exe
-*.ilk
-*.aps
+#*.obj
+#*.pdb
+#*.exe
+#*.ilk
+#*.aps
 *.bak
-*.user
-*.suo
+#*.user
+#*.suo
 *.vcxproj.user
-*.7z
+#*.7z
 *.log
 config.json
 libssl-3-x64.dll
