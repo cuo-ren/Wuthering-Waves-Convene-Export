@@ -617,18 +617,23 @@ Popup {
                             function onRefreshText(text){
                                 checkUpdateBtn.text = text
                             }
+                            function onDownloadUpdateCompleted(){
+                                checkUpdateBtn.state = "update"
+                            }
+                            function onDownloadUpdateFailed(){
+                                checkUpdateBtn.state = "noUpdate"
+                            }
                         }
 
                         onClicked: {
                             if(this.state == "noUpdate"){
                                 Update.checkUpdate()
-                            }else if(this.state == "hasUpdate"){
-                                console.log("开始下载")
-                              //  this.state = "Downloading"
+                            }
+                            else if(this.state == "hasUpdate"){
                                 Update.getUpdateFile()
-                            }else if(this.state == "Downloading"){
-                                this.state ="noUpdate"
-                            }else if(this.state == "update"){
+                                this.state = "Downloading"
+                            }
+                            else if(this.state == "update"){
                                 this.state = "Downloading"
                             }
                         }

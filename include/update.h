@@ -31,6 +31,8 @@ public:
 
         qInfo() << "开始检查更新";
         new_version = "";
+        now_version_config = {};
+        new_version_config = {};
 
         checkUpdateFuture = QtConcurrent::run([this]() {
             //获取当前版本
@@ -146,41 +148,62 @@ public:
         qInfo() << "开始获取更新";
 
         getUpdateFileFuture = QtConcurrent::run([this]() {
-            //获取程序版本的文件
-            json nowVersionInfo = getVersionInfo(Global::instance().getInfo()["version"]);
-            if (!nowVersionInfo.is_object()) {
-                if (nowVersionInfo.is_number_integer()) {
-                    Notifier::instance().notify(3, tr("获取当前版本配置文件失败 错误码: %1").arg(QString::fromStdString(nowVersionInfo)));
+            try {
+                //获取程序版本的文件
+                json nowVersionInfo = getVersionInfo(Global::instance().getInfo()["version"]);
+                if (!nowVersionInfo.is_object()) {
+                    if (nowVersionInfo.is_number_integer()) {
+                        Notifier::instance().notify(3, tr("获取当前版本配置文件失败 错误码: %1").arg(QString::number(nowVersionInfo.get<int>())));
+                        emit downloadUpdateFailed();
+                        return;
+                    }
+                    else {
+                        Notifier::instance().notify(3, tr("版本配置文件异常"));
+                        emit downloadUpdateFailed();
+                        return;
+                    }
+                }
+                now_version_config = nowVersionInfo;
+                //这里还需校验配置文件
+
+                //获取要更新的版本文件
+                json newVersionInfo = getVersionInfo(new_version);
+                if (!newVersionInfo.is_object()) {
+                    if (newVersionInfo.is_number_integer()) {
+                        Notifier::instance().notify(3, tr("获取新版本配置文件失败 错误码: %1").arg(QString::number(newVersionInfo.get<int>())));
+                        emit downloadUpdateFailed();
+                        return;
+                    }
+                    else {
+                        Notifier::instance().notify(3, tr("新版本配置文件异常"));
+                        emit downloadUpdateFailed();
+                        return;
+                    }
+                }
+                new_version_config = newVersionInfo;
+
+                //下载更新的压缩包
+                makedirs("./update/" + new_version);
+                download_file(newVersionInfo["url"], "./update/" + new_version, new_version + ".zip");
+
+                //解压压缩包
+                emit refreshText(tr("正在解压"));
+                if (!unzip("./update/" + new_version + "/" + new_version + ".zip", "./update/" + new_version)) {
+                    Notifier::instance().notify(3, tr("解压更新包失败"));
+                    emit downloadUpdateFailed();
                     return;
                 }
-                else {
-                    Notifier::instance().notify(3, tr("版本配置文件异常"));
-                    return;
-                }
+
+                //发送更新下载完成信号
+                emit downloadUpdateCompleted();
+                return;
             }
-            //这里还需校验配置文件
-
-            //获取要更新的版本文件
-            json newVersionInfo = getVersionInfo(Global::instance().getInfo()["version"]);
-            if (!newVersionInfo.is_object()) {
-                if (newVersionInfo.is_number_integer()) {
-                    Notifier::instance().notify(3, tr("获取新版本配置文件失败 错误码: %1").arg(QString::fromStdString(newVersionInfo)));
-                    return;
-                }
-                else {
-                    Notifier::instance().notify(3, tr("新版本配置文件异常"));
-                    return;
-                }
+            catch (std::exception& e) {
+                qCritical() << "线程崩溃 " << QString::fromStdString(e.what());
+                Notifier::instance().notify(3, tr("更新失败"));
+                Notifier::instance().notify(3, tr("线程崩溃 %1").arg(QString::fromStdString(e.what())));
+                emit downloadUpdateFailed();
             }
-
-            //下载更新的压缩包
-            makedirs("./update/" + new_version);
-            download_file(newVersionInfo["url"], "./update/" + new_version, new_version + ".zip");
-            //解压压缩包
-            unzip("./update/" + new_version + "/" + new_version + ".zip", "./update/" + new_version);
-
-            //发送更新下载完成信号
-
             //删除当前版本updater相关文件
 
             //替换更新版本updater相关文件  
@@ -195,6 +218,8 @@ signals:
     void hasNewVersion(bool flag,QString version = "");
     void checkUpdateFailed();
     void refreshText(QString text);
+    void downloadUpdateCompleted();
+    void downloadUpdateFailed();
 
 private:
     std::vector<std::string> old_versions = { "betav0.1","betav0.2","betav1.0","betav2.0" };
@@ -203,6 +228,8 @@ private:
     QFuture<void> getUpdateFileFuture;
 
     std::string new_version;
+    json now_version_config;
+    json new_version_config;
 
     void onUpdateInfo(bool flag, QString version = "") {
         emit hasNewVersion(flag, version);
@@ -355,11 +382,11 @@ private:
         std::filesystem::path zippath = std::filesystem::u8path(zipPath);
         mz_zip_archive zip{};
         if (!mz_zip_reader_init_file(&zip, zippath.u8string().c_str(), 0)) {
-            std::cerr << "打开ZIP失败: " << zipPath << "\n";
+            qWarning() << "打开ZIP失败: " << QString::fromStdString(zipPath);
             return false;
         }
 
-        const uint64_t MAX_TOTAL_SIZE = 1024ull * 1024ull * 1024ull; // 1GB
+        const uint64_t MAX_TOTAL_SIZE = 2ull * 1024ull * 1024ull * 1024ull; // 2GB
         uint64_t totalUncompressedSize = 0;
 
         std::filesystem::path base = std::filesystem::weakly_canonical(std::filesystem::u8path(outDir));
@@ -372,7 +399,7 @@ private:
 
             // 检查总大小限制
             if (totalUncompressedSize + st.m_uncomp_size > MAX_TOTAL_SIZE) {
-                std::cerr << "解压总大小超过 1GB，停止解压\n";
+                qWarning() << "解压总大小超过 2GB，停止解压";
                 break;
             }
 
@@ -381,7 +408,7 @@ private:
             // ===== 路径穿越检查 =====
             std::filesystem::path canon = std::filesystem::weakly_canonical(outPath.parent_path());
             if (canon.u8string().compare(0, base.u8string().size(), base.u8string()) != 0) {
-                std::cerr << "检测到路径穿越攻击，跳过: " << st.m_filename << "\n";
+                qCritical() << "检测到路径穿越攻击，跳过: " << QString::fromStdString(st.m_filename);
                 continue;
             }
 
@@ -391,7 +418,7 @@ private:
             else {
                 std::filesystem::create_directories(outPath.parent_path());
                 if (!mz_zip_reader_extract_to_file(&zip, i, outPath.u8string().c_str(), 0)) {
-                    std::cerr << "解压失败: " << st.m_filename << "\n";
+                    qWarning() << "解压失败: " << QString::fromStdString(st.m_filename);
                 }
                 else {
                     totalUncompressedSize += st.m_uncomp_size;
@@ -400,7 +427,7 @@ private:
         }
 
         mz_zip_reader_end(&zip);
-        std::cerr << "解压完成，总大小: " << totalUncompressedSize / (1024 * 1024) << " MB\n";
+        qInfo() << "解压完成，总大小: " << totalUncompressedSize / (1024 * 1024) << " MB";
         return true;
     }
 
