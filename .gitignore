@@ -5,10 +5,10 @@
 #*.ilk
 #*.aps
 *.bak
-#*.user
+*.user
 #*.suo
 *.vcxproj.user
-#*.7z
+*.7z
 *.log
 config.json
 libssl-3-x64.dll
