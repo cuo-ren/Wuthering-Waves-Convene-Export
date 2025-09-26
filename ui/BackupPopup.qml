@@ -272,7 +272,7 @@ Popup {
                     border.color: "grey"
                     Label {
                         anchors.left: parent.left;
-                        anchors.leftMargin: 20
+                        anchors.leftMargin: 10
                         anchors.verticalCenter: parent.verticalCenter
                         text: model.name
                     }
@@ -295,7 +295,7 @@ Popup {
                     border.color: "grey"
                     Label {
                         anchors.left: parent.left;
-                        anchors.leftMargin: 20
+                        anchors.leftMargin: 10
                         anchors.verticalCenter: parent.verticalCenter
                         text: model.time
                     }

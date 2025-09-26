@@ -114,34 +114,6 @@ public:
         });
     }
 
-    /*
-    void loadLanguageJson(const QString& path) {
-        QFile file(path);
-        if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-            qFatal().noquote() << "语言文件打开失败:" << path;
-            return;
-        }
-
-        QTextStream in(&file);
-        QString content = in.readAll();
-        file.close();
-
-        try {
-            languageJson = json::parse(content.toStdString());
-        }
-        catch (const json::parse_error& e) {
-            qFatal().noquote() << "语言文件解析失败:" << e.what();
-        }
-        for (auto& [langCode, item] : languageJson.items()) {
-            QVariantMap temp;
-            for (auto& [key, value] : item.items()) {
-                temp[QString::fromStdString(key)] = QString::fromStdString(value);
-            }
-            languageVariantMap[QString::fromStdString(langCode)] = temp;
-        }
-    }
-    */
-
     Q_INVOKABLE void getUpdateFile() {
         if (getUpdateFileFuture.isRunning()) {
             qWarning() << "下载更新进程已存在，跳过";
@@ -213,15 +185,19 @@ public:
                 Notifier::instance().notify(3, tr("线程崩溃"));
                 emit downloadUpdateFailed();
             }
-            //删除当前版本updater相关文件
-
-            //替换更新版本updater相关文件  
-
-            //运行更新程序
-
-            //强杀进程退出
         });
     }
+
+    Q_INVOKABLE void update() {
+        //删除当前版本updater相关文件
+
+        //替换更新版本updater相关文件  
+
+        //运行更新程序
+
+        //强杀进程退出
+    }
+
 signals:
     void updateInfo(bool flag, QString version = "");
     void hasNewVersion(bool flag,QString version = "");
@@ -293,10 +269,34 @@ private:
         }
     }
 
-    bool download_file(const std::string url, const std::string& save_path, const std::string& filename) {
+    bool download_file(const std::string url, const std::string& save_path, const std::string& filename = "") {
         makedirs(save_path);
 
-        httplib::Client cli("https://github.com");
+        std::string protocol;
+        std::string host;
+        std::string path;
+
+        std::string url_copy = QString::fromStdString(url).trimmed().toStdString();
+        
+        if (url_copy.find("://") == std::string::npos) {
+            qWarning() << "协议提取失败";
+            return false;
+        }
+        protocol = url_copy.substr(0, url_copy.find("://"));
+
+        url_copy = url_copy.substr(url_copy.find("://") + 3);
+
+        if (url_copy.find("/") == std::string::npos) {
+            host = url_copy;
+            path = "";
+        }
+        else {
+            host = url_copy.substr(0, url_copy.find("/"));
+            path = url_copy.substr(url_copy.find("/"));
+        }
+
+        httplib::Client cli(protocol + "://" + host);
+        httplib::user_agent_override = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36 Edg/133.0.0.0";
 
         cli.set_follow_location(true); // 支持 301/302 跳转
         cli.set_read_timeout(10, 0); // 10 秒超时
@@ -317,30 +317,52 @@ private:
             cli.set_proxy(r->first, r->second);
         }
 
-        std::ofstream ofs(std::filesystem::u8path(save_path)/filename, std::ios::binary);
-        if (!ofs) {
-            qWarning() << "无法打开输出文件: " << QString::fromStdString(save_path);
-            return false;
-        }
+        std::ofstream ofs;
+        std::string final_filename = filename;
 
         auto start_time = std::chrono::steady_clock::now();
 
-        std::string url_copy = url;
-        if (url.find("https://github.com") == std::string::npos) {
-            qWarning() << "url不正确" << QString::fromStdString(url);
-            return false;
-        }
-        url_copy = url_copy.substr(url_copy.find("https://github.com") + 19-1);
-        url_copy = QString::fromStdString(url_copy).trimmed().toStdString();
-
-        qDebug() << url_copy;
-
         auto res = cli.Get(
-            url_copy, // 请求路径
+            path, // 请求路径
             headers,
+            [&](const httplib::Response& res) {//ResponseHandler
+                std::string used_filename = final_filename;
+
+                if (used_filename.empty()) {
+                    // 1. 从 Content-Disposition 中取 filename
+                    auto it = res.headers.find("Content-Disposition");
+                    if (it != res.headers.end()) {
+                        std::string cd = it->second;
+                        auto pos = cd.find("filename=");
+                        if (pos != std::string::npos) {
+                            used_filename = cd.substr(pos + 9); // 去掉 filename=
+                            if (!used_filename.empty() && used_filename.front() == '\"' && used_filename.back() == '\"') {
+                                used_filename = used_filename.substr(1, used_filename.size() - 2); // 去掉引号
+                            }
+                        }
+                    }
+                    // 2. fallback
+                    if (used_filename.empty()) {
+                        used_filename = "temp";
+                    }
+                }
+
+                final_filename = used_filename;
+                std::filesystem::path file_path = std::filesystem::u8path(save_path) / final_filename;
+                ofs.open(file_path, std::ios::binary);
+                if (!ofs) {
+                    qWarning() << "无法创建文件:" << QString::fromStdString(file_path.u8string());
+                    return false; // 中止下载
+                }
+
+                return true; // 继续接收 body
+            },
             [&](const char* data, size_t len) { // ContentReceiver
-                ofs.write(data, len);
-                return true; // 继续下载
+                if (ofs.is_open()) {
+                    ofs.write(data, len);
+                    return true;
+                }
+                return false; // 没有文件就中止
             },
             [&](uint64_t current, uint64_t total) { // DownloadProgress
                 auto now = std::chrono::steady_clock::now();
@@ -357,7 +379,7 @@ private:
 
                 int percent = (total > 0) ? static_cast<int>(100.0 * current / total) : 0;
 
-                qInfo() << "Downloading " << filename << " [" << percent << "%] " << speed_str;
+                qInfo() << "Downloading " << final_filename << " [" << percent << "%] " << speed_str;
                 emit refreshText(tr("下载中 %1% %2").arg(percent).arg(QString::fromStdString(speed_str)));
 
                 return true; // 继续下载
@@ -371,7 +393,7 @@ private:
             Notifier::instance().notify(2, "网络异常" + (res ? QString::fromStdString(std::to_string(res->status)) : "连接失败"));
 
             // 删除已写入的无效文件
-            std::filesystem::path file_path = std::filesystem::u8path(save_path) / filename;
+            std::filesystem::path file_path = std::filesystem::u8path(save_path) / final_filename;
             if (std::filesystem::exists(file_path)) {
                 std::error_code ec;
                 std::filesystem::remove(file_path, ec);

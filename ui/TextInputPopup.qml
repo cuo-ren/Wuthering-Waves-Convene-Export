@@ -26,7 +26,7 @@ Popup {
 
         Text {
             text: qsTr("请输入url")
-            font.pixelSize: 14
+            font.pixelSize: 20
             //color: "#333333"
         }
 
@@ -48,8 +48,14 @@ Popup {
             Layout.alignment: Qt.AlignRight
             spacing: 8
 
-            Button {
+            MyButton {
                 text: "取消"
+                commonFillColor: "lightgrey"
+                commonBorderColor: "grey"
+                commonTextColor: "grey"
+
+                hoverFillColor: "grey"
+                hoverBorderColor: "grey"
                 onClicked: {
                     urlArea.clear()
                     textInputPopup.cancelled()
@@ -57,8 +63,14 @@ Popup {
                 }
             }
 
-            Button {
+            MyButton {
                 text: "确定"
+                commonFillColor: "#F0F9EF"
+                commonBorderColor: "#67c23a"
+                commonTextColor: "#67c23a"
+
+                hoverFillColor: "#67c23a"
+                hoverBorderColor: "#67c23a"
                 onClicked: {
                     textInputPopup.accepted(urlArea.text)
                     urlArea.clear()
