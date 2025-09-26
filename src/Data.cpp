@@ -766,6 +766,12 @@ Q_INVOKABLE void Data::update_data(const int& mode, QString input_url) {
 			Notifier::instance().notify(3, tr("线程崩溃 %1").arg(QString::fromStdString(e.what())));
 			emit updateFail();
 		}
+		catch (...) {
+			qCritical() << "线程崩溃";
+			Notifier::instance().notify(3, tr("更新失败"));
+			Notifier::instance().notify(3, tr("线程崩溃"));
+			emit updateFail();
+		}
 	});
 }
 
@@ -877,7 +883,10 @@ json Data::get_gacha_data(const std::string cardPoolId, const std::string cardPo
 	}
 
 	httplib::Client cli(url);
-	cli.set_read_timeout(10, 0); // 10 秒超时
+	httplib::user_agent_override = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36 Edg/133.0.0.0";
+
+	cli.set_read_timeout(10, 0);
+	cli.set_connection_timeout(10, 0);
 
 	//设置代理
 	std::string proxy = DownloadManager::instance().get_system_proxy();
@@ -1191,6 +1200,12 @@ Q_INVOKABLE void Data::exportToExcel() {
 			Notifier::instance().notify(3, tr("线程崩溃 %1").arg(QString::fromStdString(e.what())));
 			emit exportFail();
 		}
+		catch (...) {
+			qCritical() << "线程崩溃 ";
+			Notifier::instance().notify(3, tr("更新失败"));
+			Notifier::instance().notify(3, tr("线程崩溃"));
+			emit exportFail();
+		}
 	});
 }
 
@@ -1328,6 +1343,12 @@ Q_INVOKABLE void Data::exportToCsv() {
 			Notifier::instance().notify(3, tr("线程崩溃 %1").arg(QString::fromStdString(e.what())));
 			emit exportFail();
 		}
+		catch (...) {
+			qCritical() << "线程崩溃 ";
+			Notifier::instance().notify(3, tr("更新失败"));
+			Notifier::instance().notify(3, tr("线程崩溃"));
+			emit exportFail();
+		}
 	});
 }
 
@@ -1389,6 +1410,12 @@ Q_INVOKABLE void Data::exportToUIGF3() {
 			qCritical() << "线程崩溃 " << QString::fromStdString(e.what());
 			Notifier::instance().notify(3, tr("导出失败"));
 			Notifier::instance().notify(3, tr("线程崩溃 %1").arg(QString::fromStdString(e.what())));
+			emit exportFail();
+		}
+		catch (...) {
+			qCritical() << "线程崩溃 ";
+			Notifier::instance().notify(3, tr("更新失败"));
+			Notifier::instance().notify(3, tr("线程崩溃"));
 			emit exportFail();
 		}
 	});
@@ -1481,6 +1508,12 @@ Q_INVOKABLE void Data::exportToUIGF4(bool isTotal) {
 			qCritical() << "线程崩溃 " << QString::fromStdString(e.what());
 			Notifier::instance().notify(3, tr("导出失败"));
 			Notifier::instance().notify(3, tr("线程崩溃 %1").arg(QString::fromStdString(e.what())));
+			emit exportFail();
+		}
+		catch (...) {
+			qCritical() << "线程崩溃 ";
+			Notifier::instance().notify(3, tr("更新失败"));
+			Notifier::instance().notify(3, tr("线程崩溃"));
 			emit exportFail();
 		}
 	});
@@ -1624,6 +1657,11 @@ Q_INVOKABLE void Data::getBackupInfo() {
 			qCritical() << "线程崩溃 " << QString::fromStdString(e.what());
 			Notifier::instance().notify(3, tr("查找备份失败"));
 			Notifier::instance().notify(3, tr("线程崩溃 %1").arg(QString::fromStdString(e.what())));
+		}
+		catch (...) {
+			qCritical() << "线程崩溃 ";
+			Notifier::instance().notify(3, tr("更新失败"));
+			Notifier::instance().notify(3, tr("线程崩溃"));
 		}
 	});
 }

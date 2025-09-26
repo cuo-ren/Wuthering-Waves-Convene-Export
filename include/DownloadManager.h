@@ -155,8 +155,16 @@ private:
                     }, Qt::QueuedConnection);
             }
             catch (std::exception& e) {
-                qCritical() << "线程崩溃 " << e.what();
+                qCritical() << "线程崩溃 " << QString::fromStdString(e.what());
                 Notifier::instance().notify(3, tr("线程崩溃 %1").arg(QString::fromStdString(e.what())));
+                QMetaObject::invokeMethod(this, [this, fileName]() {
+                    activeCount--;
+                    tryStartNext();
+                    }, Qt::QueuedConnection);
+            }
+            catch (...) {
+                qCritical() << "线程崩溃";
+                Notifier::instance().notify(3, tr("线程崩溃"));
                 QMetaObject::invokeMethod(this, [this, fileName]() {
                     activeCount--;
                     tryStartNext();
@@ -167,7 +175,11 @@ private:
 
     bool downloadFile(const QString& fileName) {
         httplib::Client cli("https://raw.githubusercontent.com");
+        httplib::user_agent_override = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36 Edg/133.0.0.0";
+
         cli.set_read_timeout(10, 0);
+        cli.set_connection_timeout(10, 0);
+
         std::string proxy = get_system_proxy();
 
         if (!proxy.empty()) {

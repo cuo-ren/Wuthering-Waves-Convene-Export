@@ -163,7 +163,7 @@ Window {
             property bool flag: false
             text: flag ? qsTr("更新数据") : qsTr("查找游戏")
 
-            onClicked: {/*
+            onClicked: {
                 if(flag){
                     updateBtn.disabled = true
                     loading.visible = true
@@ -177,11 +177,11 @@ Window {
                     }else{
                         folderDialog.open()
                     }
-                }*/
-                Notifier.notify(0, "成功");
-                Notifier.notify(1, "通知");
-                Notifier.notify(2, "警告");
-                Notifier.notify(3, "错误");
+                }
+                //Notifier.notify(0, "成功");
+                //Notifier.notify(1, "通知");
+                //Notifier.notify(2, "警告");
+                //Notifier.notify(3, "错误");
             }
 
             Component.onCompleted: {

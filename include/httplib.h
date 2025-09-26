@@ -377,7 +377,7 @@ using socklen_t = int;
  * Declaration
  */
 namespace httplib {
-
+    inline std::string user_agent_override;
     namespace detail {
 
         /*
@@ -9304,8 +9304,13 @@ namespace httplib {
 
 #ifndef CPPHTTPLIB_NO_DEFAULT_USER_AGENT
             if (!req.has_header("User-Agent")) {
-                auto agent = std::string("cpp-httplib/") + CPPHTTPLIB_VERSION;
-                req.set_header("User-Agent", agent);
+                if (!httplib::user_agent_override.empty()) {
+                    req.set_header("User-Agent", httplib::user_agent_override);
+                }
+                else {
+                    auto agent = std::string("cpp-httplib/") + CPPHTTPLIB_VERSION;
+                    req.set_header("User-Agent", agent);
+                }
             }
 #endif
         };

@@ -52,7 +52,10 @@ public:
             };
 
             httplib::Client cli(url);
-            cli.set_read_timeout(10, 0); // 10 秒超时
+            httplib::user_agent_override = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36 Edg/133.0.0.0";
+
+            cli.set_read_timeout(10, 0);
+            cli.set_connection_timeout(10, 0);
 
             //设置代理
             std::string proxy = DownloadManager::instance().get_system_proxy();
@@ -204,6 +207,12 @@ public:
                 Notifier::instance().notify(3, tr("线程崩溃 %1").arg(QString::fromStdString(e.what())));
                 emit downloadUpdateFailed();
             }
+            catch (...) {
+                qCritical() << "线程崩溃 ";
+                Notifier::instance().notify(3, tr("更新失败"));
+                Notifier::instance().notify(3, tr("线程崩溃"));
+                emit downloadUpdateFailed();
+            }
             //删除当前版本updater相关文件
 
             //替换更新版本updater相关文件  
@@ -249,6 +258,9 @@ private:
         };
 
         httplib::Client cli(url);
+        httplib::user_agent_override = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36 Edg/133.0.0.0";
+
+        cli.set_connection_timeout(10, 0);
         cli.set_read_timeout(10, 0); // 10 秒超时
 
         //设置代理
