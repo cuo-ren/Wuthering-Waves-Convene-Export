@@ -56,6 +56,8 @@ void Logger::rotateLogs() {
 }
 
 void Logger::messageHandler(QtMsgType type, const QMessageLogContext& context, const QString& msg) {
+    QMutexLocker locker(&mutex);   //自动加锁，函数结束时解锁
+
     updateLogFile();
 
     QString levelPlain;

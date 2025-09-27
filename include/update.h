@@ -196,6 +196,91 @@ public:
         //运行更新程序
 
         //强杀进程退出
+        QtConcurrent::run([this]() {
+            while (1) {
+                qDebug() << "线程1";
+            }}
+        );
+        QtConcurrent::run([this]() {
+            while (1) {
+                qDebug() << "线程2";
+            }}
+        );
+        QtConcurrent::run([this]() {
+            while (1) {
+                qDebug() << "线程3";
+            }}
+        );
+        QtConcurrent::run([this]() {
+            while (1) {
+                qDebug() << "线程4";
+            }}
+        );
+        QtConcurrent::run([this]() {
+            while (1) {
+                qDebug() << "线程5";
+            }}
+        );
+        QtConcurrent::run([this]() {
+            while (1) {
+                qDebug() << "线程6";
+            }}
+        );
+        QtConcurrent::run([this]() {
+            while (1) {
+                qDebug() << "线程7";
+            }}
+        );
+        QtConcurrent::run([this]() {
+            while (1) {
+                qDebug() << "线程8";
+            }}
+        );
+        QtConcurrent::run([this]() {
+            while (1) {
+                qDebug() << "线程9";
+            }}
+        );
+        QtConcurrent::run([this]() {
+            while (1) {
+                qDebug() << "线程10";
+            }}
+        );
+        while (1) {
+            qDebug() << "主线程";
+        }
+        //QCoreApplication::exit(0);
+        QThread::sleep(1);
+        qDebug() << "std::exit(0)";
+        QThread::sleep(1);
+        qDebug() << "std::exit(0)";
+        QThread::sleep(1);
+        qDebug() << "std::exit(0)";
+        QThread::sleep(1);
+        qDebug() << "std::exit(0)";
+        QThread::sleep(1);
+        qDebug() << "std::exit(0)";
+        QThread::sleep(1);
+        qDebug() << "std::exit(0)";
+        QThread::sleep(1);
+        qDebug() << "std::exit(0)";
+        QThread::sleep(1);
+        qDebug() << "std::exit(0)";
+        QThread::sleep(1);
+        qDebug() << "std::exit(0)";
+        QThread::sleep(1);
+        qDebug() << "std::exit(0)";
+        QThread::sleep(1);
+        qDebug() << "std::exit(0)";
+        QThread::sleep(1);
+        qDebug() << "std::exit(0)";
+        QThread::sleep(1);
+        qDebug() << "std::exit(0)";
+      //  std::exit(0);
+       // QThread::sleep(1);
+        qDebug() << "abort()";
+      //  abort();
+        //QThread::sleep(1);
     }
 
 signals:

@@ -625,7 +625,7 @@ Popup {
                             }
                         }
 
-                        onClicked: {
+                        onClicked: {/*
                             if(this.state == "noUpdate"){
                                 Update.checkUpdate()
                             }
@@ -635,7 +635,7 @@ Popup {
                             }
                             else if(this.state == "update"){
                                 this.state = "Downloading"
-                            }
+                            }*/Update.update()
                         }
                     }
                 }

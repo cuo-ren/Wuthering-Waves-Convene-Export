@@ -5,12 +5,13 @@
 #include <QDir>
 #include <QFile>
 #include <QRegularExpression>
+#include <QMutex>
 #include <iostream>
 
 class Logger
 {
 public:
-	static void init();
+    static void init();
 private:
     static void updateLogFile();
     static void rotateLogs();
@@ -20,4 +21,6 @@ private:
     static inline QTextStream logStream;
     static inline QString currentDate;
     static constexpr int maxLogFiles = 7;
+
+    static inline QMutex mutex;   // 全局互斥锁
 };
