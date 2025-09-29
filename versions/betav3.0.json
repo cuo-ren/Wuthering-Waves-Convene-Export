@@ -1,11 +1,24 @@
 {
   "url": "https://github.com/cuo-ren/Wuthering-Waves-Convene-Export/releases/download/betav2.1/Wuthering.Waves.Convene.Export.zip",
+  "foldername": "Wuthering Waves Convene Export",
   "hash": "",
   "path": "./Wuthering Waves Convene Export",
   "updater": [
-    "./updater.exe"
+    {
+      "type": "file",
+      "path": "./updater.exe",
+      "version": "betav3.0",
+      "hash": "",
+      "url": ""
+    }
   ],
   "files": [
-    "./export"
+    {
+      "type": "folder",
+      "path": "./export",
+      "version": "betav3.0",
+      "hash": "",
+      "url": ""
+    }
   ]
 }

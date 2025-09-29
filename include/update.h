@@ -138,8 +138,14 @@ public:
                         return;
                     }
                 }
+
+                //校验配置文件格式
+                if (!validate_version_config(nowVersionInfo)) {
+                    Notifier::instance().notify(3, tr("版本配置文件异常"));
+                    emit downloadUpdateFailed();
+                    return;
+                }
                 now_version_config = nowVersionInfo;
-                //这里还需校验配置文件
 
                 //获取要更新的版本文件
                 json newVersionInfo = getVersionInfo(new_version);
@@ -155,6 +161,14 @@ public:
                         return;
                     }
                 }
+
+                //校验配置文件格式
+                if (!validate_version_config(newVersionInfo)) {
+                    Notifier::instance().notify(3, tr("版本配置文件异常"));
+                    emit downloadUpdateFailed();
+                    return;
+                }
+
                 new_version_config = newVersionInfo;
 
                 //下载更新的压缩包
@@ -196,91 +210,7 @@ public:
         //运行更新程序
 
         //强杀进程退出
-        QtConcurrent::run([this]() {
-            while (1) {
-                qDebug() << "线程1";
-            }}
-        );
-        QtConcurrent::run([this]() {
-            while (1) {
-                qDebug() << "线程2";
-            }}
-        );
-        QtConcurrent::run([this]() {
-            while (1) {
-                qDebug() << "线程3";
-            }}
-        );
-        QtConcurrent::run([this]() {
-            while (1) {
-                qDebug() << "线程4";
-            }}
-        );
-        QtConcurrent::run([this]() {
-            while (1) {
-                qDebug() << "线程5";
-            }}
-        );
-        QtConcurrent::run([this]() {
-            while (1) {
-                qDebug() << "线程6";
-            }}
-        );
-        QtConcurrent::run([this]() {
-            while (1) {
-                qDebug() << "线程7";
-            }}
-        );
-        QtConcurrent::run([this]() {
-            while (1) {
-                qDebug() << "线程8";
-            }}
-        );
-        QtConcurrent::run([this]() {
-            while (1) {
-                qDebug() << "线程9";
-            }}
-        );
-        QtConcurrent::run([this]() {
-            while (1) {
-                qDebug() << "线程10";
-            }}
-        );
-        while (1) {
-            qDebug() << "主线程";
-        }
-        //QCoreApplication::exit(0);
-        QThread::sleep(1);
-        qDebug() << "std::exit(0)";
-        QThread::sleep(1);
-        qDebug() << "std::exit(0)";
-        QThread::sleep(1);
-        qDebug() << "std::exit(0)";
-        QThread::sleep(1);
-        qDebug() << "std::exit(0)";
-        QThread::sleep(1);
-        qDebug() << "std::exit(0)";
-        QThread::sleep(1);
-        qDebug() << "std::exit(0)";
-        QThread::sleep(1);
-        qDebug() << "std::exit(0)";
-        QThread::sleep(1);
-        qDebug() << "std::exit(0)";
-        QThread::sleep(1);
-        qDebug() << "std::exit(0)";
-        QThread::sleep(1);
-        qDebug() << "std::exit(0)";
-        QThread::sleep(1);
-        qDebug() << "std::exit(0)";
-        QThread::sleep(1);
-        qDebug() << "std::exit(0)";
-        QThread::sleep(1);
-        qDebug() << "std::exit(0)";
-      //  std::exit(0);
-       // QThread::sleep(1);
-        qDebug() << "abort()";
-      //  abort();
-        //QThread::sleep(1);
+       
     }
 
 signals:
@@ -300,6 +230,86 @@ private:
     std::string new_version;
     json now_version_config;
     json new_version_config;
+
+    bool validate_version_config(const json& versionConfig) {
+        if (!versionConfig.contains("url") or !versionConfig["url"].is_string()) {
+            qWarning() << "版本配置文件 url不存在或类型错误";
+            return false;
+        }
+        if (!versionConfig.contains("foldername") or !versionConfig["foldername"].is_string()) {
+            qWarning() << "版本配置文件 foldername不存在或类型错误";
+            return false;
+        }
+        if (!versionConfig.contains("path") or !versionConfig["path"].is_string()) {
+            qWarning() << "版本配置文件 path不存在或类型错误";
+            return false;
+        }
+        if (!versionConfig.contains("hash") or !versionConfig["hash"].is_string()) {
+            qWarning() << "版本配置文件 hash不存在或类型错误";
+            return false;
+        }
+        if (!versionConfig.contains("updater") or !versionConfig["updater"].is_array()) {
+            qWarning() << "版本配置文件 updater不存在或类型错误";
+            return false;
+        }
+        if (!versionConfig.contains("files") or !versionConfig["files"].is_array()) {
+            qWarning() << "版本配置文件 files不存在或类型错误";
+            return false;
+        }
+        for (const auto& items : versionConfig["updater"]) {
+            if (!items.is_object()) {
+                qWarning() << "版本配置文件 updater中的元素不是json";
+                return false;
+            }
+            if (!items.contains("type") or !items["type"].is_string()) {
+                qWarning() << "版本配置文件 updater中的元素 type不存在或类型错误";
+                return false;
+            }
+            if (!items.contains("path") or !items["path"].is_string()) {
+                qWarning() << "版本配置文件 updater中的元素 path不存在或类型错误";
+                return false;
+            }
+            if (!items.contains("version") or !items["version"].is_string()) {
+                qWarning() << "版本配置文件 updater中的元素 version不存在或类型错误";
+                return false;
+            }
+            if (!items.contains("hash") or !items["hash"].is_string()) {
+                qWarning() << "版本配置文件 updater中的元素 hash不存在或类型错误";
+                return false;
+            }
+            if (!items.contains("url") or !items["url"].is_string()) {
+                qWarning() << "版本配置文件 updater中的元素 url不存在或类型错误";
+                return false;
+            }
+        }
+        for (const auto& items : versionConfig["files"]) {
+            if (!items.is_object()) {
+                qWarning() << "版本配置文件 files中的元素不是json";
+                return false;
+            }
+            if (!items.contains("type") or !items["type"].is_string()) {
+                qWarning() << "版本配置文件 files中的元素 type不存在或类型错误";
+                return false;
+            }
+            if (!items.contains("path") or !items["path"].is_string()) {
+                qWarning() << "版本配置文件 files中的元素 path不存在或类型错误";
+                return false;
+            }
+            if (!items.contains("version") or !items["version"].is_string()) {
+                qWarning() << "版本配置文件 files中的元素 version不存在或类型错误";
+                return false;
+            }
+            if (!items.contains("hash") or !items["hash"].is_string()) {
+                qWarning() << "版本配置文件 files中的元素 hash不存在或类型错误";
+                return false;
+            }
+            if (!items.contains("url") or !items["url"].is_string()) {
+                qWarning() << "版本配置文件 files中的元素 url不存在或类型错误";
+                return false;
+            }
+        }
+        return true;
+    }
 
     void onUpdateInfo(bool flag, QString version = "") {
         emit hasNewVersion(flag, version);
