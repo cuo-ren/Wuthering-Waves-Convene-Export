@@ -64,6 +64,7 @@ Popup {
         }
         function onRecoverySuccessed(){
             dataManager.data.clear()
+            dataManager.refresh()
             Data.getBackupInfo()
         }
     }
