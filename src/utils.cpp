@@ -197,6 +197,27 @@ json ReadJsonFile(const std::string& path) {
 	return data;
 }
 
+json ReadJsonFile(const std::filesystem::path& path) {
+	std::ifstream file(path);
+	if (!file.is_open()) {
+		qCritical().noquote() << "文件打开失败! " << "path:" << QString::fromStdString(path.string());
+		throw std::runtime_error("无法打开文件: " + path.string());
+	}
+	json data;
+	try {
+		file >> data;
+	}
+	catch (const json::parse_error& e) {
+		qWarning().noquote() << "json解析失败: " << QString::fromStdString(e.what());
+		throw e;
+	}
+	catch (...) {
+		qCritical().noquote() << "文件读取发生未知错误 " << "path:" << QString::fromStdString(path.string());
+		throw;
+	}
+	return data;
+}
+
 void WriteJsonFile(const std::string& path, const json& data) {
 	std::filesystem::path fsPath = std::filesystem::u8path(path);
 
@@ -222,6 +243,33 @@ void WriteJsonFile(const std::string& path, const json& data) {
 	}
 	catch (...) {
 		qCritical().noquote() << "文件写入发生未知错误" << "path:" << QString::fromUtf8(path);
+		Notifier::instance().notify(3, "文件写入发生未知错误");
+	}
+}
+
+void WriteJsonFile(const std::filesystem::path& path, const json& data) {
+	std::ofstream f(path, std::ios::binary);
+	f.exceptions(std::ofstream::failbit | std::ofstream::badbit);
+
+	if (!f.is_open()) {
+		qCritical().noquote() << "文件打开失败! " << "path:" << QString::fromStdString(path.string());
+		Notifier::instance().notify(3, "文件打开失败! ");
+		return;
+	}
+
+	try {
+		f << data.dump(2);
+	}
+	catch (const json::type_error& e) {
+		qWarning().noquote() << "json解析失败: " << e.what();
+		Notifier::instance().notify(3, "json解析失败 ");
+	}
+	catch (const std::ios_base::failure& e) {
+		qCritical().noquote() << "文件写入失败!" << "path:" << QString::fromStdString(path.string()) << QString::fromStdString(e.what());
+		Notifier::instance().notify(3, "文件写入失败!");
+	}
+	catch (...) {
+		qCritical().noquote() << "文件写入发生未知错误" << "path:" << QString::fromStdString(path.string());
 		Notifier::instance().notify(3, "文件写入发生未知错误");
 	}
 }

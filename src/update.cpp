@@ -1,5 +1,11 @@
 ﻿#include "update.h"
 
+Q_INVOKABLE void Update::init() {
+    if (!checkUpdateConfig()) {
+
+    }
+}
+
 Q_INVOKABLE void Update::checkUpdate() {
     if (checkUpdateFuture.isRunning()) {
         qWarning() << "更新检查线程已存在，跳过";
@@ -179,6 +185,38 @@ Q_INVOKABLE void Update::getUpdateFile() {
         });
 }
 
+bool Update::checkUpdateConfig() {
+    //读取并检查更新配置文件
+    std::filesystem::path filePath = std::filesystem::u8path(updatePath) / std::filesystem::u8path(updateConfigName + ".json");
+    if (!std::filesystem::exists(filePath)) {
+        return false;
+    }
+    try {
+        updateConfig = ReadJsonFile(filePath);
+    }
+    catch (const json::parse_error& e) {
+        qWarning() << "更新配置文件解析失败" << QString::fromStdString(e.what());
+        return false;
+    }
+    catch (const std::exception& e) {
+        qWarning() << "打开更新配置文件失败" << QString::fromStdString(e.what());
+        return false;
+    }
+    catch (...) {
+        qWarning() << "打开更新配置文件失败";
+        return false;
+    }
+    if (!validate_updateConfig(updateConfig)) {
+        std::error_code ec;
+        std::filesystem::remove(filePath, ec);
+        if (ec) {
+            qCritical() << "删除文件失败:" << QString::fromStdString(filePath.string()) << ec.message();
+        }
+        return false;
+    }
+    return true;
+}
+
 bool Update::validate_version_config(const json& versionConfig) {
     if (!versionConfig.contains("url") or !versionConfig["url"].is_string()) {
         qWarning() << "版本配置文件 url不存在或类型错误";
@@ -256,6 +294,53 @@ bool Update::validate_version_config(const json& versionConfig) {
             return false;
         }
     }
+    return true;
+}
+
+bool Update::validate_updateConfig(const json& updateconfig) {
+    if (!updateconfig.contains("url") or !updateconfig["url"].is_string()) {
+        qWarning() << "更新配置文件 url不存在或类型错误";
+        return false;
+    }
+    if (!updateconfig.contains("hash") or !updateconfig["hash"].is_string()) {
+        qWarning() << "更新配置文件 hash不存在或类型错误";
+        return false;
+    }
+    if (!updateconfig.contains("downloaded") or !updateconfig["downloaded"].is_number_unsigned()) {
+        qWarning() << "更新配置文件 downloaded不存在或类型错误";
+        return false;
+    }
+    if (!updateconfig.contains("totalSize") or !updateconfig["totalSize"].is_number_unsigned()) {
+        qWarning() << "更新配置文件 totalSize不存在或类型错误";
+        return false;
+    }
+    if (!updateconfig.contains("isUnzip") or !updateconfig["isUnzip"].is_boolean()) {
+        qWarning() << "更新配置文件 isUnzip不存在或类型错误";
+        return false;
+    }
+    if (!updateconfig.contains("isReplacedUpdater") or !updateconfig["isReplacedUpdater"].is_boolean()) {
+        qWarning() << "更新配置文件 isReplacedUpdater不存在或类型错误";
+        return false;
+    }
+    if (!updateconfig.contains("version") or !updateconfig["version"].is_string()) {
+        qWarning() << "更新配置文件 version不存在或类型错误";
+        return false;
+    }
+    if (updateconfig["downloaded"].get<int64_t>() != updateconfig["totalSize"].get<int64_t>()) {
+        if (updateconfig["isUnzip"].get<bool>() or updateconfig["isReplacedUpdater"].get<bool>()) {
+            //未下载完成，但已解压或替换
+            qWarning() << "更新配置文件 更新进度冲突";
+            return false;
+        }
+    }
+    else {
+        if (!updateconfig["isUnzip"].get<bool>() and updateconfig["isReplacedUpdater"].get<bool>()) {
+            //未解压，但已替换
+            qWarning() << "更新配置文件 更新进度冲突";
+            return false;
+        }
+    }
+
     return true;
 }
 
@@ -454,8 +539,6 @@ bool Update::download_file(const std::string url, const std::string& save_path, 
         return true;
     }
 }
-
-
 
 bool Update::move_files(const std::string& srcDir, const std::string& dstDir) {
     try {

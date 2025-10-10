@@ -96,17 +96,17 @@ void Global::initGachaType() {
     };
     //读取卡池配置文件
     try {
-        gacha_type = ReadJsonFile("GachaType.json");
+        gacha_type = ReadJsonFile(std::string("GachaType.json"));
     }
     catch (const std::runtime_error& e) {
         qWarning().noquote() << "卡池配置文件打开失败，正在创建" << QString::fromStdString(e.what());;
         gacha_type = default_gacha_type;
-        WriteJsonFile("GachaType.json", default_gacha_type);
+        WriteJsonFile(std::string("GachaType.json"), default_gacha_type);
     }
     catch (const json::parse_error& e) {
         qWarning().noquote() << "卡池配置文件json解析失败，正在创建" << QString::fromStdString(e.what());;
         gacha_type = default_gacha_type;
-        WriteJsonFile("GachaType.json", default_gacha_type);
+        WriteJsonFile(std::string("GachaType.json"), default_gacha_type);
     }
     catch (...) {
         qWarning().noquote() << "读取卡池配置文件发生未知错误";
@@ -116,7 +116,7 @@ void Global::initGachaType() {
     if (!validate_GachaType()) {
         gacha_type = default_gacha_type;
         qInfo().noquote() << "重置卡池配置文件";
-        WriteJsonFile("GachaType.json", default_gacha_type);
+        WriteJsonFile(std::string("GachaType.json"), default_gacha_type);
     }
     qDebug().noquote() << "卡池配置文件初始化完成";
 }

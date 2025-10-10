@@ -45,6 +45,7 @@ Popup {
     property int parentHeight: 0
     property int parentX: 0
     property int parentY: 0
+
     signal refresh()
     signal gamePathChanged()
     signal exportData()

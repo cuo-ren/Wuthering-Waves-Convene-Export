@@ -29,17 +29,17 @@ void Data::initGachaList() {
 	std::filesystem::path filePath = std::filesystem::u8path(file_path) / std::filesystem::u8path(file_name + ".json");
 	if (!std::filesystem::exists(filePath)) {
 		qWarning().noquote() << "数据文件不存在";
-		WriteJsonFile(file_path + "/" + file_name + ".json", default_data);
+		WriteJsonFile(filePath, default_data);
 	}
 	//读取数据
 	try {
-		gacha_list = ReadJsonFile(file_path + "/" + file_name + ".json");
+		gacha_list = ReadJsonFile(filePath);
 	}
 	catch (const json::parse_error& e) {
 		qWarning().noquote() << "数据文件解析失败 " << e.what();
 		Notifier::instance().notify(3, "数据文件解析失败");
 		gacha_list = default_data;
-		WriteJsonFile(file_path + "/" + file_name + ".json", default_data);
+		WriteJsonFile(filePath, default_data);
 	}
 	catch (...) {
 		qWarning().noquote() << "数据文件读取失败 ";

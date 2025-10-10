@@ -42,6 +42,7 @@ Popup {
                 color:"transparent"
                 border.color: "black"
             }
+            ContextMenu.menu: null
         }
 
         RowLayout {

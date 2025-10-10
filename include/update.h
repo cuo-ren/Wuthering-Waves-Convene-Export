@@ -14,6 +14,7 @@ public:
 	explicit Update(QObject* parent = nullptr): QObject(parent) {
         qInfo() << "正在加载更新模块";
         updatePath = "./update";
+        updateConfigName = "updateConfig";
         if (!makedirs(updatePath)) {
             qFatal("创建update目录失败");
         }
@@ -25,6 +26,7 @@ public:
 		return instance;
 	}
 
+    Q_INVOKABLE void init();
     Q_INVOKABLE void checkUpdate();
     Q_INVOKABLE void getUpdateFile();
     Q_INVOKABLE void update() {
@@ -41,6 +43,12 @@ public:
 signals:
     void updateInfo(bool flag, QString version = "");
     void hasNewVersion(bool flag,QString version = "");
+    void initUpdateCompleted(int status);
+    //0 没有正在进行的更新 显示执行自动检查更新以及显示检查更新按钮
+    //1 有正在下载的文件 显示继续下载按钮
+    //3 已经下载完成，未解压 显示立即更新按钮
+    //4 解压完成，未替换 显示立即更新按钮
+    //5 替换完成 显示立即更新按钮
     void checkUpdateFailed();
     void refreshText(QString text);
     void downloadUpdateCompleted();
@@ -48,6 +56,7 @@ signals:
 
 private:
     std::string updatePath;
+    std::string updateConfigName;
 
     std::vector<std::string> old_versions = { "betav0.1","betav0.2","betav1.0","betav2.0" };
 
@@ -55,15 +64,9 @@ private:
     QFuture<void> getUpdateFileFuture;
 
     std::string new_version;
+    json updateConfig;
     json now_version_config;
     json new_version_config;
-
-    bool validate_version_config(const json& versionConfig);
-    void onUpdateInfo(bool flag, QString version = "");
-    json getVersionInfo(std::string version);
-    bool download_file(const std::string url, const std::string& save_path, const std::string& filename = "");
-    bool move_files(const std::string& srcDir, const std::string& dstDir);
-    std::string get_system_proxy();
 
     static inline std::string trim(const std::string& s) {
         size_t a = 0, b = s.size();
@@ -77,5 +80,14 @@ private:
         return s;
     }
 
+    void onUpdateInfo(bool flag, QString version = "");
+
+    bool checkUpdateConfig();
+    bool validate_version_config(const json& versionConfig);
+    bool validate_updateConfig(const json& updateconfig);
+    json getVersionInfo(std::string version);
+    bool download_file(const std::string url, const std::string& save_path, const std::string& filename = "");
+    bool move_files(const std::string& srcDir, const std::string& dstDir);
+    std::string get_system_proxy();
     std::optional<std::pair<std::string, int>> parse_proxy(const std::string& proxy_raw);
 };
