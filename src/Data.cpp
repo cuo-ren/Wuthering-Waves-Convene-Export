@@ -7,6 +7,9 @@ Data::Data(QObject* parent)
 	QObject::connect(this, &Data::updateComplete,
 		this, &Data::onUpdateComplete);
 	file_path = "./data";
+	if (!makedirs(file_path)) {
+		qFatal("创建data目录失败");
+	}
 	file_name = "gacha_list";
 	qDebug().noquote() << "当前数据文件目录:" << QString::fromStdString(file_path) << "/" <<  QString::fromStdString(file_name) << ".json";
 	initGachaList();
@@ -20,8 +23,6 @@ Data::~Data() {
 void Data::initGachaList() {
 	qInfo().noquote() << "正在初始化数据";
 	json default_data = json::object();
-	//确保data目录存在
-	makedirs(file_path);
 	//读取hash值
 	std::string file_hash = ConfigManager::instance().get<std::string>("hash");
 	//确保json文件存在
@@ -1100,7 +1101,11 @@ Q_INVOKABLE QStringList Data::getUidList() {
 
 Q_INVOKABLE void Data::exportToExcel() {
 	//确保文件夹存在
-	makedirs("./export/excel");
+	if (!makedirs("./export/excel")) {
+		emit exportFail();
+		Notifier::instance().notify(3, "创建目录失败");
+		return;
+	}
 
 	QtConcurrent::run([this]() {
 		try {
@@ -1278,7 +1283,12 @@ Data::ExcelStyles Data::create_styles(XLDocument& doc){
 }
 
 Q_INVOKABLE void Data::exportToCsv() {
-	makedirs("./export/csv");
+	//确保文件夹存在
+	if (!makedirs("./export/csv")) {
+		emit exportFail();
+		Notifier::instance().notify(3, "创建目录失败");
+		return;
+	}
 
 	QtConcurrent::run([this]() {
 		try {
@@ -1353,7 +1363,12 @@ Q_INVOKABLE void Data::exportToCsv() {
 }
 
 Q_INVOKABLE void Data::exportToUIGF3() {
-	makedirs("./export/UIGFv3");
+	//确保文件夹存在
+	if (!makedirs("./export/UIGFv3")) {
+		emit exportFail();
+		Notifier::instance().notify(3, "创建目录失败");
+		return;
+	}
 
 	QtConcurrent::run([this]() {
 		try {
@@ -1422,7 +1437,12 @@ Q_INVOKABLE void Data::exportToUIGF3() {
 }
 
 Q_INVOKABLE void Data::exportToUIGF4(bool isTotal) {
-	makedirs("./export/UIGFv4");
+	//确保文件夹存在
+	if (!makedirs("./export/UIGFv4")) {
+		emit exportFail();
+		Notifier::instance().notify(3, "创建目录失败");
+		return;
+	}
 
 	QtConcurrent::run([this, isTotal]() {
 		try {
@@ -1698,7 +1718,12 @@ Q_INVOKABLE void Data::recoveryBackup(const QString& fileName) {
 	std::filesystem::path filePath = std::filesystem::u8path(file_path) / std::filesystem::u8path(fileName.toStdString());
 	json backupData = json::object();
 	//确保data目录存在
-	makedirs(file_path);
+	//确保文件夹存在
+	if (!makedirs(file_path)) {
+		emit recoveryFailed();
+		Notifier::instance().notify(3, "data目录不存在");
+		return;
+	}
 	//确保json文件存在
 	if (!std::filesystem::exists(filePath)) {
 		qWarning().noquote() << "无法打开备份";

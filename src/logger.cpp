@@ -7,6 +7,7 @@ void Logger::init() {
     }
     updateLogFile();
     qInstallMessageHandler(messageHandler);
+    qDebug() << "日志模块初始化完成";
 }
 
 void Logger::updateLogFile() {

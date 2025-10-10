@@ -11,6 +11,7 @@
 #include <QDateTime>
 #include <QString>
 #include "picosha2.h"
+#include "miniz.h"
 #include "json.hpp"
 using json = nlohmann::json;
 
@@ -23,8 +24,9 @@ std::string gbk_to_local(const std::string& gbk);
 std::string local_to_gbk(const std::string& gbk);
 json ReadJsonFile(const std::string& path);
 void WriteJsonFile(const std::string& path, const json& data);
-void makedirs(const std::string& path);
+bool makedirs(const std::string& path);
 std::string current_time_str();
 std::string timestamp_to_str(int timestamp);
 bool compareByTime(const json& a, const json& b);
 bool is_digit(const std::string&);
+bool unzip(const std::string& zipPath, const std::string& outDir, const uint64_t maxSize = 2ull * 1024ull * 1024ull * 1024ull);

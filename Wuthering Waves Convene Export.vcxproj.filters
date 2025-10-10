@@ -72,6 +72,9 @@
     <ClCompile Include="src\miniz.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\update.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="config.json">

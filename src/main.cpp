@@ -26,13 +26,15 @@ int main(int argc, char *argv[])
 #endif
     //注册日志系统
     Logger::init();
-    qDebug().noquote() << "日志模块初始化完成";
 
     QApplication app(argc, argv);
     //无边框窗口
     app.installNativeEventFilter(new NativeFramelessHelper);
+    if (!makedirs("./resource/")) {
+        qFatal("无法加载resource目录");
+    }
     app.setWindowIcon(QIcon(":/qt/qml/wuthering waves convene export/resource/favicon.ico"));  // 支持 qrc 或文件路径
-    makedirs("./resource/");
+    
     //加载类
     Notifier::instance();
     Global::instance();
@@ -49,9 +51,10 @@ int main(int argc, char *argv[])
         app.installTranslator(&translator);
     }
     else {
-        qWarning().noquote() << "加载翻译失败";
+        qCritical().noquote() << "加载翻译失败";
     }
     QQmlApplicationEngine engine;
+
     langMgr.init(&engine, &app);
     qmlRegisterSingletonInstance("LanguageManager", 1, 0, "LanguageManager", &langMgr);
     qmlRegisterSingletonInstance("Notifier", 1, 0, "Notifier", &Notifier::instance());
@@ -63,12 +66,6 @@ int main(int argc, char *argv[])
     qmlRegisterSingletonInstance("Update", 1, 0, "Update", &Update::instance());
 
     engine.load(QUrl(QStringLiteral("qrc:/qt/qml/wuthering waves convene export/ui/main.qml")));
-
-    /*
-    for (std::string s : test) {
-        //std::cout << s;
-        qInfo().noquote() << QString::fromUtf8(s);
-    }*/
 
     if (engine.rootObjects().isEmpty())
         return -1;

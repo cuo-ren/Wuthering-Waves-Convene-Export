@@ -226,17 +226,42 @@ void WriteJsonFile(const std::string& path, const json& data) {
 	}
 }
 
-void makedirs(const std::string& path) {
+bool makedirs(const std::string& path) {
 	std::filesystem::path fsPath = std::filesystem::u8path(path);
-	std::error_code ec; // 防止抛异常
+	std::error_code ec;
 
-	if (!std::filesystem::exists(fsPath)) {
-		if (!std::filesystem::create_directories(fsPath, ec)) {
-			if (ec) {
-				qCritical().noquote() << "创建路径失败! " << QString::fromStdString(path) << " " << QString::fromStdString(ec.message());
+	std::filesystem::path current;
+	//逐层检查是否是文件夹
+	for (const auto& part : fsPath) {
+		current /= part;
+		//避免出现符号链接
+		if (std::filesystem::is_symlink(current)) {
+			qFatal("路径包含符号链接，可能存在风险: %s", current.string().c_str());
+			return false;
+		}
+		if (std::filesystem::exists(current)) {
+			//存在文件夹同名文件
+			if (std::filesystem::is_regular_file(current)) {
+				qWarning() << "存在文件夹同名文件" << QString::fromStdString(current.string()) << "尝试删除";
+				std::filesystem::remove(current, ec);
+				if (ec) {
+					qCritical().noquote() << "删除文件失败: " << QString::fromStdString(current.string()) << " " << ec.message();
+					return false;
+				}
 			}
 		}
+		else {
+			break;
+		}
 	}
+	if (!std::filesystem::exists(fsPath)) {
+		std::filesystem::create_directories(fsPath, ec);
+		if (ec) {
+			qCritical().noquote() << "创建目录失败: " << QString::fromStdString(fsPath.string()) << " " << ec.message();
+			return false;
+		}
+	}
+	return true;
 }
 
 std::string current_time_str() {
@@ -262,4 +287,74 @@ bool is_digit(const std::string& s) {
 std::string timestamp_to_str(int timestamp) {
 	QDateTime dt = QDateTime::fromSecsSinceEpoch(timestamp);
 	return dt.toString("yyyy-MM-dd HH:mm:ss").toStdString();
+}
+
+bool unzip(const std::string& zipPath, const std::string& outDir, uint64_t maxSize) {
+	std::filesystem::path zippath = std::filesystem::u8path(zipPath);
+	mz_zip_archive zip{};
+	if (!mz_zip_reader_init_file(&zip, zippath.u8string().c_str(), 0)) {
+		qWarning() << "打开ZIP失败: " << QString::fromStdString(zipPath);
+		return false;
+	}
+
+	uint64_t totalUncompressedSize = 0;
+
+	std::filesystem::path base = std::filesystem::weakly_canonical(std::filesystem::u8path(outDir));
+	std::filesystem::create_directories(base);
+
+	int fileCount = (int)mz_zip_reader_get_num_files(&zip);
+	for (int i = 0; i < fileCount; i++) {
+		mz_zip_archive_file_stat st;
+		if (!mz_zip_reader_file_stat(&zip, i, &st)) continue;
+
+		// 检查总大小限制
+		if (totalUncompressedSize + st.m_uncomp_size > maxSize) {
+			qWarning() << "解压总大小超过限制，停止解压";
+			mz_zip_reader_end(&zip);
+			return false;
+		}
+
+		std::filesystem::path outPath = base / st.m_filename;
+
+		// ===== 路径穿越检查 =====
+		std::filesystem::path canonPath;
+		try {
+			canonPath = std::filesystem::canonical(outPath.parent_path());
+		}
+		catch (const std::filesystem::filesystem_error& e) {
+			qCritical() << "路径规范化失败: " << e.what();
+			mz_zip_reader_end(&zip);
+			return false;
+		}
+
+		// 确保canonPath是base的子目录（无论文件/目录类型）
+		if (canonPath.string().find(base.string()) != 0) {
+			qCritical() << "检测到路径穿越攻击，跳过: " << QString::fromStdString(st.m_filename);
+			mz_zip_reader_end(&zip);
+			return false;
+		}
+
+		if (mz_zip_reader_is_file_a_directory(&zip, i)) {
+			if (!makedirs(outPath.string())) {
+				qWarning() << "解压失败: " << "创建文件夹失败 " << QString::fromStdString(outPath.string());
+				mz_zip_reader_end(&zip);
+				return false;
+			}
+		}
+		else {
+			std::filesystem::create_directories(outPath.parent_path());
+			if (!mz_zip_reader_extract_to_file(&zip, i, outPath.u8string().c_str(), 0)) {
+				qWarning() << "解压失败: " << QString::fromStdString(st.m_filename);
+				mz_zip_reader_end(&zip);
+				return false;
+			}
+			else {
+				totalUncompressedSize += st.m_uncomp_size;
+			}
+		}
+	}
+
+	mz_zip_reader_end(&zip);
+	qInfo() << "解压完成，总大小: " << totalUncompressedSize / (1024 * 1024) << " MB";
+	return true;
 }
