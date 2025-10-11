@@ -1,9 +1,72 @@
 ﻿#include "update.h"
 
 Q_INVOKABLE void Update::init() {
+    //检查更新配置文件是否存在
     if (!checkUpdateConfig()) {
-
+        emit initUpdateCompleted(NoUpdate);
+        QtConcurrent::run([this]() {
+            try {
+                reset_folder(updatePath);
+            }
+            catch (std::exception& e) {
+                qCritical() << "线程崩溃" << QString::fromStdString(e.what());
+                Notifier::instance().notify(3, tr("线程崩溃 %1").arg(QString::fromStdString(e.what())));
+            }
+            catch (...) {
+                qCritical() << "线程崩溃";
+                Notifier::instance().notify(3, tr("线程崩溃"));
+            }
+        });
+        return;
     }
+    //复制一份给多线程使用
+    json updateconfig = updateConfig;
+    QtConcurrent::run([this, updateconfig]() {
+        try {
+            //未解压，下载阶段
+            if (!updateconfig["isUnzip"]) {
+                //检查文件是否存在,不存在清空整个下载目录
+                std::filesystem::path downloadFilePath = std::filesystem::u8path(updatePath) / updateconfig["version"] / updateconfig["fileName"];
+                if (!std::filesystem::exists(downloadFilePath) or updateconfig["version"].get<std::string>().length() == 0 or updateconfig["fileName"].get<std::string>().length() == 0) {
+                    reset_folder(updatePath);
+                    emit initUpdateCompleted(NoUpdate);
+                    return;
+                }
+                std::string hash = sha256_file_streaming(downloadFilePath.string());
+                if (hash != updateconfig["hash"]) {
+                    reset_folder(updatePath);
+                    emit initUpdateCompleted(NoUpdate);
+                    return;
+                }
+                else {
+                    if (updateconfig["downloaded"].get<int64_t>() != updateconfig["totalSize"].get<int64_t>()) {
+                        emit initUpdateCompleted(Downloading, QString::asprintf("%.2f%", (static_cast<double>(updateconfig["downloaded"].get<int64_t>()) / updateconfig["totalSize"].get<int64_t>()) * 100.0));
+                    }
+                    else {
+                        emit initUpdateCompleted(Downloaded);
+                    }
+                    return;
+                }
+            }
+
+            if (!updateconfig["isReplacedUpdater"]) {
+                emit initUpdateCompleted(Unzipped);
+                return;
+            }
+            else {
+                emit initUpdateCompleted(Replaced);
+                return;
+            }
+        }
+        catch (std::exception& e) {
+            qCritical() << "线程崩溃" << QString::fromStdString(e.what());
+            Notifier::instance().notify(3, tr("线程崩溃 %1").arg(QString::fromStdString(e.what())));
+        }
+        catch (...) {
+            qCritical() << "线程崩溃";
+            Notifier::instance().notify(3, tr("线程崩溃"));
+        }
+    });
 }
 
 Q_INVOKABLE void Update::checkUpdate() {
@@ -189,6 +252,7 @@ bool Update::checkUpdateConfig() {
     //读取并检查更新配置文件
     std::filesystem::path filePath = std::filesystem::u8path(updatePath) / std::filesystem::u8path(updateConfigName + ".json");
     if (!std::filesystem::exists(filePath)) {
+        qDebug() << "不存在更新配置文件";
         return false;
     }
     try {
@@ -207,6 +271,7 @@ bool Update::checkUpdateConfig() {
         return false;
     }
     if (!validate_updateConfig(updateConfig)) {
+        qWarning() << "更新配置文件校验不通过";
         std::error_code ec;
         std::filesystem::remove(filePath, ec);
         if (ec) {
@@ -324,6 +389,10 @@ bool Update::validate_updateConfig(const json& updateconfig) {
     }
     if (!updateconfig.contains("version") or !updateconfig["version"].is_string()) {
         qWarning() << "更新配置文件 version不存在或类型错误";
+        return false;
+    }
+    if (!updateconfig.contains("fileName") or !updateconfig["fileName"].is_string()) {
+        qWarning() << "更新配置文件 fileName不存在或类型错误";
         return false;
     }
     if (updateconfig["downloaded"].get<int64_t>() != updateconfig["totalSize"].get<int64_t>()) {

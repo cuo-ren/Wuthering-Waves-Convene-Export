@@ -61,10 +61,8 @@ Popup {
         skipSettingSwitch.checked = ConfigManager.getValue("skip")
         //自动更新设置
         updateSettingSwitch.checked = ConfigManager.getValue("update")
-        //检查更新
-        if(updateSettingSwitch.checked){
-            Update.checkUpdate()
-        }
+        //初始化更新
+        Update.init()
         //语言设置
         var supportLanguages = Global.supportLanguages
         for(var i = 0; i < supportLanguages.length; i++){
@@ -543,7 +541,7 @@ Popup {
 
                         text: qsTr("检查更新")
 
-                        state:"noUpdate"
+                        state: "loading"
 
                         states: [
                             State {
@@ -599,11 +597,30 @@ Popup {
                                     text: qsTr("立即更新")
                                     disabled: false
                                 }
+                            },
+                            State {
+                                name: "loading"
+                                PropertyChanges {
+                                    target: checkUpdateBtn
+                                    disabled: true
+
+                                    text: qsTr("正在加载")
+                                }
                             }
                         ]
 
                         Connections{
                             target: Update
+                            function onInitUpdateCompleted(status,desc){
+                                switch(status){
+                                case 0:checkUpdateBtn.state ="noUpdate";break;
+                                case 1:checkUpdateBtn.state ="Downloading";break;
+                                case 2:checkUpdateBtn.state ="update";break;
+                                case 3:checkUpdateBtn.state ="update";break;
+                                case 4:checkUpdateBtn.state ="update";break;
+                                }
+                            }
+
                             function onCheckUpdateFailed(){
                                 checkUpdateBtn.state = "noUpdate"
                             }

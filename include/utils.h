@@ -32,3 +32,5 @@ std::string timestamp_to_str(int timestamp);
 bool compareByTime(const json& a, const json& b);
 bool is_digit(const std::string&);
 bool unzip(const std::string& zipPath, const std::string& outDir, const uint64_t maxSize = 2ull * 1024ull * 1024ull * 1024ull);
+void reset_folder(const std::string& path);
+void reset_folder(const std::filesystem::path& path);

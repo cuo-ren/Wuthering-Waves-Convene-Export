@@ -406,3 +406,45 @@ bool unzip(const std::string& zipPath, const std::string& outDir, uint64_t maxSi
 	qInfo() << "解压完成，总大小: " << totalUncompressedSize / (1024 * 1024) << " MB";
 	return true;
 }
+
+void reset_folder(const std::string& path) {
+	std::filesystem::path folder_path = std::filesystem::u8path(path);
+
+	// 如果文件夹存在，删除整个文件夹（包括内容）
+	if (std::filesystem::exists(folder_path)) {
+		std::error_code ec;
+		std::filesystem::remove_all(folder_path, ec);
+		if (ec) {
+			qCritical() << "删除文件夹失败" << QString::fromStdString(ec.message());
+			throw std::runtime_error("删除文件夹失败" + ec.message());
+		}
+	}
+
+	// 创建空文件夹
+	std::error_code ec;
+	std::filesystem::create_directory(folder_path, ec);
+	if (ec) {
+		qCritical() << "创建文件夹失败" << QString::fromStdString(ec.message());
+		throw std::runtime_error("创建文件夹失败" + ec.message());
+	}
+}
+
+void reset_folder(const std::filesystem::path& path) {
+	// 如果文件夹存在，删除整个文件夹（包括内容）
+	if (std::filesystem::exists(path)) {
+		std::error_code ec;
+		std::filesystem::remove_all(path, ec);
+		if (ec) {
+			qCritical() << "删除文件夹失败" << QString::fromStdString(ec.message());
+			throw std::runtime_error("删除文件夹失败" + ec.message());
+		}
+	}
+
+	// 创建空文件夹
+	std::error_code ec;
+	std::filesystem::create_directory(path, ec);
+	if (ec) {
+		qCritical() << "创建文件夹失败" << QString::fromStdString(ec.message());
+		throw std::runtime_error("创建文件夹失败" + ec.message());
+	}
+}

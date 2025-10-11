@@ -12,9 +12,10 @@ class Update : public QObject {
 
 public:
 	explicit Update(QObject* parent = nullptr): QObject(parent) {
-        qInfo() << "正在加载更新模块";
+        qInfo() << "正在初始化更新模块";
         updatePath = "./update";
         updateConfigName = "updateConfig";
+        canceled = false;
         if (!makedirs(updatePath)) {
             qFatal("创建update目录失败");
         }
@@ -43,12 +44,12 @@ public:
 signals:
     void updateInfo(bool flag, QString version = "");
     void hasNewVersion(bool flag,QString version = "");
-    void initUpdateCompleted(int status);
+    void initUpdateCompleted(int status,QString desc = "");
     //0 没有正在进行的更新 显示执行自动检查更新以及显示检查更新按钮
     //1 有正在下载的文件 显示继续下载按钮
-    //3 已经下载完成，未解压 显示立即更新按钮
-    //4 解压完成，未替换 显示立即更新按钮
-    //5 替换完成 显示立即更新按钮
+    //2 已经下载完成，未解压 显示开始更新按钮
+    //3 解压完成，未替换 显示开始更新按钮
+    //4 替换完成 显示立即重启按钮
     void checkUpdateFailed();
     void refreshText(QString text);
     void downloadUpdateCompleted();
@@ -59,6 +60,15 @@ private:
     std::string updateConfigName;
 
     std::vector<std::string> old_versions = { "betav0.1","betav0.2","betav1.0","betav2.0" };
+    bool canceled = false;
+
+    enum UpdateStatus {
+        NoUpdate = 0,
+        Downloading = 1,
+        Downloaded = 2,
+        Unzipped = 3,
+        Replaced = 4
+    };
 
     QFuture<void> checkUpdateFuture;
     QFuture<void> getUpdateFileFuture;
