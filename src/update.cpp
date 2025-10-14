@@ -1,59 +1,64 @@
 ﻿#include "update.h"
 
 Q_INVOKABLE void Update::init() {
-    //检查更新配置文件是否存在
-    if (!checkUpdateConfig()) {
-        emit initUpdateCompleted(NoUpdate);
-        QtConcurrent::run([this]() {
-            try {
-                reset_folder(updatePath);
-            }
-            catch (std::exception& e) {
-                qCritical() << "线程崩溃" << QString::fromStdString(e.what());
-                Notifier::instance().notify(3, tr("线程崩溃 %1").arg(QString::fromStdString(e.what())));
-            }
-            catch (...) {
-                qCritical() << "线程崩溃";
-                Notifier::instance().notify(3, tr("线程崩溃"));
-            }
-        });
-        return;
-    }
     //复制一份给多线程使用
-    json updateconfig = updateConfig;
-    QtConcurrent::run([this, updateconfig]() {
+    QtConcurrent::run([this]() {
         try {
+            //检查更新配置文件是否存在
+            if (!checkUpdateConfig()) {
+                emit initUpdateCompleted(NoUpdate);
+                reset_folder(updatePath);
+                return;
+            }
+            new_version = updateConfig["version"].get<std::string>();
+            new_version_config = updateConfig["newVersion"];
+            current_version_config = updateConfig["currentVersion"];
+
             //未解压，下载阶段
-            if (!updateconfig["isUnzip"]) {
+            if (!updateConfig["isUnzip"]) {
                 //检查文件是否存在,不存在清空整个下载目录
-                std::filesystem::path downloadFilePath = std::filesystem::u8path(updatePath) / updateconfig["version"] / updateconfig["fileName"];
-                if (!std::filesystem::exists(downloadFilePath) or updateconfig["version"].get<std::string>().length() == 0 or updateconfig["fileName"].get<std::string>().length() == 0) {
+                std::filesystem::path downloadFilePath = std::filesystem::u8path(updatePath) / updateConfig["version"] / updateConfig["fileName"];
+                if (!std::filesystem::exists(downloadFilePath) or updateConfig["version"].get<std::string>().length() == 0 or updateConfig["fileName"].get<std::string>().length() == 0) {
+                    qWarning() << "找不到下载文件 即将重置更新目录";
+                    resetUpdateConfig();
+                    new_version = "";
+                    new_version_config = json::object();
+                    current_version_config = json::object();
                     reset_folder(updatePath);
                     emit initUpdateCompleted(NoUpdate);
                     return;
                 }
                 std::string hash = sha256_file_streaming(downloadFilePath.string());
-                if (hash != updateconfig["hash"]) {
+                if (hash != updateConfig["hash"]) {
+                    qWarning() << "下载文件hash校验不通过 即将重置更新目录";
+                    resetUpdateConfig();
+                    new_version = "";
+                    new_version_config = json::object();
+                    current_version_config = json::object();
                     reset_folder(updatePath);
                     emit initUpdateCompleted(NoUpdate);
                     return;
                 }
                 else {
-                    if (updateconfig["downloaded"].get<int64_t>() != updateconfig["totalSize"].get<int64_t>()) {
-                        emit initUpdateCompleted(Downloading, QString::asprintf("%.2f%", (static_cast<double>(updateconfig["downloaded"].get<int64_t>()) / updateconfig["totalSize"].get<int64_t>()) * 100.0));
+                    if (!updateConfig["isDownloadCompleted"]) {
+                        qInfo() << "检测到存在未完成的更新 进度:下载中";
+                        emit initUpdateCompleted(Downloading, QString::asprintf("%.2f%", (static_cast<double>(updateConfig["downloaded"].get<int64_t>()) / updateConfig["totalSize"].get<int64_t>()) * 100.0));
                     }
                     else {
+                        qInfo() << "检测到存在未完成的更新 进度:下载完成";
                         emit initUpdateCompleted(Downloaded);
                     }
                     return;
                 }
             }
 
-            if (!updateconfig["isReplacedUpdater"]) {
+            if (!updateConfig["isReplacedUpdater"]) {
+                qInfo() << "检测到存在未完成的更新 进度:解压完成";
                 emit initUpdateCompleted(Unzipped);
                 return;
             }
             else {
+                qInfo() << "检测到存在未完成的更新 进度:替换完成";
                 emit initUpdateCompleted(Replaced);
                 return;
             }
@@ -77,7 +82,7 @@ Q_INVOKABLE void Update::checkUpdate() {
 
     qInfo() << "开始检查更新";
     new_version = "";
-    now_version_config = {};
+    current_version_config = {};
     new_version_config = {};
 
     checkUpdateFuture = QtConcurrent::run([this]() {
@@ -153,9 +158,9 @@ Q_INVOKABLE void Update::checkUpdate() {
             emit updateInfo(false);
         }
         else {
-            Notifier::instance().notify(0, tr("存在更新"));
+            Notifier::instance().notify(0, tr("有新版本可以使用 %1").arg(QString::fromStdString(new_version)));
             emit updateInfo(true, QString::fromStdString(new_version));
-            qDebug() << new_version;
+            qDebug() << QString::fromStdString(new_version);
         }
         });
 }
@@ -171,10 +176,11 @@ Q_INVOKABLE void Update::getUpdateFile() {
     getUpdateFileFuture = QtConcurrent::run([this]() {
         try {
             //获取程序版本的文件
-            json nowVersionInfo = getVersionInfo(Global::instance().getInfo()["version"]);
-            if (!nowVersionInfo.is_object()) {
-                if (nowVersionInfo.is_number_integer()) {
-                    Notifier::instance().notify(3, tr("获取当前版本配置文件失败 错误码: %1").arg(QString::number(nowVersionInfo.get<int>())));
+            updateConfig["version"] = new_version;
+            json currentVersionInfo = getVersionInfo(Global::instance().getInfo()["version"]);
+            if (!currentVersionInfo.is_object()) {
+                if (currentVersionInfo.is_number_integer()) {
+                    Notifier::instance().notify(3, tr("获取当前版本配置文件失败 错误码: %1").arg(QString::number(currentVersionInfo.get<int>())));
                     emit downloadUpdateFailed();
                     return;
                 }
@@ -186,12 +192,13 @@ Q_INVOKABLE void Update::getUpdateFile() {
             }
 
             //校验配置文件格式
-            if (!validate_version_config(nowVersionInfo)) {
+            if (!validate_version_config(currentVersionInfo)) {
                 Notifier::instance().notify(3, tr("版本配置文件异常"));
                 emit downloadUpdateFailed();
                 return;
             }
-            now_version_config = nowVersionInfo;
+            current_version_config = currentVersionInfo;
+            updateConfig["currentVersion"] = currentVersionInfo;
 
             //获取要更新的版本文件
             json newVersionInfo = getVersionInfo(new_version);
@@ -216,34 +223,82 @@ Q_INVOKABLE void Update::getUpdateFile() {
             }
 
             new_version_config = newVersionInfo;
+            updateConfig["newVersion"] = newVersionInfo;
+            updateConfig["url"] = newVersionInfo["url"];
+            updateConfig["fileName"] = new_version + ".zip";
+
+            //保存updateconfig
+            WriteJsonFile(updatePath + "/" + updateConfigName + ".json", updateConfig);
 
             //下载更新的压缩包
             makedirs("./update/" + new_version);
-            download_file(newVersionInfo["url"], "./update/" + new_version, new_version + ".zip");
-
-            //解压压缩包
-            emit refreshText(tr("正在解压"));
-            if (!unzip("./update/" + new_version + "/" + new_version + ".zip", "./update/" + new_version)) {
-                Notifier::instance().notify(3, tr("解压更新包失败"));
+            int code = download_file(newVersionInfo["url"], "./update/" + new_version, new_version + ".zip");
+            if (code == -1) {
                 emit downloadUpdateFailed();
-                return;
+                resetUpdateConfig();
+                reset_folder(updatePath);
             }
-
-            //发送更新下载完成信号
-            emit downloadUpdateCompleted();
+            else if (code == 0) {
+                //发送更新下载完成信号
+                emit downloadUpdateCompleted(); 
+            }
             return;
         }
         catch (std::exception& e) {
             qCritical() << "线程崩溃 " << QString::fromStdString(e.what());
             Notifier::instance().notify(3, tr("更新失败"));
             Notifier::instance().notify(3, tr("线程崩溃 %1").arg(QString::fromStdString(e.what())));
+            resetUpdateConfig();
+            reset_folder(updatePath);
             emit downloadUpdateFailed();
         }
         catch (...) {
             qCritical() << "线程崩溃 ";
             Notifier::instance().notify(3, tr("更新失败"));
             Notifier::instance().notify(3, tr("线程崩溃"));
+            resetUpdateConfig();
+            reset_folder(updatePath);
             emit downloadUpdateFailed();
+        }
+        });
+}
+
+Q_INVOKABLE void Update::pause() {
+    canceled = true;
+}
+
+Q_INVOKABLE void Update::continueDownload() {
+    canceled = false;
+    QtConcurrent::run([this]() {
+        try {
+            emit continued();
+            int code = download_file(new_version_config["url"], "./update/" + new_version, new_version + ".zip");
+            if (code == -1) {
+                emit downloadUpdateFailed();
+                resetUpdateConfig();
+                reset_folder(updatePath);
+            }
+            else if (code == 0) {
+                //发送更新下载完成信号
+                emit downloadUpdateCompleted();
+            }
+            return;
+        }
+        catch (std::exception& e) {
+            qCritical() << "线程崩溃 " << QString::fromStdString(e.what());
+            Notifier::instance().notify(3, tr("更新失败"));
+            Notifier::instance().notify(3, tr("线程崩溃 %1").arg(QString::fromStdString(e.what())));
+            //resetUpdateConfig();
+            //reset_folder(updatePath);
+            //emit downloadUpdateFailed();
+        }
+        catch (...) {
+            qCritical() << "线程崩溃 ";
+            Notifier::instance().notify(3, tr("更新失败"));
+            Notifier::instance().notify(3, tr("线程崩溃"));
+            //resetUpdateConfig();
+            //reset_folder(updatePath);
+            //emit downloadUpdateFailed();
         }
         });
 }
@@ -251,8 +306,22 @@ Q_INVOKABLE void Update::getUpdateFile() {
 bool Update::checkUpdateConfig() {
     //读取并检查更新配置文件
     std::filesystem::path filePath = std::filesystem::u8path(updatePath) / std::filesystem::u8path(updateConfigName + ".json");
+    json defaultConfig = {
+        {"version",""},
+        {"fileName",""},
+        {"url",""},
+        {"hash",""},
+        {"downloaded",0},
+        {"totalSize",0},
+        {"isDownloadCompleted",false},
+        {"isUnzip",false},
+        {"isReplacedUpdater",false},
+        {"currentVersion",json::object()},
+        {"newVersion",json::object()}
+    };
     if (!std::filesystem::exists(filePath)) {
         qDebug() << "不存在更新配置文件";
+        updateConfig = defaultConfig;
         return false;
     }
     try {
@@ -260,14 +329,17 @@ bool Update::checkUpdateConfig() {
     }
     catch (const json::parse_error& e) {
         qWarning() << "更新配置文件解析失败" << QString::fromStdString(e.what());
+        updateConfig = defaultConfig;
         return false;
     }
     catch (const std::exception& e) {
         qWarning() << "打开更新配置文件失败" << QString::fromStdString(e.what());
+        updateConfig = defaultConfig;
         return false;
     }
     catch (...) {
         qWarning() << "打开更新配置文件失败";
+        updateConfig = defaultConfig;
         return false;
     }
     if (!validate_updateConfig(updateConfig)) {
@@ -277,6 +349,7 @@ bool Update::checkUpdateConfig() {
         if (ec) {
             qCritical() << "删除文件失败:" << QString::fromStdString(filePath.string()) << ec.message();
         }
+        updateConfig = defaultConfig;
         return false;
     }
     return true;
@@ -387,6 +460,10 @@ bool Update::validate_updateConfig(const json& updateconfig) {
         qWarning() << "更新配置文件 isReplacedUpdater不存在或类型错误";
         return false;
     }
+    if (!updateconfig.contains("isDownloadCompleted") or !updateconfig["isDownloadCompleted"].is_boolean()) {
+        qWarning() << "更新配置文件 isDownloadCompleted不存在或类型错误";
+        return false;
+    }
     if (!updateconfig.contains("version") or !updateconfig["version"].is_string()) {
         qWarning() << "更新配置文件 version不存在或类型错误";
         return false;
@@ -395,7 +472,23 @@ bool Update::validate_updateConfig(const json& updateconfig) {
         qWarning() << "更新配置文件 fileName不存在或类型错误";
         return false;
     }
-    if (updateconfig["downloaded"].get<int64_t>() != updateconfig["totalSize"].get<int64_t>()) {
+    if (!updateconfig.contains("currentVersion") or !updateconfig["currentVersion"].is_object()) {
+        qWarning() << "更新配置文件 currentVersion不存在或类型错误";
+        return false;
+    }
+    if (!updateconfig.contains("newVersion") or !updateconfig["newVersion"].is_object()) {
+        qWarning() << "更新配置文件 newVersion不存在或类型错误";
+        return false;
+    }
+    if (!validate_version_config(updateconfig["currentVersion"])) {
+        qWarning() << "更新配置文件 currentVersion校验失败";
+        return false;
+    }
+    if (!validate_version_config(updateconfig["newVersion"])) {
+        qWarning() << "更新配置文件 newVersion校验失败";
+        return false;
+    }
+    if (!updateconfig["isDownloadCompleted"].get<bool>()) {
         if (updateconfig["isUnzip"].get<bool>() or updateconfig["isReplacedUpdater"].get<bool>()) {
             //未下载完成，但已解压或替换
             qWarning() << "更新配置文件 更新进度冲突";
@@ -466,8 +559,21 @@ json Update::getVersionInfo(std::string version) {
     }
 }
 
-bool Update::download_file(const std::string url, const std::string& save_path, const std::string& filename) {
+int Update::download_file(const std::string url, const std::string& save_path, const std::string& filename) {
+    //0 下载完成
+    //1 下载暂停
+    //-1 下载失败
     makedirs(save_path);
+
+    bool isFirstDownload;
+    int64_t standedBites = 0;
+    if (updateConfig["downloaded"] != 0 and !updateConfig["isDownloadCompleted"]) {
+        isFirstDownload = false;
+        standedBites = updateConfig["downloaded"];
+    }
+    else {
+        isFirstDownload = true;
+    }
 
     std::string protocol;
     std::string host;
@@ -477,7 +583,7 @@ bool Update::download_file(const std::string url, const std::string& save_path, 
 
     if (url_copy.find("://") == std::string::npos) {
         qWarning() << "协议提取失败";
-        return false;
+        return -1;
     }
     protocol = url_copy.substr(0, url_copy.find("://"));
 
@@ -498,11 +604,42 @@ bool Update::download_file(const std::string url, const std::string& save_path, 
     cli.set_follow_location(true); // 支持 301/302 跳转
     cli.set_read_timeout(10, 0); // 10 秒超时
     httplib::Headers headers;
+    picosha2::hash256_one_by_one hasher;
+
 
     headers = {
         { "User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36 Edg/133.0.0.0" }
     };
 
+    if (!isFirstDownload) {
+        headers = {
+            { "User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36 Edg/133.0.0.0" },
+            {"Range", "bytes=" + std::to_string(updateConfig["downloaded"].get<int64_t>()) + "-"}
+        };
+
+        std::filesystem::path fsPath = std::filesystem::u8path(updatePath)/ updateConfig["version"].get<std::string>()/ updateConfig["fileName"].get<std::string>();
+
+        std::ifstream file(fsPath, std::ios::binary);
+        if (!file.is_open()) {
+            return -1;
+        }
+
+        hasher.init();
+
+        std::vector<unsigned char> buffer(8192);  // 8KB 缓冲区
+        while (file) {
+            file.read(reinterpret_cast<char*>(buffer.data()), buffer.size());
+            std::streamsize read_bytes = file.gcount();
+            if (read_bytes > 0) {
+                hasher.process(buffer.begin(), buffer.begin() + read_bytes);
+            }
+        }
+    }
+    else {
+        headers = {
+            { "User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36 Edg/133.0.0.0" }
+        };
+    }
 
     //设置代理
     std::string proxy = DownloadManager::instance().get_system_proxy();
@@ -517,54 +654,80 @@ bool Update::download_file(const std::string url, const std::string& save_path, 
     std::ofstream ofs;
     std::string final_filename = filename;
 
-    auto start_time = std::chrono::steady_clock::now();
+    auto last_time = std::chrono::steady_clock::now();
+    int64_t last_current_bites = standedBites;
 
     auto res = cli.Get(
         path, // 请求路径
         headers,
         [&](const httplib::Response& res) {//ResponseHandler
             std::string used_filename = final_filename;
+            if (!isFirstDownload) {
+                std::filesystem::path file_path = std::filesystem::u8path(updatePath) / updateConfig["version"].get<std::string>() / updateConfig["fileName"].get<std::string>();
+                ofs.open(file_path, std::ios::binary | std::ios::app);
+                if (!ofs) {
+                    qWarning() << "无法打开文件:" << QString::fromStdString(file_path.u8string());
+                    return false; // 中止下载
+                }
 
-            if (used_filename.empty()) {
-                // 1. 从 Content-Disposition 中取 filename
-                auto it = res.headers.find("Content-Disposition");
-                if (it != res.headers.end()) {
-                    std::string cd = it->second;
-                    auto pos = cd.find("filename=");
-                    if (pos != std::string::npos) {
-                        used_filename = cd.substr(pos + 9); // 去掉 filename=
-                        if (!used_filename.empty() && used_filename.front() == '\"' && used_filename.back() == '\"') {
-                            used_filename = used_filename.substr(1, used_filename.size() - 2); // 去掉引号
+                return true; // 继续接收 body
+            }
+            else {
+                hasher.init();
+                if (used_filename.empty()) {
+                    // 1. 从 Content-Disposition 中取 filename
+                    auto it = res.headers.find("Content-Disposition");
+                    if (it != res.headers.end()) {
+                        std::string cd = it->second;
+                        auto pos = cd.find("filename=");
+                        if (pos != std::string::npos) {
+                            used_filename = cd.substr(pos + 9); // 去掉 filename=
+                            if (!used_filename.empty() && used_filename.front() == '\"' && used_filename.back() == '\"') {
+                                used_filename = used_filename.substr(1, used_filename.size() - 2); // 去掉引号
+                            }
                         }
                     }
+                    // 2. fallback
+                    if (used_filename.empty()) {
+                        used_filename = "temp";
+                    }
                 }
-                // 2. fallback
-                if (used_filename.empty()) {
-                    used_filename = "temp";
+
+                final_filename = used_filename;
+                updateConfig["fileName"] = final_filename;
+
+                std::filesystem::path file_path = std::filesystem::u8path(save_path) / final_filename;
+                ofs.open(file_path, std::ios::binary);
+                if (!ofs) {
+                    qWarning() << "无法创建文件:" << QString::fromStdString(file_path.u8string());
+                    return false; // 中止下载
                 }
-            }
 
-            final_filename = used_filename;
-            std::filesystem::path file_path = std::filesystem::u8path(save_path) / final_filename;
-            ofs.open(file_path, std::ios::binary);
-            if (!ofs) {
-                qWarning() << "无法创建文件:" << QString::fromStdString(file_path.u8string());
-                return false; // 中止下载
+                return true; // 继续接收 body
             }
-
-            return true; // 继续接收 body
+            
         },
         [&](const char* data, size_t len) { // ContentReceiver
             if (ofs.is_open()) {
                 ofs.write(data, len);
+                hasher.process(data, data + len);
+                
                 return true;
             }
             return false; // 没有文件就中止
         },
         [&](uint64_t current, uint64_t total) { // DownloadProgress
             auto now = std::chrono::steady_clock::now();
-            double elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - start_time).count() / 1000.0;
-            double speed = (elapsed > 0) ? (current / elapsed) : 0.0; // bytes per sec
+            double elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - last_time).count() / 1000.0;
+            double speed;
+            if (elapsed > 0.0) {
+                last_time = now;
+                speed = (current + standedBites - last_current_bites) / elapsed; // bytes per sec
+                last_current_bites = current + standedBites;
+            }
+            else {
+                speed = 0.0;
+            }
 
             std::string speed_str;
             if (speed > 1024 * 1024)
@@ -574,10 +737,16 @@ bool Update::download_file(const std::string url, const std::string& save_path, 
             else
                 speed_str = std::to_string(speed).substr(0, 5) + " B/s";
 
-            int percent = (total > 0) ? static_cast<int>(100.0 * current / total) : 0;
+            int percent = (total > 0) ? static_cast<int>(100.0 * (current + standedBites) / (total + standedBites)) : 0;
+            updateConfig["downloaded"] = current + standedBites;
+            updateConfig["totalSize"] = total + standedBites;
 
             qInfo() << "Downloading " << final_filename << " [" << percent << "%] " << speed_str;
             emit refreshText(tr("下载中 %1% %2").arg(percent).arg(QString::fromStdString(speed_str)));
+
+            if (canceled) {
+                return false;//暂停下载
+            }
 
             return true; // 继续下载
         }
@@ -585,7 +754,17 @@ bool Update::download_file(const std::string url, const std::string& save_path, 
 
     ofs.close();
 
-    if (!res || res->status != 200) {
+    if (canceled and updateConfig["downloaded"] != updateConfig["totalSize"]) {
+        hasher.finish();
+        std::vector<unsigned char> hash(picosha2::k_digest_size);
+        hasher.get_hash_bytes(hash.begin(), hash.end());
+        updateConfig["hash"] = picosha2::bytes_to_hex_string(hash.begin(), hash.end());
+        WriteJsonFile(updatePath + "/" + updateConfigName + ".json", updateConfig);
+        emit paused();
+        return 1;
+    }
+
+    if (!res || !(res->status == 200 || res->status == 206)) {
         qWarning().noquote() << "网络异常 状态码：" << (res ? QString::fromStdString(std::to_string(res->status)) : "连接失败");
         Notifier::instance().notify(2, "网络异常" + (res ? QString::fromStdString(std::to_string(res->status)) : "连接失败"));
 
@@ -601,12 +780,36 @@ bool Update::download_file(const std::string url, const std::string& save_path, 
                 qInfo() << "已删除无效文件:" << QString::fromStdString(file_path.u8string());
             }
         }
-        return false;
+        return -1;
     }
     else {
         qInfo() << "下载完成";
-        return true;
+        hasher.finish();
+        std::vector<unsigned char> hash(picosha2::k_digest_size);
+        hasher.get_hash_bytes(hash.begin(), hash.end());
+        updateConfig["hash"] = picosha2::bytes_to_hex_string(hash.begin(), hash.end());
+        updateConfig["isDownloadCompleted"] = true;
+        WriteJsonFile(updatePath + "/" + updateConfigName + ".json", updateConfig);
+        return 0;
     }
+}
+
+void Update::resetUpdateConfig() {
+    json defaultConfig = {
+        {"version",""},
+        {"fileName",""},
+        {"url",""},
+        {"hash",""},
+        {"downloaded",0},
+        {"totalSize",0},
+        {"isDownloadCompleted",false},
+        {"isUnzip",false},
+        {"isReplacedUpdater",false},
+        {"currentVersion",json::object()},
+        {"newVersion",json::object()}
+    };
+    updateConfig = defaultConfig;
+    return;
 }
 
 bool Update::move_files(const std::string& srcDir, const std::string& dstDir) {
@@ -726,4 +929,17 @@ std::optional<std::pair<std::string, int>> Update::parse_proxy(const std::string
     catch (...) {
         return {};
     }
+}
+
+Q_INVOKABLE void Update::update() {
+    //解压文件
+
+    //删除当前版本updater相关文件
+
+    //替换更新版本updater相关文件  
+
+    //运行更新程序
+
+    //强杀进程退出
+
 }

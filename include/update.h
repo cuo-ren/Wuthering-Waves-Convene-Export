@@ -30,6 +30,8 @@ public:
     Q_INVOKABLE void init();
     Q_INVOKABLE void checkUpdate();
     Q_INVOKABLE void getUpdateFile();
+    Q_INVOKABLE void pause();
+    Q_INVOKABLE void continueDownload();
     Q_INVOKABLE void update() {
         //删除当前版本updater相关文件
 
@@ -54,6 +56,8 @@ signals:
     void refreshText(QString text);
     void downloadUpdateCompleted();
     void downloadUpdateFailed();
+    void paused();
+    void continued();
 
 private:
     std::string updatePath;
@@ -75,7 +79,7 @@ private:
 
     std::string new_version;
     json updateConfig;
-    json now_version_config;
+    json current_version_config;
     json new_version_config;
 
     static inline std::string trim(const std::string& s) {
@@ -92,11 +96,12 @@ private:
 
     void onUpdateInfo(bool flag, QString version = "");
 
+    void resetUpdateConfig();
     bool checkUpdateConfig();
     bool validate_version_config(const json& versionConfig);
     bool validate_updateConfig(const json& updateconfig);
     json getVersionInfo(std::string version);
-    bool download_file(const std::string url, const std::string& save_path, const std::string& filename = "");
+    int download_file(const std::string url, const std::string& save_path, const std::string& filename = "");
     bool move_files(const std::string& srcDir, const std::string& dstDir);
     std::string get_system_proxy();
     std::optional<std::pair<std::string, int>> parse_proxy(const std::string& proxy_raw);

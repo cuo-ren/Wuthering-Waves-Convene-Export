@@ -580,7 +580,16 @@ Popup {
                                     target: checkUpdateBtn
 
                                     text: qsTr("正在下载")
-                                    disabled: true
+                                    disabled: false
+                                }
+                            },
+                            State {
+                                name: "pause"
+                                PropertyChanges {
+                                    target: checkUpdateBtn
+
+                                    text: qsTr("继续下载")
+                                    disabled: false
                                 }
                             },
                             State {
@@ -599,6 +608,21 @@ Popup {
                                 }
                             },
                             State {
+                                name: "finish"
+                                PropertyChanges {
+                                    target: checkUpdateBtn
+                                    commonFillColor: "#F0F9EF"
+                                    commonBorderColor: "#67c23a"
+                                    commonTextColor: "#67c23a"
+
+                                    hoverFillColor: "#67c23a"
+                                    hoverBorderColor: "#67c23a"
+
+                                    text: qsTr("立即重启")
+                                    disabled: false
+                                }
+                            },
+                            State {
                                 name: "loading"
                                 PropertyChanges {
                                     target: checkUpdateBtn
@@ -613,11 +637,11 @@ Popup {
                             target: Update
                             function onInitUpdateCompleted(status,desc){
                                 switch(status){
-                                case 0:checkUpdateBtn.state ="noUpdate";break;
-                                case 1:checkUpdateBtn.state ="Downloading";break;
-                                case 2:checkUpdateBtn.state ="update";break;
-                                case 3:checkUpdateBtn.state ="update";break;
-                                case 4:checkUpdateBtn.state ="update";break;
+                                    case 0:checkUpdateBtn.state ="noUpdate";break;
+                                    case 1:checkUpdateBtn.state ="pause";break;
+                                    case 2:checkUpdateBtn.state ="update";break;
+                                    case 3:checkUpdateBtn.state ="update";break;
+                                    case 4:checkUpdateBtn.state ="finish";break;
                                 }
                             }
 
@@ -641,6 +665,12 @@ Popup {
                             function onDownloadUpdateFailed(){
                                 checkUpdateBtn.state = "noUpdate"
                             }
+                            function onPaused(){
+                                checkUpdateBtn.state = "pause"
+                            }
+                            function onContinued(){
+                                checkUpdateBtn.state = "Downloading"
+                            }
                         }
 
                         onClicked: {
@@ -651,8 +681,19 @@ Popup {
                                 Update.getUpdateFile()
                                 this.state = "Downloading"
                             }
+                            else if(this.state == "Downloading"){
+                                Update.pause()
+                                this.state = "loading"
+                            }
+                            else if(this.state == "pause"){
+                                Update.continueDownload()
+                                this.state = "loading"
+                            }
                             else if(this.state == "update"){
-                                this.state = "Downloading"
+                                Update.update()
+                            }
+                            else if(this.state == "finish"){
+                                Qt.quit()
                             }
                         }
                     }
