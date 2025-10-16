@@ -187,7 +187,7 @@ json ReadJsonFile(const std::string& path) {
 		file >> data;
 	}
 	catch (const json::parse_error& e) {
-		qWarning().noquote() << "json解析失败: " << QString::fromStdString(e.what());
+		qWarning().noquote() << "json解析失败: " << QString::fromLocal8Bit(e.what());
 		throw;
 	}
 	catch (...) {
@@ -208,7 +208,7 @@ json ReadJsonFile(const std::filesystem::path& path) {
 		file >> data;
 	}
 	catch (const json::parse_error& e) {
-		qWarning().noquote() << "json解析失败: " << QString::fromStdString(e.what());
+		qWarning().noquote() << "json解析失败: " << QString::fromLocal8Bit(e.what());
 		throw e;
 	}
 	catch (...) {
@@ -234,11 +234,11 @@ void WriteJsonFile(const std::string& path, const json& data) {
 		f << data.dump(2);
 	}
 	catch (const json::type_error& e) {
-		qWarning().noquote() << "json解析失败: " << e.what();
+		qWarning().noquote() << "json解析失败: " << QString::fromLocal8Bit(e.what());
 		Notifier::instance().notify(3, "json解析失败 ");
 	}
 	catch (const std::ios_base::failure& e) {
-		qCritical().noquote() << "文件写入失败!" << "path:" << QString::fromUtf8(path) << QString::fromStdString(e.what());
+		qCritical().noquote() << "文件写入失败!" << "path:" << QString::fromUtf8(path) << QString::fromLocal8Bit(e.what());
 		Notifier::instance().notify(3, "文件写入失败!");
 	}
 	catch (...) {
@@ -261,11 +261,11 @@ void WriteJsonFile(const std::filesystem::path& path, const json& data) {
 		f << data.dump(2);
 	}
 	catch (const json::type_error& e) {
-		qWarning().noquote() << "json解析失败: " << e.what();
+		qWarning().noquote() << "json解析失败: " << QString::fromLocal8Bit(e.what());
 		Notifier::instance().notify(3, "json解析失败 ");
 	}
 	catch (const std::ios_base::failure& e) {
-		qCritical().noquote() << "文件写入失败!" << "path:" << QString::fromStdString(path.string()) << QString::fromStdString(e.what());
+		qCritical().noquote() << "文件写入失败!" << "path:" << QString::fromStdString(path.string()) << QString::fromLocal8Bit(e.what());
 		Notifier::instance().notify(3, "文件写入失败!");
 	}
 	catch (...) {
@@ -337,75 +337,6 @@ std::string timestamp_to_str(int timestamp) {
 	return dt.toString("yyyy-MM-dd HH:mm:ss").toStdString();
 }
 
-bool unzip(const std::string& zipPath, const std::string& outDir, uint64_t maxSize) {
-	std::filesystem::path zippath = std::filesystem::u8path(zipPath);
-	mz_zip_archive zip{};
-	if (!mz_zip_reader_init_file(&zip, zippath.u8string().c_str(), 0)) {
-		qWarning() << "打开ZIP失败: " << QString::fromStdString(zipPath);
-		return false;
-	}
-
-	uint64_t totalUncompressedSize = 0;
-
-	std::filesystem::path base = std::filesystem::weakly_canonical(std::filesystem::u8path(outDir));
-	std::filesystem::create_directories(base);
-
-	int fileCount = (int)mz_zip_reader_get_num_files(&zip);
-	for (int i = 0; i < fileCount; i++) {
-		mz_zip_archive_file_stat st;
-		if (!mz_zip_reader_file_stat(&zip, i, &st)) continue;
-
-		// 检查总大小限制
-		if (totalUncompressedSize + st.m_uncomp_size > maxSize) {
-			qWarning() << "解压总大小超过限制，停止解压";
-			mz_zip_reader_end(&zip);
-			return false;
-		}
-
-		std::filesystem::path outPath = base / st.m_filename;
-
-		// ===== 路径穿越检查 =====
-		std::filesystem::path canonPath;
-		try {
-			canonPath = std::filesystem::canonical(outPath.parent_path());
-		}
-		catch (const std::filesystem::filesystem_error& e) {
-			qCritical() << "路径规范化失败: " << e.what();
-			mz_zip_reader_end(&zip);
-			return false;
-		}
-
-		// 确保canonPath是base的子目录（无论文件/目录类型）
-		if (canonPath.string().find(base.string()) != 0) {
-			qCritical() << "检测到路径穿越攻击，跳过: " << QString::fromStdString(st.m_filename);
-			mz_zip_reader_end(&zip);
-			return false;
-		}
-
-		if (mz_zip_reader_is_file_a_directory(&zip, i)) {
-			if (!makedirs(outPath.string())) {
-				qWarning() << "解压失败: " << "创建文件夹失败 " << QString::fromStdString(outPath.string());
-				mz_zip_reader_end(&zip);
-				return false;
-			}
-		}
-		else {
-			std::filesystem::create_directories(outPath.parent_path());
-			if (!mz_zip_reader_extract_to_file(&zip, i, outPath.u8string().c_str(), 0)) {
-				qWarning() << "解压失败: " << QString::fromStdString(st.m_filename);
-				mz_zip_reader_end(&zip);
-				return false;
-			}
-			else {
-				totalUncompressedSize += st.m_uncomp_size;
-			}
-		}
-	}
-
-	mz_zip_reader_end(&zip);
-	qInfo() << "解压完成，总大小: " << totalUncompressedSize / (1024 * 1024) << " MB";
-	return true;
-}
 
 void reset_folder(const std::string& path) {
 	std::filesystem::path folder_path = std::filesystem::u8path(path);

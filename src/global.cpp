@@ -99,12 +99,12 @@ void Global::initGachaType() {
         gacha_type = ReadJsonFile(std::string("GachaType.json"));
     }
     catch (const std::runtime_error& e) {
-        qWarning().noquote() << "卡池配置文件打开失败，正在创建" << QString::fromStdString(e.what());;
+        qWarning().noquote() << "卡池配置文件打开失败，正在创建" << QString::fromLocal8Bit(e.what());;
         gacha_type = default_gacha_type;
         WriteJsonFile(std::string("GachaType.json"), default_gacha_type);
     }
     catch (const json::parse_error& e) {
-        qWarning().noquote() << "卡池配置文件json解析失败，正在创建" << QString::fromStdString(e.what());;
+        qWarning().noquote() << "卡池配置文件json解析失败，正在创建" << QString::fromLocal8Bit(e.what());;
         gacha_type = default_gacha_type;
         WriteJsonFile(std::string("GachaType.json"), default_gacha_type);
     }

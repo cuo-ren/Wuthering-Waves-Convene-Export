@@ -64,8 +64,8 @@ Q_INVOKABLE void Update::init() {
             }
         }
         catch (std::exception& e) {
-            qCritical() << "线程崩溃" << QString::fromStdString(e.what());
-            Notifier::instance().notify(3, tr("线程崩溃 %1").arg(QString::fromStdString(e.what())));
+            qCritical() << "线程崩溃" << QString::fromLocal8Bit(e.what());
+            Notifier::instance().notify(3, tr("线程崩溃 %1").arg(QString::fromLocal8Bit(e.what())));
         }
         catch (...) {
             qCritical() << "线程崩溃";
@@ -236,6 +236,9 @@ Q_INVOKABLE void Update::getUpdateFile() {
             if (code == -1) {
                 emit downloadUpdateFailed();
                 resetUpdateConfig();
+                new_version = "";
+                new_version_config = json::object();
+                current_version_config = json::object();
                 reset_folder(updatePath);
             }
             else if (code == 0) {
@@ -245,9 +248,9 @@ Q_INVOKABLE void Update::getUpdateFile() {
             return;
         }
         catch (std::exception& e) {
-            qCritical() << "线程崩溃 " << QString::fromStdString(e.what());
+            qCritical() << "线程崩溃 " << QString::fromLocal8Bit(e.what());
             Notifier::instance().notify(3, tr("更新失败"));
-            Notifier::instance().notify(3, tr("线程崩溃 %1").arg(QString::fromStdString(e.what())));
+            Notifier::instance().notify(3, tr("线程崩溃 %1").arg(QString::fromLocal8Bit(e.what())));
             resetUpdateConfig();
             reset_folder(updatePath);
             emit downloadUpdateFailed();
@@ -268,8 +271,14 @@ Q_INVOKABLE void Update::pause() {
 }
 
 Q_INVOKABLE void Update::continueDownload() {
+    if (continueDownloadFuture.isRunning() or getUpdateFileFuture.isRunning()) {
+        qWarning() << "存在下载进程，跳过";
+        return;
+    }
+
     canceled = false;
-    QtConcurrent::run([this]() {
+
+    continueDownloadFuture = QtConcurrent::run([this]() {
         try {
             emit continued();
             int code = download_file(new_version_config["url"], "./update/" + new_version, new_version + ".zip");
@@ -285,9 +294,9 @@ Q_INVOKABLE void Update::continueDownload() {
             return;
         }
         catch (std::exception& e) {
-            qCritical() << "线程崩溃 " << QString::fromStdString(e.what());
+            qCritical() << "线程崩溃 " << QString::fromLocal8Bit(e.what());
             Notifier::instance().notify(3, tr("更新失败"));
-            Notifier::instance().notify(3, tr("线程崩溃 %1").arg(QString::fromStdString(e.what())));
+            Notifier::instance().notify(3, tr("线程崩溃 %1").arg(QString::fromLocal8Bit(e.what())));
             //resetUpdateConfig();
             //reset_folder(updatePath);
             //emit downloadUpdateFailed();
@@ -328,12 +337,12 @@ bool Update::checkUpdateConfig() {
         updateConfig = ReadJsonFile(filePath);
     }
     catch (const json::parse_error& e) {
-        qWarning() << "更新配置文件解析失败" << QString::fromStdString(e.what());
+        qWarning() << "更新配置文件解析失败" << QString::fromLocal8Bit(e.what());
         updateConfig = defaultConfig;
         return false;
     }
     catch (const std::exception& e) {
-        qWarning() << "打开更新配置文件失败" << QString::fromStdString(e.what());
+        qWarning() << "打开更新配置文件失败" << QString::fromLocal8Bit(e.what());
         updateConfig = defaultConfig;
         return false;
     }
@@ -788,6 +797,10 @@ int Update::download_file(const std::string url, const std::string& save_path, c
         std::vector<unsigned char> hash(picosha2::k_digest_size);
         hasher.get_hash_bytes(hash.begin(), hash.end());
         updateConfig["hash"] = picosha2::bytes_to_hex_string(hash.begin(), hash.end());
+        if (updateConfig["hash"] != new_version_config["hash"]) {
+            //hash校验
+            return -1;
+        }
         updateConfig["isDownloadCompleted"] = true;
         WriteJsonFile(updatePath + "/" + updateConfigName + ".json", updateConfig);
         return 0;
@@ -828,7 +841,7 @@ bool Update::move_files(const std::string& srcDir, const std::string& dstDir) {
         }
     }
     catch (const std::filesystem::filesystem_error& e) {
-        std::cerr << "移动文件失败: " << e.what() << std::endl;
+        qCritical() << "移动文件失败: " << QString::fromLocal8Bit(e.what());
         return false;
     }
     return true;
@@ -931,15 +944,246 @@ std::optional<std::pair<std::string, int>> Update::parse_proxy(const std::string
     }
 }
 
+bool Update::unzip(const std::string& zipPath, const std::string& outDir, uint64_t maxSize) {
+    std::filesystem::path zippath = std::filesystem::u8path(zipPath);
+    mz_zip_archive zip{};
+    if (!mz_zip_reader_init_file(&zip, zippath.u8string().c_str(), 0)) {
+        qWarning() << "打开ZIP失败: " << QString::fromStdString(zipPath);
+        return false;
+    }
+
+    uint64_t totalUncompressedSize = 0;
+
+    std::filesystem::path base = std::filesystem::weakly_canonical(std::filesystem::u8path(outDir));
+    std::filesystem::create_directories(base);
+
+    int fileCount = (int)mz_zip_reader_get_num_files(&zip);
+    for (int i = 0; i < fileCount; i++) {
+        mz_zip_archive_file_stat st;
+        if (!mz_zip_reader_file_stat(&zip, i, &st)) continue;
+
+        //是否退出
+        if (canceled) {
+            qWarning() << "主动终止解压";
+            mz_zip_reader_end(&zip);
+            return false;
+        }
+
+        // 检查总大小限制
+        if (totalUncompressedSize + st.m_uncomp_size > maxSize) {
+            qWarning() << "解压总大小超过限制，停止解压";
+            mz_zip_reader_end(&zip);
+            return false;
+        }
+
+        std::filesystem::path outPath = base / st.m_filename;
+
+        // ===== 路径穿越检查 =====
+        std::filesystem::path canonPath;
+        try {
+            canonPath = std::filesystem::weakly_canonical(outPath.parent_path());
+        }
+        catch (const std::filesystem::filesystem_error& e) {
+            qCritical() << "路径规范化失败: " << QString::fromLocal8Bit(e.what());
+            mz_zip_reader_end(&zip);
+            return false;
+        }
+
+        // 确保canonPath是base的子目录（无论文件/目录类型）
+        if (!isSubPath(base, canonPath)) {
+            qCritical() << "检测到路径穿越攻击，跳过: " << QString::fromStdString(st.m_filename);
+            mz_zip_reader_end(&zip);
+            return false;
+        }
+
+        if (mz_zip_reader_is_file_a_directory(&zip, i)) {
+            if (!makedirs(outPath.string())) {
+                qWarning() << "解压失败: " << "创建文件夹失败 " << QString::fromStdString(outPath.string());
+                mz_zip_reader_end(&zip);
+                return false;
+            }
+        }
+        else {
+            std::filesystem::create_directories(outPath.parent_path());
+            if (!mz_zip_reader_extract_to_file(&zip, i, outPath.u8string().c_str(), 0)) {
+                qWarning() << "解压失败: " << QString::fromStdString(st.m_filename);
+                mz_zip_reader_end(&zip);
+                return false;
+            }
+            else {
+                totalUncompressedSize += st.m_uncomp_size;
+            }
+        }
+    }
+
+    mz_zip_reader_end(&zip);
+    qInfo() << "解压完成，总大小: " << totalUncompressedSize / (1024 * 1024) << " MB";
+    return true;
+}
+
 Q_INVOKABLE void Update::update() {
-    //解压文件
+    if (updateFuture.isRunning()) {
+        qWarning() << "存在更新进程，跳过";
+        return;
+    }
 
-    //删除当前版本updater相关文件
+    updateFuture = QtConcurrent::run([this]() {
+        try {
+            //解压文件
+            bool result = unzip(updatePath + "/" + updateConfig["version"].get<std::string>() + "/" + updateConfig["fileName"].get<std::string>(), updatePath + "/" + updateConfig["version"].get<std::string>());
+            if (!result) {
+                if (!canceled) {
+                    //解压失败
+                    qWarning() << "解压文件失败";
+                    resetUpdateConfig();
+                    new_version = "";
+                    new_version_config = json::object();
+                    current_version_config = json::object();
+                    reset_folder(updatePath);
+                    emit updateFailed();
+                    return;
+                }
+                else {
+                    //退出程序，终止解压
+                    return;
+                }
+            }
+            //删除当前版本updater相关文件
+            std::filesystem::path workPath = std::filesystem::current_path();
+            for (auto& item : current_version_config["updater"]) {
+                std::filesystem::path itemPath = std::filesystem::u8path(item["path"].get<std::string>());
+                if (std::filesystem::exists(itemPath)) {
+                    if (!isSubPath(workPath, itemPath)) {
+                        qCritical() << "检测到路径穿越" << QString::fromStdString(itemPath.string());
+                        resetUpdateConfig();
+                        new_version = "";
+                        new_version_config = json::object();
+                        current_version_config = json::object();
+                        reset_folder(updatePath);
+                        emit updateFailed();
+                        return;
+                    }
+                    std::error_code ec;
+                    std::filesystem::remove_all(itemPath,ec);
+                    if (ec) {
+                        qCritical() << "删除目录失败" << QString::fromStdString(itemPath.string()) << QString::fromLocal8Bit(ec.message());
+                        resetUpdateConfig();
+                        new_version = "";
+                        new_version_config = json::object();
+                        current_version_config = json::object();
+                        reset_folder(updatePath);
+                        emit updateFailed();
+                        return;
+                    }
+                }
+                else {
+                    qWarning() << "文件不存在" << QString::fromStdString(itemPath.string());
+                }
+            }
+            //替换更新版本updater相关文件
+            std::filesystem::path versionRoot = std::filesystem::u8path(updatePath + "/" + new_version);
+            std::filesystem::path contentRoot = std::filesystem::weakly_canonical(versionRoot / new_version_config["path"].get<std::string>());
 
-    //替换更新版本updater相关文件  
+            for (auto& item : new_version_config["updater"]) {
 
-    //运行更新程序
+                std::string relativePathStr = item["path"].get<std::string>();
+                std::filesystem::path relativePath = std::filesystem::u8path(relativePathStr);
 
-    //强杀进程退出
+                std::filesystem::path sourcePath = std::filesystem::weakly_canonical(contentRoot / relativePath);
+                std::filesystem::path targetPath = std::filesystem::weakly_canonical(workPath / relativePath);
 
+                if (!std::filesystem::exists(sourcePath)) {
+                    qWarning() << "源文件不存在：" << QString::fromStdString(sourcePath.string());
+                    emit updateFailed();
+                    resetUpdateConfig();
+                    new_version = "";
+                    new_version_config = json::object();
+                    current_version_config = json::object();
+                    reset_folder(updatePath);
+                    return;
+                }
+
+                if (!makedirs(targetPath.parent_path().string())) {
+                    qCritical() << "创建目标目录失败：" << QString::fromStdString(targetPath.parent_path().string());
+                    emit updateFailed();
+                    resetUpdateConfig();
+                    new_version = "";
+                    new_version_config = json::object();
+                    current_version_config = json::object();
+                    reset_folder(updatePath);
+                    return;
+                }
+
+                std::string type = item["type"];
+                std::error_code ec;
+                if (type == "file") {
+                    if (!std::filesystem::is_regular_file(sourcePath)) {
+                        qWarning() << "文件类型为文件夹 文件" << QString::fromStdString(sourcePath.string());
+                        emit updateFailed();
+                        resetUpdateConfig();
+                        new_version = "";
+                        new_version_config = json::object();
+                        current_version_config = json::object();
+                        reset_folder(updatePath);
+                        return;
+                    }
+                    std::filesystem::copy_file(sourcePath, targetPath, std::filesystem::copy_options::overwrite_existing, ec);
+                }
+                else if (type == "folder") {
+                    if (!std::filesystem::is_directory(sourcePath)) {
+                        qWarning() << "文件夹类型为文件 文件夹" << QString::fromStdString(sourcePath.string());
+                        emit updateFailed();
+                        resetUpdateConfig();
+                        new_version = "";
+                        new_version_config = json::object();
+                        current_version_config = json::object();
+                        reset_folder(updatePath);
+                        return;
+                    }
+                    std::filesystem::copy(sourcePath, targetPath, std::filesystem::copy_options::overwrite_existing | std::filesystem::copy_options::recursive, ec);
+                }
+                else {
+                    qWarning() << "未知类型：" << QString::fromStdString(type);
+                    continue;
+                }
+
+                if (ec) {
+                    qCritical() << "复制失败：" << QString::fromStdString(sourcePath.string()) << " → " << QString::fromStdString(targetPath.string()) << QString::fromLocal8Bit(ec.message());
+                    emit updateFailed();
+                    return;
+                }
+
+                qDebug() << "已替换：" << QString::fromStdString(targetPath.string());
+            }
+            //运行更新程序
+
+            //强杀进程退出
+            emit updateCompleted();
+        }
+        catch (std::exception& e) {
+            qCritical() << "线程崩溃" << QString::fromLocal8Bit(e.what());
+            Notifier::instance().notify(3, tr("线程崩溃 %1").arg(QString::fromLocal8Bit(e.what())));
+            emit updateFailed();
+        }
+        catch (...) {
+            qCritical() << "线程崩溃";
+            Notifier::instance().notify(3, tr("线程崩溃"));
+            emit updateFailed();
+        }
+    });
+}
+
+bool Update::isSubPath(const std::filesystem::path& base, const std::filesystem::path& target) {
+    auto baseCanonical = std::filesystem::weakly_canonical(base);
+    auto targetCanonical = std::filesystem::weakly_canonical(target);
+
+    auto baseIt = baseCanonical.begin();
+    auto targetIt = targetCanonical.begin();
+
+    for (; baseIt != baseCanonical.end() && targetIt != targetCanonical.end(); ++baseIt, ++targetIt) {
+        if (*baseIt != *targetIt)
+            return false;
+    }
+
+    return baseIt == baseCanonical.end(); // base 完全匹配 target 的前缀
 }

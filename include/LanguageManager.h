@@ -105,7 +105,7 @@ private:
             languageJson = json::parse(content.toStdString());
         }
         catch (const json::parse_error& e) {
-            qFatal().noquote() << "语言文件解析失败:" << e.what();
+            qFatal().noquote() << "语言文件解析失败:" << QString::fromLocal8Bit(e.what());
         }
         for (auto& [langCode, item] : languageJson.items()) {
             QVariantMap temp;

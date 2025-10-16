@@ -4,6 +4,7 @@
 #include <QtConcurrent/QtConcurrent>
 #include <QFuture>
 #include "DownloadManager.h"
+#include "miniz.h"
 #define CPPHTTPLIB_OPENSSL_SUPPORT
 #include "httplib.h"
 
@@ -32,16 +33,7 @@ public:
     Q_INVOKABLE void getUpdateFile();
     Q_INVOKABLE void pause();
     Q_INVOKABLE void continueDownload();
-    Q_INVOKABLE void update() {
-        //删除当前版本updater相关文件
-
-        //替换更新版本updater相关文件  
-
-        //运行更新程序
-
-        //强杀进程退出
-       
-    }
+    Q_INVOKABLE void update();
 
 signals:
     void updateInfo(bool flag, QString version = "");
@@ -56,6 +48,8 @@ signals:
     void refreshText(QString text);
     void downloadUpdateCompleted();
     void downloadUpdateFailed();
+    void updateFailed();
+    void updateCompleted();
     void paused();
     void continued();
 
@@ -76,6 +70,8 @@ private:
 
     QFuture<void> checkUpdateFuture;
     QFuture<void> getUpdateFileFuture;
+    QFuture<void> continueDownloadFuture;
+    QFuture<void> updateFuture;;
 
     std::string new_version;
     json updateConfig;
@@ -102,7 +98,9 @@ private:
     bool validate_updateConfig(const json& updateconfig);
     json getVersionInfo(std::string version);
     int download_file(const std::string url, const std::string& save_path, const std::string& filename = "");
+    bool unzip(const std::string& zipPath, const std::string& outDir, const uint64_t maxSize = 2ull * 1024ull * 1024ull * 1024ull);
     bool move_files(const std::string& srcDir, const std::string& dstDir);
     std::string get_system_proxy();
     std::optional<std::pair<std::string, int>> parse_proxy(const std::string& proxy_raw);
+    bool isSubPath(const std::filesystem::path& base, const std::filesystem::path& target);
 };

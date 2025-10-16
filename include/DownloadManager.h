@@ -155,8 +155,8 @@ private:
                     }, Qt::QueuedConnection);
             }
             catch (std::exception& e) {
-                qCritical() << "线程崩溃 " << QString::fromStdString(e.what());
-                Notifier::instance().notify(3, tr("线程崩溃 %1").arg(QString::fromStdString(e.what())));
+                qCritical() << "线程崩溃 " << QString::fromLocal8Bit(e.what());
+                Notifier::instance().notify(3, tr("线程崩溃 %1").arg(QString::fromLocal8Bit(e.what())));
                 QMetaObject::invokeMethod(this, [this, fileName]() {
                     activeCount--;
                     tryStartNext();

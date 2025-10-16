@@ -671,6 +671,12 @@ Popup {
                             function onContinued(){
                                 checkUpdateBtn.state = "Downloading"
                             }
+                            function onUpdateFailed(){
+                                checkUpdateBtn.state = "noUpdate"
+                            }
+                            function onUpdateCompleted(){
+                                checkUpdateBtn.state = "finish"
+                            }
                         }
 
                         onClicked: {

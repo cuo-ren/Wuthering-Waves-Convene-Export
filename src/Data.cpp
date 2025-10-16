@@ -36,7 +36,7 @@ void Data::initGachaList() {
 		gacha_list = ReadJsonFile(filePath);
 	}
 	catch (const json::parse_error& e) {
-		qWarning().noquote() << "数据文件解析失败 " << e.what();
+		qWarning().noquote() << "数据文件解析失败 " << QString::fromLocal8Bit(e.what());
 		Notifier::instance().notify(3, "数据文件解析失败");
 		gacha_list = default_data;
 		WriteJsonFile(filePath, default_data);
@@ -143,7 +143,7 @@ void Data::save(json data) {
 		qInfo().noquote() << "备份数据成功 " << QString::fromStdString(file_path + "/" + file_name + "_" + std::to_string(timestamp) + ".json.bak");
 	}
 	catch (const std::filesystem::filesystem_error& e) {
-		qWarning().noquote() << "备份数据失败 " << e.what();
+		qWarning().noquote() << "备份数据失败 " << QString::fromLocal8Bit(e.what());
 		Notifier::instance().notify(2, "备份数据失败");
 	}
 	WriteJsonFile(file_path + "/" + file_name + ".json", data);
@@ -181,7 +181,7 @@ void Data::trim_backup_files(const std::string& dir, int max_backup_count) {
 				qInfo().noquote() << "清理备份文件成功:" << QString::fromStdString(file_to_delete.u8string()).replace("\\", "/");
 			}
 			catch (const fs::filesystem_error& e) {
-				qWarning().noquote() << "清理备份文件失败 " << e.what();
+				qWarning().noquote() << "清理备份文件失败 " << QString::fromLocal8Bit(e.what());
 				Notifier::instance().notify(2, "备份文件删除失败");
 			}
 		}
@@ -762,9 +762,9 @@ Q_INVOKABLE void Data::update_data(const int& mode, QString input_url) {
 			emit updateComplete(gacha_listCopy, last_uid);
 		}
 		catch (const std::exception& e) {
-			qCritical() << "线程崩溃 " << QString::fromStdString(e.what());
+			qCritical() << "线程崩溃 " << QString::fromLocal8Bit(e.what());
 			Notifier::instance().notify(3, tr("更新失败"));
-			Notifier::instance().notify(3, tr("线程崩溃 %1").arg(QString::fromStdString(e.what())));
+			Notifier::instance().notify(3, tr("线程崩溃 %1").arg(QString::fromLocal8Bit(e.what())));
 			emit updateFail();
 		}
 		catch (...) {
@@ -810,7 +810,7 @@ json Data::findGachaUrls() {
 				};
 			}
 			catch (const std::exception& e) {
-				qWarning().noquote() << "解析url参数失败:" << e.what();
+				qWarning().noquote() << "解析url参数失败:" << QString::fromLocal8Bit(e.what());
 				continue;
 			}
 		}
@@ -1131,7 +1131,7 @@ Q_INVOKABLE void Data::exportToExcel() {
 					doc.workbook().addWorksheet(pool_name);
 				}
 				catch (const std::exception& e) {
-					std::cout << e.what() << std::endl;
+					qWarning() << "添加工作表失败" << QString::fromStdString(pool_name) << QString::fromLocal8Bit(e.what());
 				}
 				XLWorksheet ws = doc.workbook().worksheet(pool_name);
 				// 创建表头
@@ -1200,9 +1200,9 @@ Q_INVOKABLE void Data::exportToExcel() {
 			emit exportCompleted();
 		}
 		catch (const std::exception& e) {
-			qCritical() << "线程崩溃 " << QString::fromStdString(e.what());
+			qCritical() << "线程崩溃 " << QString::fromLocal8Bit(e.what());
 			Notifier::instance().notify(3, tr("导出失败"));
-			Notifier::instance().notify(3, tr("线程崩溃 %1").arg(QString::fromStdString(e.what())));
+			Notifier::instance().notify(3, tr("线程崩溃 %1").arg(QString::fromLocal8Bit(e.what())));
 			emit exportFail();
 		}
 		catch (...) {
@@ -1348,9 +1348,9 @@ Q_INVOKABLE void Data::exportToCsv() {
 			emit exportCompleted();
 		}
 		catch (const std::exception& e) {
-			qCritical() << "线程崩溃 " << QString::fromStdString(e.what());
+			qCritical() << "线程崩溃 " << QString::fromLocal8Bit(e.what());
 			Notifier::instance().notify(3, tr("导出失败"));
-			Notifier::instance().notify(3, tr("线程崩溃 %1").arg(QString::fromStdString(e.what())));
+			Notifier::instance().notify(3, tr("线程崩溃 %1").arg(QString::fromLocal8Bit(e.what())));
 			emit exportFail();
 		}
 		catch (...) {
@@ -1525,9 +1525,9 @@ Q_INVOKABLE void Data::exportToUIGF4(bool isTotal) {
 			emit exportCompleted();
 		}
 		catch (const std::exception& e) {
-			qCritical() << "线程崩溃 " << QString::fromStdString(e.what());
+			qCritical() << "线程崩溃 " << QString::fromLocal8Bit(e.what());
 			Notifier::instance().notify(3, tr("导出失败"));
-			Notifier::instance().notify(3, tr("线程崩溃 %1").arg(QString::fromStdString(e.what())));
+			Notifier::instance().notify(3, tr("线程崩溃 %1").arg(QString::fromLocal8Bit(e.what())));
 			emit exportFail();
 		}
 		catch (...) {
@@ -1647,7 +1647,7 @@ Q_INVOKABLE void Data::getBackupInfo() {
 						}
 						catch (const json::parse_error& e) {
 							fileInfo["status"] = 2;
-							qWarning() << QString::fromStdString(filename) << "文件损坏" << QString::fromStdString(e.what());
+							qWarning() << QString::fromStdString(filename) << "文件损坏" << QString::fromLocal8Bit(e.what());
 						}
 						catch (...) {
 							fileInfo["status"] = 2;
@@ -1667,16 +1667,16 @@ Q_INVOKABLE void Data::getBackupInfo() {
 						emit foundBackup(fileInfo);
 					}
 					catch (const std::exception& e) {
-						qWarning().noquote() << "解析备份文件失败:" << QString::fromStdString(filename) << e.what();
+						qWarning().noquote() << "解析备份文件失败:" << QString::fromStdString(filename) << QString::fromLocal8Bit(e.what());
 						Notifier::instance().notify(3, tr("解析备份文件失败"));
 					}
 				}
 			}
 		}
 		catch (const std::exception& e) {
-			qCritical() << "线程崩溃 " << QString::fromStdString(e.what());
+			qCritical() << "线程崩溃 " << QString::fromLocal8Bit(e.what());
 			Notifier::instance().notify(3, tr("查找备份失败"));
-			Notifier::instance().notify(3, tr("线程崩溃 %1").arg(QString::fromStdString(e.what())));
+			Notifier::instance().notify(3, tr("线程崩溃 %1").arg(QString::fromLocal8Bit(e.what())));
 		}
 		catch (...) {
 			qCritical() << "线程崩溃 ";
@@ -1706,7 +1706,7 @@ Q_INVOKABLE bool Data::removeBackupFile(const QString& fileName) {
 		}
 	}
 	catch (const std::filesystem::filesystem_error& e) {
-		qWarning().noquote() << "删除备份文件失败:" << e.what();
+		qWarning().noquote() << "删除备份文件失败:" << QString::fromLocal8Bit(e.what());
 		Notifier::instance().notify(3, tr("删除失败"));
 	}
 	return false;
@@ -1736,7 +1736,7 @@ Q_INVOKABLE void Data::recoveryBackup(const QString& fileName) {
 		backupData = ReadJsonFile(file_path + "/" + fileName.toStdString());
 	}
 	catch (const json::parse_error& e) {
-		qWarning().noquote() << "备份文件解析失败 " << e.what();
+		qWarning().noquote() << "备份文件解析失败 " << QString::fromLocal8Bit(e.what());
 		Notifier::instance().notify(3, "备份文件解析失败");
 		emit recoveryFailed();
 		return;
@@ -1760,17 +1760,17 @@ Q_INVOKABLE void Data::importUIGF(const QString& path) {
 	}
 	catch (const std::runtime_error& e) {
 		Notifier::instance().notify(3, tr("打开文件失败"));
-		qWarning() << "打开文件失败" << path << QString::fromStdString(e.what());;
+		qWarning() << "打开文件失败" << path << QString::fromLocal8Bit(e.what());;
 		return;
 	}
 	catch (const json::parse_error& e) {
 		Notifier::instance().notify(3, tr("解析数据失败"));
-		qWarning() << "解析数据失败" << path << QString::fromStdString(e.what());
+		qWarning() << "解析数据失败" << path << QString::fromLocal8Bit(e.what());
 		return;
 	}
 	catch (const std::exception& e) {
 		Notifier::instance().notify(3, tr("解析数据失败"));
-		qWarning() << "解析数据失败" << path << QString::fromStdString(e.what());
+		qWarning() << "解析数据失败" << path << QString::fromLocal8Bit(e.what());
 		return;
 	}
 	catch (...) {
