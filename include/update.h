@@ -34,6 +34,7 @@ public:
     Q_INVOKABLE void pause();
     Q_INVOKABLE void continueDownload();
     Q_INVOKABLE void update();
+    Q_INVOKABLE void reboot();
 
 signals:
     void updateInfo(bool flag, QString version = "");

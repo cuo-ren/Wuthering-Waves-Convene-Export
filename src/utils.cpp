@@ -95,7 +95,7 @@ std::string sha256_file_streaming(const std::string& filepath) {
 }
 
 std::string local_to_utf8(const std::string& gbk) {
-	UINT acp = GetConsoleOutputCP();
+	UINT acp = GetACP();
 	if (acp == CP_UTF8) {
 		return gbk;
 	}
@@ -111,7 +111,7 @@ std::string local_to_utf8(const std::string& gbk) {
 }
 
 std::string utf8_to_local(const std::string& utf8) {
-	UINT acp = GetConsoleOutputCP();
+	UINT acp = GetACP();
 	if (acp == CP_UTF8) {
 		// 当前系统 ACP 是 UTF-8，说明 utf8 本身就是目标编码
 		return utf8;  // 无需转换
@@ -134,7 +134,7 @@ std::string utf8_to_local(const std::string& utf8) {
 }
 
 std::string gbk_to_local(const std::string& gbk) {
-	UINT acp = GetConsoleOutputCP();
+	UINT acp = GetACP();
 	if (acp == 936) {
 		return gbk;
 	}
@@ -155,7 +155,7 @@ std::string gbk_to_local(const std::string& gbk) {
 
 // 当前 ACP -> GBK
 std::string local_to_gbk(const std::string& local) {
-	UINT acp = GetConsoleOutputCP();
+	UINT acp = GetACP();
 	if (acp == 936) {
 		return local;
 	}

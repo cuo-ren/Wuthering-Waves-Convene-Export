@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.11.35303.130
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Wuthering Waves Convene Export Updater", "Wuthering Waves Convene Export Updater.vcxproj", "{D5C32D8C-22E6-495A-AA77-BADCE293A960}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D5C32D8C-22E6-495A-AA77-BADCE293A960}.Debug|x64.ActiveCfg = Debug|x64
+		{D5C32D8C-22E6-495A-AA77-BADCE293A960}.Debug|x64.Build.0 = Debug|x64
+		{D5C32D8C-22E6-495A-AA77-BADCE293A960}.Debug|x86.ActiveCfg = Debug|Win32
+		{D5C32D8C-22E6-495A-AA77-BADCE293A960}.Debug|x86.Build.0 = Debug|Win32
+		{D5C32D8C-22E6-495A-AA77-BADCE293A960}.Release|x64.ActiveCfg = Release|x64
+		{D5C32D8C-22E6-495A-AA77-BADCE293A960}.Release|x64.Build.0 = Release|x64
+		{D5C32D8C-22E6-495A-AA77-BADCE293A960}.Release|x86.ActiveCfg = Release|Win32
+		{D5C32D8C-22E6-495A-AA77-BADCE293A960}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {883CA9C8-7F05-4E99-A4BC-9AD975242C9A}
+	EndGlobalSection
+EndGlobal

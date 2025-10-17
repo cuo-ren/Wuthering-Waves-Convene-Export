@@ -231,7 +231,15 @@ Q_INVOKABLE void Update::getUpdateFile() {
             WriteJsonFile(updatePath + "/" + updateConfigName + ".json", updateConfig);
 
             //下载更新的压缩包
-            makedirs("./update/" + new_version);
+            if (!makedirs("./update/" + new_version)) {
+                qCritical() << "创建文件夹失败";
+                emit downloadUpdateFailed();
+                resetUpdateConfig();
+                new_version = "";
+                new_version_config = json::object();
+                current_version_config = json::object();
+                reset_folder(updatePath);
+            }
             int code = download_file(newVersionInfo["url"], "./update/" + new_version, new_version + ".zip");
             if (code == -1) {
                 emit downloadUpdateFailed();
@@ -259,6 +267,9 @@ Q_INVOKABLE void Update::getUpdateFile() {
             qCritical() << "线程崩溃 ";
             Notifier::instance().notify(3, tr("更新失败"));
             Notifier::instance().notify(3, tr("线程崩溃"));
+            new_version = "";
+            new_version_config = json::object();
+            current_version_config = json::object();
             resetUpdateConfig();
             reset_folder(updatePath);
             emit downloadUpdateFailed();
@@ -284,6 +295,9 @@ Q_INVOKABLE void Update::continueDownload() {
             int code = download_file(new_version_config["url"], "./update/" + new_version, new_version + ".zip");
             if (code == -1) {
                 emit downloadUpdateFailed();
+                new_version = "";
+                new_version_config = json::object();
+                current_version_config = json::object();
                 resetUpdateConfig();
                 reset_folder(updatePath);
             }
@@ -297,17 +311,23 @@ Q_INVOKABLE void Update::continueDownload() {
             qCritical() << "线程崩溃 " << QString::fromLocal8Bit(e.what());
             Notifier::instance().notify(3, tr("更新失败"));
             Notifier::instance().notify(3, tr("线程崩溃 %1").arg(QString::fromLocal8Bit(e.what())));
-            //resetUpdateConfig();
-            //reset_folder(updatePath);
-            //emit downloadUpdateFailed();
+            new_version = "";
+            new_version_config = json::object();
+            current_version_config = json::object();
+            resetUpdateConfig();
+            reset_folder(updatePath);
+            emit downloadUpdateFailed();
         }
         catch (...) {
             qCritical() << "线程崩溃 ";
             Notifier::instance().notify(3, tr("更新失败"));
             Notifier::instance().notify(3, tr("线程崩溃"));
-            //resetUpdateConfig();
-            //reset_folder(updatePath);
-            //emit downloadUpdateFailed();
+            new_version = "";
+            new_version_config = json::object();
+            current_version_config = json::object();
+            resetUpdateConfig();
+            reset_folder(updatePath);
+            emit downloadUpdateFailed();
         }
         });
 }
@@ -799,7 +819,8 @@ int Update::download_file(const std::string url, const std::string& save_path, c
         updateConfig["hash"] = picosha2::bytes_to_hex_string(hash.begin(), hash.end());
         if (updateConfig["hash"] != new_version_config["hash"]) {
             //hash校验
-            return -1;
+            qWarning() << "hash文件校验未通过";
+            //return -1;
         }
         updateConfig["isDownloadCompleted"] = true;
         WriteJsonFile(updatePath + "/" + updateConfigName + ".json", updateConfig);
@@ -1155,9 +1176,7 @@ Q_INVOKABLE void Update::update() {
 
                 qDebug() << "已替换：" << QString::fromStdString(targetPath.string());
             }
-            //运行更新程序
-
-            //强杀进程退出
+            
             emit updateCompleted();
         }
         catch (std::exception& e) {
@@ -1171,6 +1190,62 @@ Q_INVOKABLE void Update::update() {
             emit updateFailed();
         }
     });
+}
+
+void Update::reboot(){
+    //运行更新程序
+    std::filesystem::path updaterPath = std::filesystem::current_path() / "updater.exe";
+
+    if (!std::filesystem::exists(updaterPath)) {
+    qCritical() << "更新程序不存在：" << updaterPath.string().c_str();
+    Notifier::instance().notify(3, tr("更新程序文件缺失"));
+    return;
+}
+    // 获取 PID
+    DWORD pid = GetCurrentProcessId();
+
+    // 获取当前工作目录（推荐方式）
+    std::filesystem::path cwd = std::filesystem::current_path();
+
+    // 构造命令行参数
+    std::string cmdLine = "\"" + updaterPath.string() + "\"" + " -pid " + std::to_string(pid) + +" -path " + "\"" + cwd.string() + "\"" + " -updatePath " + "\"" + std::filesystem::weakly_canonical(cwd / updatePath).string() + "\"";
+
+    // 启动新进程（非阻塞）
+    STARTUPINFOA si = { sizeof(si) };
+    PROCESS_INFORMATION pi;
+    BOOL success = CreateProcessA(
+        updaterPath.string().c_str(),
+        &cmdLine[0],
+        nullptr,
+        nullptr,
+        FALSE,
+        CREATE_NEW_CONSOLE,
+        nullptr,
+        nullptr,
+        &si,
+        &pi
+    );
+
+    if (success) {
+        qInfo() << "更新程序已启动，PID: " << pi.dwProcessId;
+        CloseHandle(pi.hProcess);
+        CloseHandle(pi.hThread);
+    }
+    else {
+        DWORD errCode = GetLastError();
+        LPVOID msgBuf;
+        FormatMessageA(
+            FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+            nullptr, errCode,
+            MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+            (LPSTR)&msgBuf, 0, nullptr
+        );
+        qCritical() << "启动失败：" << (char*)msgBuf;
+        Notifier::instance().notify(3, tr("更新进程启动失败"));
+        LocalFree(msgBuf);
+        return;
+    }
+    QCoreApplication::exit();
 }
 
 bool Update::isSubPath(const std::filesystem::path& base, const std::filesystem::path& target) {

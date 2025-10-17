@@ -153,17 +153,16 @@ void Data::save(json data) {
 }
 
 void Data::trim_backup_files(const std::string& dir, int max_backup_count) {
-	namespace fs = std::filesystem;
 
-	fs::path baseDir = fs::u8path(dir);
+	std::filesystem::path baseDir = std::filesystem::u8path(dir);
 	std::regex backup_pattern(file_name + R"(_(\d+)\.json\.bak)");
-	std::vector<std::pair<std::uint64_t, fs::path>> backups;
+	std::vector<std::pair<std::uint64_t, std::filesystem::path>> backups;
 
-	for (const auto& entry : fs::directory_iterator(baseDir)) {
-		const fs::path& path = entry.path();
+	for (const auto& entry : std::filesystem::directory_iterator(baseDir)) {
+		const std::filesystem::path& path = entry.path();
 		std::smatch match;
 		std::string filename = path.filename().u8string(); // 保证 UTF-8
-		if (fs::is_regular_file(path) && std::regex_match(filename, match, backup_pattern)) {
+		if (std::filesystem::is_regular_file(path) && std::regex_match(filename, match, backup_pattern)) {
 			std::uint64_t ts = std::stoull(match[1].str());
 			backups.emplace_back(ts, path);
 		}
@@ -176,11 +175,11 @@ void Data::trim_backup_files(const std::string& dir, int max_backup_count) {
 		size_t num_to_delete = backups.size() - max_backup_count;
 		for (size_t i = 0; i < num_to_delete; ++i) {
 			try {
-				fs::path& file_to_delete = backups[i].second;
-				fs::remove(file_to_delete);
+				std::filesystem::path& file_to_delete = backups[i].second;
+				std::filesystem::remove(file_to_delete);
 				qInfo().noquote() << "清理备份文件成功:" << QString::fromStdString(file_to_delete.u8string()).replace("\\", "/");
 			}
-			catch (const fs::filesystem_error& e) {
+			catch (const std::filesystem::filesystem_error& e) {
 				qWarning().noquote() << "清理备份文件失败 " << QString::fromLocal8Bit(e.what());
 				Notifier::instance().notify(2, "备份文件删除失败");
 			}

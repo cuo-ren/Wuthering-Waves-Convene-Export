@@ -699,7 +699,7 @@ Popup {
                                 Update.update()
                             }
                             else if(this.state == "finish"){
-                                Qt.quit()
+                                Update.reboot()
                             }
                         }
                     }
