@@ -52,6 +52,7 @@ Window {
             }
             else{
                 updateBtn.flag = false
+                Notifier.notify(2,qsTr("未找到游戏日志"))
             }
         }
         onExportData: {
@@ -110,11 +111,11 @@ Window {
             var path = folderDialog.selectedFolder.toString().replace("file:///", "")
             console.log("选择的文件夹:", path)
             if(Path.validatePath(path)){
-                notificationModel.append({"text": qsTr("已定位到游戏日志"), "duration": 3000, "color":"green"})
+                Notifier.notify(0,qsTr("成功定位到游戏日志"))
                 ConfigManager.setValue("path", path)
                 popup.updatePath()
             }else{
-                notificationModel.append({"text": qsTr("未定位到游戏日志"), "duration": 3000, "color":"orange"})
+                Notifier.notify(2,qsTr("未找到游戏日志"))
             }
         }
     }
@@ -132,7 +133,7 @@ Window {
         id: btnGroup
         Rectangle{
             anchors.fill:parent
-            color:"transparent"//color:"yellow"
+            color:"transparent"
         }
         anchors.top: header.bottom
         anchors.horizontalCenter: root.horizontalCenter
@@ -178,10 +179,6 @@ Window {
                         folderDialog.open()
                     }
                 }
-                //Notifier.notify(0, "成功");
-                //Notifier.notify(1, "通知");
-                //Notifier.notify(2, "警告");
-                //Notifier.notify(3, "错误");
             }
 
             Component.onCompleted: {
@@ -190,6 +187,7 @@ Window {
                 }
                 else{
                     flag = false
+                    Notifier.notify(2,qsTr("未找到游戏日志"))
                 }
             }
         }

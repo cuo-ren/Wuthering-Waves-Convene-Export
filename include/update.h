@@ -29,7 +29,7 @@ public:
 	}
 
     Q_INVOKABLE void init();
-    Q_INVOKABLE void checkUpdate();
+    Q_INVOKABLE void checkUpdate(bool notNotifyNoupdate=false);
     Q_INVOKABLE void getUpdateFile();
     Q_INVOKABLE void pause();
     Q_INVOKABLE void continueDownload();
@@ -100,7 +100,6 @@ private:
     json getVersionInfo(std::string version);
     int download_file(const std::string url, const std::string& save_path, const std::string& filename = "");
     bool unzip(const std::string& zipPath, const std::string& outDir, const uint64_t maxSize = 2ull * 1024ull * 1024ull * 1024ull);
-    bool move_files(const std::string& srcDir, const std::string& dstDir);
     std::string get_system_proxy();
     std::optional<std::pair<std::string, int>> parse_proxy(const std::string& proxy_raw);
     bool isSubPath(const std::filesystem::path& base, const std::filesystem::path& target);

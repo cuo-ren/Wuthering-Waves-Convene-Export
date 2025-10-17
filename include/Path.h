@@ -20,11 +20,11 @@ public:
     Q_INVOKABLE QVariant validatePath(QString path) {
 		std::filesystem::path fsPath = std::filesystem::u8path(path.toStdString() + "/Client/Saved/Logs/Client.log");
         if (!std::filesystem::exists(fsPath)) {
-            qDebug().noquote() << "未找到游戏日志 path:" << path;
+            qDebug().noquote() << "目录内未找到游戏日志" << path;
             return false;
         }
         else {
-            qDebug().noquote() << "找到游戏日志 path:" << path;
+            qDebug().noquote() << "目录内找到游戏日志" << path;
             return true;
         }
     }
@@ -83,7 +83,6 @@ public:
 			return true;
 		}
 	}
-
 
 private:
 

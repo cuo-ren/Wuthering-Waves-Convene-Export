@@ -509,7 +509,7 @@ Popup {
                         id: updateSettingText
                         font.pixelSize: 14
                         width: 150
-                        text: qsTr("自动更新")
+                        text: qsTr("自动检查更新")
 
                         horizontalAlignment: Text.AlignRight
                         anchors.verticalCenter: parent.verticalCenter
@@ -637,7 +637,13 @@ Popup {
                             target: Update
                             function onInitUpdateCompleted(status,desc){
                                 switch(status){
-                                    case 0:checkUpdateBtn.state ="noUpdate";break;
+                                    case 0:{
+                                        checkUpdateBtn.state ="noUpdate";
+                                        if(ConfigManager.getValue("update")){
+                                            Update.checkUpdate(true)
+                                        }
+                                        break;
+                                    }
                                     case 1:checkUpdateBtn.state ="pause";break;
                                     case 2:checkUpdateBtn.state ="update";break;
                                     case 3:checkUpdateBtn.state ="update";break;
