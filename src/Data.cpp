@@ -547,20 +547,31 @@ Q_INVOKABLE QVariantList Data::getBarChartData(const QString& key) {
 
 	QVariantList list;
 	int count = 0;
+	bool pendingOffTarget = false;
+	bool isOffTarget = false;
 	for (auto& item : gacha_list[uid]["data"][key.toStdString()]) {
 		QVariantMap map;
 		count++;
 		if (item["qualityLevel"] == 5) {
+			//判断是否歪了
+			if (!isStandard and std::find(standardList.begin(), standardList.end(), item["id"].get<int>()) != standardList.end()) {
+				//不展示常驻，跳过
+				if (!ConfigManager::instance().get<bool>("showStandardItem")) {
+					pendingOffTarget = true;
+					continue;
+				}
+				isOffTarget = true;
+			}
+			else {
+				isOffTarget = false;
+			}
+
 			map["ItemName"] = QString::fromStdString(item["name"].get<std::string>());
 			map["source"] = QString::number(item["id"].get<int>());
 			map["count"] = count;
-			//判断是否歪了
-			if (!isStandard and std::find(standardList.begin(), standardList.end(), item["id"].get<int>()) != standardList.end()) {
-				map["isOffTarget"] = true;
-			}
-			else {
-				map["isOffTarget"] = false;
-			}
+			map["isOffTarget"] = pendingOffTarget or isOffTarget;
+
+			pendingOffTarget = false;
 
 			list.append(map);
 			count = 0;
@@ -573,7 +584,7 @@ Q_INVOKABLE QVariantList Data::getBarChartData(const QString& key) {
 	map["ItemName"] = tr("已垫");
 	map["source"] = "unknown";
 	map["count"] = count;
-	map["isOffTarget"] = false;
+	map["isOffTarget"] = pendingOffTarget or isOffTarget;
 	list.append(map);
 	return list;
 }

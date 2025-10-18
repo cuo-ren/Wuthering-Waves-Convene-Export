@@ -61,6 +61,8 @@ Popup {
         skipSettingSwitch.checked = ConfigManager.getValue("skip")
         //自动更新设置
         updateSettingSwitch.checked = ConfigManager.getValue("update")
+        //展示常驻物品设置
+        showStandardItemSettingSwitch.checked = ConfigManager.getValue("showStandardItem")
         //初始化更新
         Update.init()
         //语言设置
@@ -502,6 +504,39 @@ Popup {
                 }
 
                 Item{
+                    id: showStandardItemSetting
+                    width:parent.width
+                    height: 35
+                    Text {
+                        id: showStandardItemSettingText
+                        font.pixelSize: 14
+                        width: 150
+                        text: qsTr("展示常驻物品")
+
+                        horizontalAlignment: Text.AlignRight
+                        anchors.verticalCenter: parent.verticalCenter
+                        verticalAlignment:  Text.AlignVCenter
+
+                        anchors.left: parent.left
+                    }
+                    MySwitch {
+                        id: showStandardItemSettingSwitch
+                        anchors.left: showStandardItemSettingText.right
+                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.margins: 10
+                        text:""
+                        onCheckedChanged: {
+                            if(ConfigManager.getValue("showStandardItem") != checked){
+                                console.log("修改展示常驻物品设置 "+ "当前设置 " + checked)
+                                ConfigManager.setValue("showStandardItem",checked)
+                                settingsPopup.refresh()
+                            }
+                        }
+                    }
+                }
+
+
+                Item{
                     id: updateSetting
                     width: parent.width
                     height: 35
@@ -710,7 +745,6 @@ Popup {
                         }
                     }
                 }
-
 
                 Item{
                     id: urlSetting

@@ -37,6 +37,7 @@ Window {
         modal: false
         onRefresh: {
             initButtonGroup()
+            barChart.maxCount = ConfigManager.getValue("showStandardItem") ? 80 : 160
             if(myModel.count != 0){
                 initData(myModel.get(0)["key"],myModel.get(0)["name"])
             }
@@ -408,56 +409,84 @@ Window {
         }
     }
 
-    Item{
-        id: chartArea
+    SwipeView{
+        id: swipeview
+
         anchors.top: btnGroup.bottom
         anchors.left: pageArea.right
-        clip: true
 
         width: root.width - pageArea.width
         height: root.height - header.height - btnGroup.height
-        Rectangle{
-            anchors.fill:parent
-            color:"transparent"//color:"lightblue"
-        }
-        BarChart{
-            id: barChart
-            path: Global.path + "/resource/"
-            anchors.top: parent.top
-            anchors.horizontalCenter: parent.horizontalCenter
-            height: parent.height - row.height - 10
-            width: contentWidth > parent.width ? parent.width : contentWidth
-            chartClip: contentWidth > parent.width ? true : false
-            //clip: true
-        }
 
-        ButtonGroup {
-            id: buttonGroup
-        }
+        orientation: Qt.Vertical
+        interactive: false
 
-        Row {
-            //visible:false
-            id: row
-            property int lastclick: 0
+        clip: true
 
-            //anchors.top:barChart.bottom
-            anchors.horizontalCenter: barChart.horizontalCenter
-            anchors.bottom: chartArea.bottom
-            anchors.margins: 10
+        Item{
+            id: chartArea
 
-            Repeater{
-                model: myModel
-                RadioButton {
-                    text: model.name
-                    ButtonGroup.group: buttonGroup
-                    checked: index==0?true:false
-                    onClicked: {
-                        if(index != row.lastclick){
-                            initData(model.key,model.name)
-                            row.lastclick = index
+            clip: true
+
+            BarChart{
+                id: barChart
+                path: Global.path + "/resource/"
+                anchors.top: parent.top
+                anchors.horizontalCenter: parent.horizontalCenter
+                height: parent.height - row.height - 10
+                width: contentWidth > parent.width ? parent.width : contentWidth
+                chartClip: contentWidth > parent.width ? true : false
+                maxCount: ConfigManager.getValue("showStandardItem") ? 80 : 160
+                //clip: true
+            }
+
+            ButtonGroup {
+                id: buttonGroup
+            }
+
+            Row {
+                //visible:false
+                id: row
+                property int lastclick: 0
+
+                height: 25
+
+                //anchors.top:barChart.bottom
+                anchors.horizontalCenter: barChart.horizontalCenter
+                anchors.bottom: chartArea.bottom
+                anchors.margins: 10
+
+                Repeater{
+                    model: myModel
+                    RadioButton {
+                        text: model.name
+                        ButtonGroup.group: buttonGroup
+                        checked: index==0?true:false
+                        onClicked: {
+                            if(index != row.lastclick){
+                                initData(model.key,model.name)
+                                row.lastclick = index
+                            }
                         }
                     }
                 }
+            }
+        }
+
+        Item{
+            Rectangle{
+                color:"red"
+                anchors.fill: parent
+            }
+        }
+        Item{
+            Text {
+                id: name
+                property int count1: 0
+                property int count2: 0
+                property int totalcount: 0
+                property double t:0
+                text: qsTr("平均出金抽数%1\n平均限定抽数%2\n不歪概率%3\n总抽数%4\n").arg(count1).arg(count2).arg(t).arg(totalcount)
             }
         }
     }
@@ -466,12 +495,25 @@ Window {
         id: pageArea
         width: 50
         height: root.height - header.height
-        Rectangle{
-            anchors.fill:parent
-            color:"transparent"//color:"red"
-        }
         anchors.left: root.left
         anchors.top: btnGroup.bottom
+
+        ColumnLayout{
+            anchors.fill:parent
+            Button{
+                Layout.fillWidth: true
+                onClicked: swipeview.currentIndex = 0
+            }
+            Button{
+                Layout.fillWidth: true
+                onClicked: swipeview.currentIndex = 1
+            }
+
+            Button{
+                Layout.fillWidth: true
+                onClicked: swipeview.currentIndex = 2
+            }
+        }
     }
 
     Connections{

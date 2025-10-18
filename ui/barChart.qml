@@ -15,6 +15,7 @@ Item {
     property string key: "0"
     property alias contentWidth: root.contentWidth
     property alias chartClip: root.clip
+    property int maxCount: 80
 
     property bool hiddenImage: false
     property bool flag: false
@@ -57,18 +58,20 @@ Item {
         // 关键：仅对 40~80 段做非线性映射
         let r, g, b;
 
-        if (v <= 40) {
+        const mid = maxCount / 2;
+
+        if (v <= mid) {
             // lightgreen → yellow
-            let t = v / 40;
+            let t = v / mid;
             r = lerp(144, 255, t);
             g = lerp(238, 255, t);
             b = lerp(144,   0, t);
             return Qt.rgba(r/255, g/255, b/255, 1);
         } // lightgreen，可按需替换
-        if (v >= 80) return Qt.hsla(0/360,    1.0, 0.5, 1); // red
+        if (v >= maxCount) return Qt.hsla(0/360,    1.0, 0.5, 1); // red
 
         // 线性比例
-        const t = (v - 40) / 40;
+        const t = (v - mid) / (maxCount - mid);
 
         // 指数形状函数：p≈1.48 让 v=65 时接近橙（H=30°）
         const p = 1.48; // 可当作参数暴露出去
@@ -185,7 +188,7 @@ Item {
                         target: countRect
                         property: "height"
                         from: 0
-                        to: count * (root.height - 30 - 10 - 12 - 10 - 10 - 50 - 5 - 12 - 30)/80
+                        to: count * (root.height - 30 - 10 - 12 - 10 - 10 - 50 - 5 - 12 - 30)/maxCount
                         duration: 1000
                         easing.type: Easing.InOutCubic
                     }
@@ -228,7 +231,7 @@ Item {
                             anchors.horizontalCenter: parent.horizontalCenter
                             anchors.margins: 10
                             width: 8
-                            height: count * (root.height - 30 - 10 - 12 - 10 - 10 - 50 - 5 -12 - 30)/80
+                            height: count * (root.height - 30 - 10 - 12 - 10 - 10 - 50 - 5 -12 - 30)/maxCount
                             color: chart.valueToColor(animatedCount)//animatedCount < 40 ? "lightgreen" : animatedCount <= 65 ? "yellow" : "red"
                             radius: width/2
                             Behavior on height{
