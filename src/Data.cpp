@@ -544,7 +544,6 @@ Q_INVOKABLE QVariantList Data::getBarChartData(const QString& key) {
 	bool isStandard = Global::instance().get_gacha_type_map()[key.toStdString()]["isStandard"];
 	std::vector<int> standardList = Global::instance().get_standardList();
 
-
 	QVariantList list;
 	int count = 0;
 	bool pendingOffTarget = false;
@@ -1954,4 +1953,75 @@ Q_INVOKABLE void Data::importUIGF4(const json& uigf) {
 		save(gacha_list);
 	}
 	Notifier::instance().notify(0, tr("导入成功，共导入%1个用户").arg(QString::number(cnt)));
+}
+
+Q_INVOKABLE QVariantList Data::getInfoData(const QString& key) {
+	//检查uid
+	std::vector<std::string> uid_list;
+	for (auto& [uid, value] : gacha_list.items()) {
+		uid_list.push_back(uid);
+	}
+	std::string uid = ConfigManager::instance().get<std::string>("active_uid");
+
+	if (uid_list.size() == 0) {
+		//无数据
+		if (uid.length() != 0) {
+			ConfigManager::instance().set<std::string>("active_uid", "");
+			emit uidChanged("");
+			qDebug().noquote() << "active_uid变更为空";
+		}
+		return QVariantList();
+	}
+
+	if (uid.length() == 0 and uid_list.size() != 0) {
+		//没有活跃uid且存在uid，设置为第一个
+		uid = uid_list[0];
+		ConfigManager::instance().set<std::string>("active_uid", uid);
+		emit uidChanged(QString::fromStdString(uid));
+		qDebug().noquote() << "active_uid变更为:" << QString::fromStdString(uid);
+	}
+	if (std::find(uid_list.begin(), uid_list.end(), uid) == uid_list.end() and uid_list.size() != 0) {
+		//活跃uid不在列表中
+		uid = uid_list[0];
+		ConfigManager::instance().set<std::string>("active_uid", uid);
+		emit uidChanged(QString::fromStdString(uid));
+		qDebug().noquote() << "active_uid变更为:" << QString::fromStdString(uid);
+	}
+
+	bool isStandard = Global::instance().get_gacha_type_map()[key.toStdString()]["isStandard"];
+	std::vector<int> standardList = Global::instance().get_standardList();
+
+	QVariantList list;
+	
+	int totalCount = 0;//总抽数
+	int fiveCount = 0;//5星数量
+	int notStandedFiveCount = 0;
+	int fiveTotalCount = 0;//5星抽数
+	int notStandedFiveTotalCount = 0;
+
+	for (auto& item : gacha_list[uid]["data"][key.toStdString()]) {
+		totalCount++;
+		if (item["qualityLevel"] == 5) {
+			if (!isStandard and std::find(standardList.begin(), standardList.end(), item["id"].get<int>()) != standardList.end()) {
+				fiveCount++;
+				fiveTotalCount = totalCount;
+			}
+			else {
+				notStandedFiveCount++;
+				fiveCount++;
+				notStandedFiveTotalCount = totalCount;
+			}
+			
+		}
+	}
+
+	double p = 1.0 - double(fiveCount - notStandedFiveCount) / (double)notStandedFiveCount;
+	double avgFiveCount = fiveTotalCount / fiveCount;
+	double avgNotStandedFiveCount = notStandedFiveTotalCount / notStandedFiveCount;
+	qDebug() << p << avgFiveCount << avgNotStandedFiveCount << totalCount;
+	list.append(p*100);
+	list.append(avgFiveCount);
+	list.append(avgNotStandedFiveCount);
+	list.append(totalCount);
+	return list;
 }

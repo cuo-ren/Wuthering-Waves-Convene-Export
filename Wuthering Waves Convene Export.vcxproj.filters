@@ -134,6 +134,9 @@
     <None Include="ui\DataPopup.qml">
       <Filter>Resource Files\ui</Filter>
     </None>
+    <None Include="ui\MySwipeView.qml">
+      <Filter>Resource Files\ui</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="include\config.h">

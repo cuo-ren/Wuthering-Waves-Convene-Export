@@ -157,6 +157,7 @@
     <None Include="ui\main.qml" />
     <None Include="ui\MyButton.qml" />
     <None Include="ui\MyComboBox.qml" />
+    <None Include="ui\MySwipeView.qml" />
     <None Include="ui\MySwitch.qml" />
     <None Include="ui\MyTextField.qml" />
     <None Include="ui\NotificationItem.qml" />

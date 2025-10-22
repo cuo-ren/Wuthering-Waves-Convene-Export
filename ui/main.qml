@@ -39,7 +39,7 @@ Window {
             initButtonGroup()
             barChart.maxCount = ConfigManager.getValue("showStandardItem") ? 80 : 160
             if(myModel.count != 0){
-                initData(myModel.get(0)["key"],myModel.get(0)["name"])
+                initBarChartData(myModel.get(0)["key"],myModel.get(0)["name"])
             }
             else{
                 barChart.key = "0"
@@ -342,7 +342,7 @@ Window {
                     console.log("切换uid为 " + currentText)
                     initButtonGroup()
                     if(myModel.count != 0){
-                        initData(myModel.get(0)["key"],myModel.get(0)["name"])
+                        initBarChartData(myModel.get(0)["key"],myModel.get(0)["name"])
                     }
                     else{
                         barChart.key = "0"
@@ -409,7 +409,7 @@ Window {
         }
     }
 
-    SwipeView{
+    MySwipeView{
         id: swipeview
 
         anchors.top: btnGroup.bottom
@@ -420,7 +420,7 @@ Window {
 
         orientation: Qt.Vertical
         interactive: false
-
+        wheelEnabled: false
         clip: true
 
         Item{
@@ -464,7 +464,7 @@ Window {
                         checked: index==0?true:false
                         onClicked: {
                             if(index != row.lastclick){
-                                initData(model.key,model.name)
+                                initBarChartData(model.key,model.name)
                                 row.lastclick = index
                             }
                         }
@@ -472,7 +472,12 @@ Window {
                 }
             }
         }
-
+        Item{
+            Rectangle{
+                color:"green"
+                anchors.fill: parent
+            }
+        }
         Item{
             Rectangle{
                 color:"red"
@@ -480,13 +485,18 @@ Window {
             }
         }
         Item{
+            ListModel{
+                id: infoListmodel
+                ListElement{data:0}//不歪概率
+                ListElement{data:0}//平均出金抽数
+                ListElement{data:0}//平均限定抽数
+                ListElement{data:0}//总抽数
+            }
+
             Text {
-                id: name
-                property int count1: 0
-                property int count2: 0
-                property int totalcount: 0
-                property double t:0
-                text: qsTr("平均出金抽数%1\n平均限定抽数%2\n不歪概率%3\n总抽数%4\n").arg(count1).arg(count2).arg(t).arg(totalcount)
+                id: infoText
+                property string title: qsTr("标题")
+                text: qsTr("%1\n平均出金抽数%2\n平均限定抽数%3\n不歪概率%4%\n总抽数%5\n").arg(title).arg(infoListmodel.get(1).data).arg(infoListmodel.get(2).data).arg(infoListmodel.get(0).data.toFixed(2)).arg(infoListmodel.get(3).data)
             }
         }
     }
@@ -502,16 +512,16 @@ Window {
             anchors.fill:parent
             Button{
                 Layout.fillWidth: true
-                onClicked: swipeview.currentIndex = 0
+                onClicked: swipeview.setIndex(0)
             }
             Button{
                 Layout.fillWidth: true
-                onClicked: swipeview.currentIndex = 1
+                onClicked: swipeview.setIndex(1)
             }
 
             Button{
                 Layout.fillWidth: true
-                onClicked: swipeview.currentIndex = 2
+                onClicked: swipeview.setIndex(2)
             }
         }
     }
@@ -564,8 +574,9 @@ Window {
     Component.onCompleted:{
         initButtonGroup()
         if(myModel.count != 0){
-            initData(myModel.get(0)["key"],myModel.get(0)["name"])
+            initBarChartData(myModel.get(0)["key"],myModel.get(0)["name"])
         }
+        initInfoData(myModel.get(0)["key"],myModel.get(0)["name"])
     }
 
     function initButtonGroup(){
@@ -580,7 +591,7 @@ Window {
         }
     }
 
-    function initData(key,name){
+    function initBarChartData(key,name){
         barChart.key = key
         barChart.gacha_data.clear()
         barChart.chartTitle = name
@@ -601,7 +612,7 @@ Window {
         }
         if(barChart.key == "0"){
             //之前没数据但现在有了
-            initData(myModel.get(0)["key"],myModel.get(0)["name"])
+            initBarChartData(myModel.get(0)["key"],myModel.get(0)["name"])
         }
         var gacha_data = Data.getBarChartData(barChart.key)
         for(var i = 0; i < gacha_data.length; i++){
@@ -627,6 +638,14 @@ Window {
                 }
                 continue;
             }
+        }
+    }
+
+    function initInfoData(key,name){
+        infoText.title = name
+        var l = Data.getInfoData(key)
+        for(var i = 0; i < l.length; i++){
+            infoListmodel.setProperty(i,"data",l[i])
         }
     }
 }

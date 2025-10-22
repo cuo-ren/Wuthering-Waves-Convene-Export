@@ -27,6 +27,7 @@ public:
     }
 
     Q_INVOKABLE QVariantList getBarChartData(const QString& key);
+    Q_INVOKABLE QVariantList getInfoData(const QString& key);
     Q_INVOKABLE QStringList getUidList();
     Q_INVOKABLE QVariantList getDataInfo();
     Q_INVOKABLE void getBackupInfo();
