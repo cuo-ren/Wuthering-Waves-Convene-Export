@@ -31,5 +31,6 @@
         <file>resource/success.svg</file>
         <file>resource/warning.svg</file>
         <file>ui/MySwipeView.qml</file>
+        <file>ui/MyRadioButton.qml</file>
     </qresource>
 </RCC>

@@ -159,9 +159,9 @@ Window {
 
             hoverFillColor: "#409eff"
             hoverBorderColor: "#409eff"
-
+/*
             source: "../resource/refresh.svg"
-
+*/
             property bool flag: false
             text: flag ? qsTr("更新数据") : qsTr("查找游戏")
 
@@ -445,7 +445,6 @@ Window {
             }
 
             Row {
-                //visible:false
                 id: row
                 property int lastclick: 0
 
@@ -456,12 +455,23 @@ Window {
                 anchors.bottom: chartArea.bottom
                 anchors.margins: 10
 
+                spacing: 10
+
                 Repeater{
                     model: myModel
-                    RadioButton {
+                    MyRadioButton {
                         text: model.name
                         ButtonGroup.group: buttonGroup
                         checked: index==0?true:false
+
+                        commonBgColor: "transparent"
+                        pressBgColor: Qt.darkGray
+                        activeBgColor: "grey"
+
+                        commonTextColor: "grey"
+                        pressTextColor: "white"
+                        activeTextColor: "white"
+
                         onClicked: {
                             if(index != row.lastclick){
                                 initBarChartData(model.key,model.name)
@@ -507,7 +517,7 @@ Window {
         height: root.height - header.height
         anchors.left: root.left
         anchors.top: btnGroup.bottom
-
+/*
         ColumnLayout{
             anchors.fill:parent
             Button{
@@ -523,7 +533,7 @@ Window {
                 Layout.fillWidth: true
                 onClicked: swipeview.setIndex(2)
             }
-        }
+        }*/
     }
 
     Connections{
