@@ -158,6 +158,7 @@
     <None Include="ui\MyButton.qml" />
     <None Include="ui\MyComboBox.qml" />
     <None Include="ui\MyRadioButton.qml" />
+    <None Include="ui\MyRadioImageButton.qml" />
     <None Include="ui\MySwipeView.qml" />
     <None Include="ui\MySwitch.qml" />
     <None Include="ui\MyTextField.qml" />

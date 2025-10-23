@@ -2018,7 +2018,7 @@ Q_INVOKABLE QVariantList Data::getInfoData(const QString& key) {
 	double p = 1.0 - double(fiveCount - notStandedFiveCount) / (double)notStandedFiveCount;
 	double avgFiveCount = fiveTotalCount / fiveCount;
 	double avgNotStandedFiveCount = notStandedFiveTotalCount / notStandedFiveCount;
-	qDebug() << p << avgFiveCount << avgNotStandedFiveCount << totalCount;
+
 	list.append(p*100);
 	list.append(avgFiveCount);
 	list.append(avgNotStandedFiveCount);

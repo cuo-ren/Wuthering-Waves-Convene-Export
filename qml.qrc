@@ -32,5 +32,8 @@
         <file>resource/warning.svg</file>
         <file>ui/MySwipeView.qml</file>
         <file>ui/MyRadioButton.qml</file>
+        <file>ui/MyRadioImageButton.qml</file>
+        <file>resource/barChart.svg</file>
+        <file>resource/infoLightBlue.svg</file>
     </qresource>
 </RCC>

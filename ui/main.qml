@@ -483,18 +483,6 @@ Window {
             }
         }
         Item{
-            Rectangle{
-                color:"green"
-                anchors.fill: parent
-            }
-        }
-        Item{
-            Rectangle{
-                color:"red"
-                anchors.fill: parent
-            }
-        }
-        Item{
             ListModel{
                 id: infoListmodel
                 ListElement{data:0}//不歪概率
@@ -516,24 +504,59 @@ Window {
         width: 50
         height: root.height - header.height
         anchors.left: root.left
-        anchors.top: btnGroup.bottom
-/*
-        ColumnLayout{
-            anchors.fill:parent
-            Button{
-                Layout.fillWidth: true
-                onClicked: swipeview.setIndex(0)
-            }
-            Button{
-                Layout.fillWidth: true
-                onClicked: swipeview.setIndex(1)
-            }
+        anchors.top: header.bottom
+        Column{
+            id: pageButton
+            property int lastclick: 0
 
-            Button{
-                Layout.fillWidth: true
-                onClicked: swipeview.setIndex(2)
+            anchors.centerIn: parent
+            width: parent.width
+            height: childrenRect.height
+
+            MyRadioImageButton{
+                width: parent.width - 5
+                height: parent.width - 5
+                commonBgColor: "transparent"
+                pressBgColor: "grey"
+                activeBgColor: "transparent"
+
+                commonBorderColor: "transparent"
+                pressBorderColor: "grey"
+                activeBorderColor: "grey"
+
+                iconNormal: "../resource/barChart.svg"
+                iconChecked: "../resource/barChart.svg"
+
+                onClicked: {
+                    if(pageButton.lastclick != 0){
+                        swipeview.setIndex(0)
+                        pageButton.lastclick = 0
+                    }
+                }
             }
-        }*/
+            MyRadioImageButton{
+                width: parent.width - 5
+                height: parent.width - 5
+
+                commonBgColor: "transparent"
+                pressBgColor: "grey"
+                activeBgColor: "transparent"
+
+                commonBorderColor: "transparent"
+                pressBorderColor: "grey"
+                activeBorderColor: "grey"
+
+                iconNormal: "../resource/infoLightBlue.svg"
+                iconChecked: "../resource/infoLightBlue.svg"
+
+                onClicked: {
+                    if(pageButton.lastclick != 1){
+                        swipeview.setIndex(1)
+                        pageButton.lastclick = 1
+                    }
+                }
+            }
+        }
     }
 
     Connections{

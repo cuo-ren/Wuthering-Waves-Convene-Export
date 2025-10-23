@@ -140,6 +140,9 @@
     <None Include="ui\MyRadioButton.qml">
       <Filter>Resource Files\ui</Filter>
     </None>
+    <None Include="ui\MyRadioImageButton.qml">
+      <Filter>Resource Files\ui</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="include\config.h">
