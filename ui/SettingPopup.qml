@@ -60,7 +60,7 @@ Popup {
         //跳过设置
         skipSettingSwitch.checked = ConfigManager.getValue("skip")
         //自动更新设置
-        updateSettingSwitch.checked = ConfigManager.getValue("update")
+        updateSettingSwitch.checked = ConfigManager.getValue("checkUpdate")
         //展示常驻物品设置
         showStandardItemSettingSwitch.checked = ConfigManager.getValue("hiddenStandardItem")
         //初始化更新
@@ -559,9 +559,9 @@ Popup {
                         anchors.margins: 10
                         text: ""
                         onCheckedChanged: {
-                            if(ConfigManager.getValue("update") != checked){
+                            if(ConfigManager.getValue("checkUpdate") != checked){
                                 console.log("修改自动更新设置 "+ "当前设置 " + checked)
-                                ConfigManager.setValue("update",checked)
+                                ConfigManager.setValue("checkUpdate",checked)
                             }
                         }
                     }
@@ -674,7 +674,7 @@ Popup {
                                 switch(status){
                                     case 0:{
                                         checkUpdateBtn.state ="noUpdate";
-                                        if(ConfigManager.getValue("update")){
+                                        if(ConfigManager.getValue("checkUpdate")){
                                             Update.checkUpdate(true)
                                         }
                                         break;

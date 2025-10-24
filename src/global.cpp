@@ -15,7 +15,7 @@ Global::Global(QObject* parent)
 
     json version = {
         {"name", "Wuthering Waves Convene Export"},
-        {"version", "betav3.0"}
+        {"version", "v1.0.0"}
     };
     qDebug().noquote() << "程序名称:" << QString::fromStdString(version["name"]) << " " << QString::fromStdString(version["version"]);
     m_version = jsonToVariantMap(version);
@@ -99,12 +99,12 @@ void Global::initGachaType() {
         gacha_type = ReadJsonFile(std::string("GachaType.json"));
     }
     catch (const std::runtime_error& e) {
-        qWarning().noquote() << "卡池配置文件打开失败，正在创建" << QString::fromLocal8Bit(e.what());;
+        qWarning().noquote() << "卡池配置文件打开失败，正在创建" << QString::fromStdString(e.what());;
         gacha_type = default_gacha_type;
         WriteJsonFile(std::string("GachaType.json"), default_gacha_type);
     }
     catch (const json::parse_error& e) {
-        qWarning().noquote() << "卡池配置文件json解析失败，正在创建" << QString::fromLocal8Bit(e.what());;
+        qWarning().noquote() << "卡池配置文件json解析失败，正在创建" << QString::fromStdString(e.what());;
         gacha_type = default_gacha_type;
         WriteJsonFile(std::string("GachaType.json"), default_gacha_type);
     }

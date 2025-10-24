@@ -40,6 +40,7 @@ Window {
             barChart.maxCount = !ConfigManager.getValue("hiddenStandardItem") ? 80 : 160
             if(myModel.count != 0){
                 initBarChartData(myModel.get(0)["key"],myModel.get(0)["name"])
+                initInfoData(myModel.get(0)["key"],myModel.get(0)["name"])
             }
             else{
                 barChart.key = "0"
@@ -344,6 +345,7 @@ Window {
                     initButtonGroup()
                     if(myModel.count != 0){
                         initBarChartData(myModel.get(0)["key"],myModel.get(0)["name"])
+                        initInfoData(myModel.get(0)["key"],myModel.get(0)["name"])
                     }
                     else{
                         barChart.key = "0"
@@ -538,7 +540,7 @@ Window {
                         console.log("切换至柱状图页面")
                     }
                 }
-            }
+            }/*
             MyRadioImageButton{
                 width: parent.width - 5
                 height: parent.width - 5
@@ -561,7 +563,7 @@ Window {
                         console.log("切换至数据页面")
                     }
                 }
-            }
+            }*/
         }
     }
 
@@ -614,8 +616,8 @@ Window {
         initButtonGroup()
         if(myModel.count != 0){
             initBarChartData(myModel.get(0)["key"],myModel.get(0)["name"])
+            initInfoData(myModel.get(0)["key"],myModel.get(0)["name"])
         }
-        initInfoData(myModel.get(0)["key"],myModel.get(0)["name"])
     }
 
     function initButtonGroup(){
@@ -652,6 +654,7 @@ Window {
         if(barChart.key == "0"){
             //之前没数据但现在有了
             initBarChartData(myModel.get(0)["key"],myModel.get(0)["name"])
+            initInfoData(myModel.get(0)["key"],myModel.get(0)["name"])
         }
         var gacha_data = Data.getBarChartData(barChart.key)
         for(var i = 0; i < gacha_data.length; i++){

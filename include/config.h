@@ -164,7 +164,7 @@ private:
             {"skip", false},//跳过一次性卡池
             {"url", json::array()},//历史记录url
             {"fix", false},//修复记录
-            {"update", false},//自动更新
+            {"checkUpdate", false},//自动更新
             {"hiddenStandardItem", false},//隐藏常驻角色
             {"hash",""}//数据文件hash值
         };
@@ -173,13 +173,13 @@ private:
             config = ReadJsonFile(configPath);
         }
         catch (const std::runtime_error& e) {
-            qWarning().noquote() << "配置文件打开失败，正在创建" << QString::fromLocal8Bit(e.what());
+            qWarning().noquote() << "配置文件打开失败，正在创建" << QString::fromStdString(e.what());
             Notifier::instance().notify(3, "配置文件读取失败");
             config = default_config;
             save();
         }
         catch (const json::parse_error& e) {
-            qWarning() << "配置文件json解析失败，正在创建" << QString::fromLocal8Bit(e.what());
+            qWarning() << "配置文件json解析失败，正在创建" << QString::fromStdString(e.what());
             Notifier::instance().notify(3, "配置文件读取失败");
             config = default_config;
             save();
@@ -206,7 +206,7 @@ private:
         ensure("url", json::array());
         ensure("fix", false);
         ensure("hash", "");
-        ensure("update", false);
+        ensure("checkUpdate", false);
         ensure("hiddenStandardItem", true);
 
         std::vector<std::string> support_languages = Global::instance().get_support_languages();

@@ -418,6 +418,14 @@ bool Update::validate_version_config(const json& versionConfig) {
         qWarning() << "版本配置文件 files不存在或类型错误";
         return false;
     }
+    if (!versionConfig.contains("updaterMainFile") or !versionConfig["updaterMainFile"].is_string()) {
+        qWarning() << "版本配置文件 updaterMainFile不存在或类型错误";
+        return false;
+    }
+    if (!versionConfig.contains("mainFile") or !versionConfig["mainFile"].is_string()) {
+        qWarning() << "版本配置文件 mainFile不存在或类型错误";
+        return false;
+    }
     for (const auto& items : versionConfig["updater"]) {
         if (!items.is_object()) {
             qWarning() << "版本配置文件 updater中的元素不是json";
@@ -1192,7 +1200,7 @@ Q_INVOKABLE void Update::update() {
 
 void Update::reboot(){
     //运行更新程序
-    std::filesystem::path updaterPath = std::filesystem::current_path() / "updater.exe";
+    std::filesystem::path updaterPath = std::filesystem::current_path() / new_version_config["updaterMainFile"].get<std::string>();
 
     if (!std::filesystem::exists(updaterPath)) {
         qCritical() << "更新程序不存在：" << updaterPath.string().c_str();

@@ -318,7 +318,7 @@ int main(int argc, char* argv[]) {
         std::cout << "已替换：" << targetPath.string() << std::endl;
     }
     // 构造命令行参数
-    std::string cmdLine = "\".\\Wuthering Waves Convene Export.exe\"";
+    std::string cmdLine = "\".\\" + new_version_config["updaterMainFile"].get<std::string>() + "\"";
 
     // 启动新进程（非阻塞）
     STARTUPINFOA si = { sizeof(si) };
@@ -340,6 +340,13 @@ int main(int argc, char* argv[]) {
         std::cout << "更新程序已启动，PID: " << pi.dwProcessId << std::endl;
         CloseHandle(pi.hProcess);
         CloseHandle(pi.hThread);
+        //删除配置文件
+        std::error_code ec;
+        std::filesystem::remove(updatePath + "/updateConfig.json",ec);
+        if (ec) {
+            show_message("删除配置文件失败");
+            return -1;
+        }
     }
     else {
         DWORD errCode = GetLastError();
