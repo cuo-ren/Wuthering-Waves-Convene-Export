@@ -58,7 +58,7 @@ private:
     std::string updatePath;
     std::string updateConfigName;
 
-    std::vector<std::string> old_versions = { "betav0.1","betav0.2","betav1.0","betav2.0" };
+    std::vector<std::string> old_versions = { "betav0.1","betav0.2","betav1.0","betav2.0","betav2.1"};
     bool canceled = false;
 
     enum UpdateStatus {
