@@ -1,7 +1,7 @@
 {
   "url": "",
   "foldername": "Wuthering Waves Convene Export",
-  "hash": "124fb0737968dbe460ecb0b23e2ec1d9d71c5e8870615154f4e2782c02dc1e8f",
+  "hash": "815d3ed27d41f9e7c2311dc1580ffd5382337ffa597d165f13bc3019d9dc2e29",
   "path": "./Wuthering Waves Convene Export",
   "updaterMainFile": "updater.exe",
   "mainFile": "Wuthering Waves Convene Export.exe",
@@ -10,7 +10,7 @@
       "type": "file",
       "path": "./updater.exe",
       "version": "v1.0.0",
-      "hash": "80935f9e5160ef788c234780fb74b790584ae4721516b1c1d0361c788dfee756",
+      "hash": "59880f873b3aed4f6a29b094cfdfc7cc64b37d364ddf5c01affb07ef3009e3d4",
       "url": ""
     }
   ],
