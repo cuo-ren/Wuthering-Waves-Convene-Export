@@ -165,7 +165,7 @@ private:
             {"url", json::array()},//历史记录url
             {"fix", false},//修复记录
             {"update", false},//自动更新
-            {"showStandardItem", true},//展示常驻角色
+            {"hiddenStandardItem", false},//隐藏常驻角色
             {"hash",""}//数据文件hash值
         };
 
@@ -207,7 +207,7 @@ private:
         ensure("fix", false);
         ensure("hash", "");
         ensure("update", false);
-        ensure("showStandardItem", true);
+        ensure("hiddenStandardItem", true);
 
         std::vector<std::string> support_languages = Global::instance().get_support_languages();
         // 特殊检查

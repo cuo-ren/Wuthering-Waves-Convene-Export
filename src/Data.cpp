@@ -555,7 +555,7 @@ Q_INVOKABLE QVariantList Data::getBarChartData(const QString& key) {
 			//判断是否歪了
 			if (!isStandard and std::find(standardList.begin(), standardList.end(), item["id"].get<int>()) != standardList.end()) {
 				//不展示常驻，跳过
-				if (!ConfigManager::instance().get<bool>("showStandardItem")) {
+				if (ConfigManager::instance().get<bool>("hiddenStandardItem")) {
 					pendingOffTarget = true;
 					continue;
 				}
@@ -2011,7 +2011,6 @@ Q_INVOKABLE QVariantList Data::getInfoData(const QString& key) {
 				fiveCount++;
 				notStandedFiveTotalCount = totalCount;
 			}
-			
 		}
 	}
 

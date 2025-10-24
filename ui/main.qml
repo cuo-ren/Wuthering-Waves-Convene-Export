@@ -16,7 +16,7 @@ Window {
     visible: true
     width: Screen.width/2
     height: Screen.height/2
-    title: "Wuthering Waves Convene Export"
+    title: qsTr("Wuthering Waves Convene Export")
 
     Header{
         id: header
@@ -37,7 +37,7 @@ Window {
         modal: false
         onRefresh: {
             initButtonGroup()
-            barChart.maxCount = ConfigManager.getValue("showStandardItem") ? 80 : 160
+            barChart.maxCount = !ConfigManager.getValue("hiddenStandardItem") ? 80 : 160
             if(myModel.count != 0){
                 initBarChartData(myModel.get(0)["key"],myModel.get(0)["name"])
             }
@@ -236,6 +236,7 @@ Window {
 
             onTriggered: function(index, item) {
                 exportBtn.disabled = true
+                console.log("开始导出数据 模式:",index)
                 switch(index){
                     case 0:Data.exportToExcel();break;
                     case 1:Data.exportToCsv();break;
@@ -436,7 +437,7 @@ Window {
                 height: parent.height - row.height - 10
                 width: contentWidth > parent.width ? parent.width : contentWidth
                 chartClip: contentWidth > parent.width ? true : false
-                maxCount: ConfigManager.getValue("showStandardItem") ? 80 : 160
+                maxCount: !ConfigManager.getValue("hiddenStandardItem") ? 80 : 160
                 //clip: true
             }
 
@@ -476,6 +477,7 @@ Window {
                             if(index != row.lastclick){
                                 initBarChartData(model.key,model.name)
                                 row.lastclick = index
+                                console.log("切换卡池","key:",model.key,"name:",model.name)
                             }
                         }
                     }
@@ -517,20 +519,23 @@ Window {
                 width: parent.width - 5
                 height: parent.width - 5
                 commonBgColor: "transparent"
-                pressBgColor: "grey"
+                pressBgColor: "#00FF00"
                 activeBgColor: "transparent"
 
                 commonBorderColor: "transparent"
-                pressBorderColor: "grey"
-                activeBorderColor: "grey"
+                pressBorderColor: "#00FF00"
+                activeBorderColor: "#00FF00"
 
                 iconNormal: "../resource/barChart.svg"
                 iconChecked: "../resource/barChart.svg"
+
+                checked: true
 
                 onClicked: {
                     if(pageButton.lastclick != 0){
                         swipeview.setIndex(0)
                         pageButton.lastclick = 0
+                        console.log("切换至柱状图页面")
                     }
                 }
             }
@@ -539,12 +544,12 @@ Window {
                 height: parent.width - 5
 
                 commonBgColor: "transparent"
-                pressBgColor: "grey"
+                pressBgColor: "#00FF00"
                 activeBgColor: "transparent"
 
                 commonBorderColor: "transparent"
-                pressBorderColor: "grey"
-                activeBorderColor: "grey"
+                pressBorderColor: "#00FF00"
+                activeBorderColor: "#00FF00"
 
                 iconNormal: "../resource/infoLightBlue.svg"
                 iconChecked: "../resource/infoLightBlue.svg"
@@ -553,6 +558,7 @@ Window {
                     if(pageButton.lastclick != 1){
                         swipeview.setIndex(1)
                         pageButton.lastclick = 1
+                        console.log("切换至数据页面")
                     }
                 }
             }

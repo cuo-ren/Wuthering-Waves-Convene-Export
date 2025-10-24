@@ -62,7 +62,7 @@ Popup {
         //自动更新设置
         updateSettingSwitch.checked = ConfigManager.getValue("update")
         //展示常驻物品设置
-        showStandardItemSettingSwitch.checked = ConfigManager.getValue("showStandardItem")
+        showStandardItemSettingSwitch.checked = ConfigManager.getValue("hiddenStandardItem")
         //初始化更新
         Update.init()
         //语言设置
@@ -272,13 +272,13 @@ Popup {
                         optionsTextPressedColor: textPressedColor
 
                         onActivated:{
-                            if(currentText != lastText){
-                                lastText = currentText
+                            if(currentText != lastText){  
                                 console.log("修改当前语言设置 " + "当前语言 " + currentText)
                                 if(!LanguageManager.switchLanguage(myModel.get(currentIndex).key)){
                                     var supportLanguages = Global.supportLanguages
                                     var usedLang = supportLanguages.indexOf(ConfigManager.getValue("language"))
                                     languageSettingCombobox.currentIndex = usedLang
+                                    lastText = currentText
                                 }else{
                                     settingsPopup.refresh()
                                 }
@@ -511,7 +511,7 @@ Popup {
                         id: showStandardItemSettingText
                         font.pixelSize: 14
                         width: 150
-                        text: qsTr("展示常驻物品")
+                        text: qsTr("隐藏常驻物品")
 
                         horizontalAlignment: Text.AlignRight
                         anchors.verticalCenter: parent.verticalCenter
@@ -526,9 +526,9 @@ Popup {
                         anchors.margins: 10
                         text:""
                         onCheckedChanged: {
-                            if(ConfigManager.getValue("showStandardItem") != checked){
+                            if(ConfigManager.getValue("hiddenStandardItem") != checked){
                                 console.log("修改展示常驻物品设置 "+ "当前设置 " + checked)
-                                ConfigManager.setValue("showStandardItem",checked)
+                                ConfigManager.setValue("hiddenStandardItem",checked)
                                 settingsPopup.refresh()
                             }
                         }

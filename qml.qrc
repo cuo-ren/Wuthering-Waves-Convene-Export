@@ -9,8 +9,6 @@
         <file>ui/Loading.qml</file>
         <file>ui/MyButton.qml</file>
         <file>ui/SettingPopup.qml</file>
-        <file>translations/zh-Hans.qm</file>
-        <file>translations/zh-Hant.qm</file>
         <file>resource/bg.jpg</file>
         <file>ui/HoverDropdownButton.qml</file>
         <file>resource/closebtn.svg</file>
@@ -35,5 +33,6 @@
         <file>ui/MyRadioImageButton.qml</file>
         <file>resource/barChart.svg</file>
         <file>resource/infoLightBlue.svg</file>
+        <file>translations/zh-Hans.qm</file>
     </qresource>
 </RCC>

@@ -67,224 +67,225 @@
 <context>
     <name>Data</name>
     <message>
-        <location filename="../src/Data.cpp" line="573"/>
+        <location filename="../src/Data.cpp" line="583"/>
         <source>已垫</source>
         <translation>已垫</translation>
     </message>
     <message>
-        <location filename="../src/Data.cpp" line="610"/>
+        <location filename="../src/Data.cpp" line="620"/>
         <source>未找到url</source>
         <translation>未找到url</translation>
     </message>
     <message>
-        <location filename="../src/Data.cpp" line="647"/>
-        <location filename="../src/Data.cpp" line="765"/>
-        <location filename="../src/Data.cpp" line="771"/>
-        <location filename="../src/Data.cpp" line="1209"/>
-        <location filename="../src/Data.cpp" line="1357"/>
-        <location filename="../src/Data.cpp" line="1431"/>
-        <location filename="../src/Data.cpp" line="1534"/>
-        <location filename="../src/Data.cpp" line="1682"/>
+        <location filename="../src/Data.cpp" line="657"/>
+        <location filename="../src/Data.cpp" line="775"/>
+        <location filename="../src/Data.cpp" line="781"/>
+        <location filename="../src/Data.cpp" line="1219"/>
+        <location filename="../src/Data.cpp" line="1367"/>
+        <location filename="../src/Data.cpp" line="1441"/>
+        <location filename="../src/Data.cpp" line="1544"/>
+        <location filename="../src/Data.cpp" line="1692"/>
         <source>更新失败</source>
         <translation>更新失败</translation>
     </message>
     <message>
-        <location filename="../src/Data.cpp" line="662"/>
+        <location filename="../src/Data.cpp" line="672"/>
         <source>正在获取数据:</source>
         <translation>正在获取数据:</translation>
     </message>
     <message>
-        <location filename="../src/Data.cpp" line="696"/>
+        <location filename="../src/Data.cpp" line="706"/>
         <source>正在获取数据：</source>
         <translation>正在获取数据：</translation>
     </message>
     <message>
-        <location filename="../src/Data.cpp" line="766"/>
-        <location filename="../src/Data.cpp" line="1204"/>
-        <location filename="../src/Data.cpp" line="1352"/>
-        <location filename="../src/Data.cpp" line="1426"/>
-        <location filename="../src/Data.cpp" line="1529"/>
-        <location filename="../src/Data.cpp" line="1678"/>
+        <location filename="../src/Data.cpp" line="776"/>
+        <location filename="../src/Data.cpp" line="1214"/>
+        <location filename="../src/Data.cpp" line="1362"/>
+        <location filename="../src/Data.cpp" line="1436"/>
+        <location filename="../src/Data.cpp" line="1539"/>
+        <location filename="../src/Data.cpp" line="1688"/>
         <source>线程崩溃 %1</source>
         <translation>线程崩溃 %1</translation>
     </message>
     <message>
-        <location filename="../src/Data.cpp" line="772"/>
-        <location filename="../src/Data.cpp" line="1210"/>
-        <location filename="../src/Data.cpp" line="1358"/>
-        <location filename="../src/Data.cpp" line="1432"/>
-        <location filename="../src/Data.cpp" line="1535"/>
-        <location filename="../src/Data.cpp" line="1683"/>
+        <location filename="../src/Data.cpp" line="782"/>
+        <location filename="../src/Data.cpp" line="1220"/>
+        <location filename="../src/Data.cpp" line="1368"/>
+        <location filename="../src/Data.cpp" line="1442"/>
+        <location filename="../src/Data.cpp" line="1545"/>
+        <location filename="../src/Data.cpp" line="1693"/>
         <source>线程崩溃</source>
         <translation>线程崩溃</translation>
     </message>
     <message>
-        <location filename="../src/Data.cpp" line="927"/>
+        <location filename="../src/Data.cpp" line="937"/>
         <source>响应解析失败</source>
         <translation>响应解析失败</translation>
     </message>
     <message>
-        <location filename="../src/Data.cpp" line="1138"/>
+        <location filename="../src/Data.cpp" line="1148"/>
         <source>时间</source>
         <translation>时间</translation>
     </message>
     <message>
-        <location filename="../src/Data.cpp" line="1139"/>
+        <location filename="../src/Data.cpp" line="1149"/>
         <source>名称</source>
         <translation>名称</translation>
     </message>
     <message>
-        <location filename="../src/Data.cpp" line="1140"/>
+        <location filename="../src/Data.cpp" line="1150"/>
         <source>类型</source>
         <translation>类型</translation>
     </message>
     <message>
-        <location filename="../src/Data.cpp" line="1141"/>
+        <location filename="../src/Data.cpp" line="1151"/>
         <source>星级</source>
         <translation>星级</translation>
     </message>
     <message>
-        <location filename="../src/Data.cpp" line="1142"/>
+        <location filename="../src/Data.cpp" line="1152"/>
         <source>总抽数</source>
         <translation>总抽数</translation>
     </message>
     <message>
-        <location filename="../src/Data.cpp" line="1143"/>
+        <location filename="../src/Data.cpp" line="1153"/>
         <source>保底内抽数</source>
         <translation>保底内抽数</translation>
     </message>
     <message>
-        <location filename="../src/Data.cpp" line="1203"/>
-        <location filename="../src/Data.cpp" line="1351"/>
-        <location filename="../src/Data.cpp" line="1425"/>
-        <location filename="../src/Data.cpp" line="1528"/>
+        <location filename="../src/Data.cpp" line="1213"/>
+        <location filename="../src/Data.cpp" line="1361"/>
+        <location filename="../src/Data.cpp" line="1435"/>
+        <location filename="../src/Data.cpp" line="1538"/>
         <source>导出失败</source>
         <translation>导出失败</translation>
     </message>
     <message>
-        <location filename="../src/Data.cpp" line="1304"/>
+        <location filename="../src/Data.cpp" line="1314"/>
         <source>创建文件失败! </source>
         <translation>创建文件失败! </translation>
     </message>
     <message>
-        <location filename="../src/Data.cpp" line="1314"/>
+        <location filename="../src/Data.cpp" line="1324"/>
         <source>卡池,时间,名称,类型,星级,总抽数,保底内抽数
 </source>
-        <translation>卡池,时间,名称,类型,星级,总抽数,保底内抽数\n</translation>
+        <translation>卡池,时间,名称,类型,星级,总抽数,保底内抽数
+</translation>
     </message>
     <message>
-        <location filename="../src/Data.cpp" line="1591"/>
         <location filename="../src/Data.cpp" line="1601"/>
+        <location filename="../src/Data.cpp" line="1611"/>
         <source>%1 不存在</source>
         <translation>%1 不存在</translation>
     </message>
     <message>
-        <location filename="../src/Data.cpp" line="1670"/>
+        <location filename="../src/Data.cpp" line="1680"/>
         <source>解析备份文件失败</source>
         <translation>解析备份文件失败</translation>
     </message>
     <message>
-        <location filename="../src/Data.cpp" line="1677"/>
+        <location filename="../src/Data.cpp" line="1687"/>
         <source>查找备份失败</source>
         <translation>查找备份失败</translation>
     </message>
     <message>
-        <location filename="../src/Data.cpp" line="1696"/>
+        <location filename="../src/Data.cpp" line="1706"/>
         <source>删除成功</source>
         <translation>删除成功</translation>
     </message>
     <message>
-        <location filename="../src/Data.cpp" line="1703"/>
+        <location filename="../src/Data.cpp" line="1713"/>
         <source>文件不存在</source>
         <translation>文件不存在</translation>
     </message>
     <message>
-        <location filename="../src/Data.cpp" line="1709"/>
+        <location filename="../src/Data.cpp" line="1719"/>
         <source>删除失败</source>
         <translation>删除失败</translation>
     </message>
     <message>
-        <location filename="../src/Data.cpp" line="1729"/>
+        <location filename="../src/Data.cpp" line="1739"/>
         <source>无法打开备份</source>
         <translation>无法打开备份</translation>
     </message>
     <message>
-        <location filename="../src/Data.cpp" line="1751"/>
+        <location filename="../src/Data.cpp" line="1761"/>
         <source>恢复备份成功</source>
         <translation>恢复备份成功</translation>
     </message>
     <message>
-        <location filename="../src/Data.cpp" line="1761"/>
+        <location filename="../src/Data.cpp" line="1771"/>
         <source>打开文件失败</source>
         <translation>打开文件失败</translation>
     </message>
     <message>
-        <location filename="../src/Data.cpp" line="1766"/>
-        <location filename="../src/Data.cpp" line="1771"/>
         <location filename="../src/Data.cpp" line="1776"/>
+        <location filename="../src/Data.cpp" line="1781"/>
+        <location filename="../src/Data.cpp" line="1786"/>
         <source>解析数据失败</source>
         <translation>解析数据失败</translation>
     </message>
     <message>
-        <location filename="../src/Data.cpp" line="1791"/>
-        <location filename="../src/Data.cpp" line="1797"/>
+        <location filename="../src/Data.cpp" line="1801"/>
+        <location filename="../src/Data.cpp" line="1807"/>
         <source>无法判断UIGF版本</source>
         <translation>无法判断UIGF版本</translation>
     </message>
     <message>
-        <location filename="../src/Data.cpp" line="1810"/>
+        <location filename="../src/Data.cpp" line="1820"/>
         <source>导入失败</source>
         <translation>导入失败</translation>
     </message>
     <message>
-        <location filename="../src/Data.cpp" line="1827"/>
+        <location filename="../src/Data.cpp" line="1837"/>
         <source>导入的数据语言不支持</source>
         <translation>导入的数据语言不支持</translation>
     </message>
     <message>
-        <location filename="../src/Data.cpp" line="1842"/>
-        <location filename="../src/Data.cpp" line="1848"/>
+        <location filename="../src/Data.cpp" line="1852"/>
+        <location filename="../src/Data.cpp" line="1858"/>
         <source>导入的数据有误</source>
         <translation>导入的数据有误</translation>
     </message>
     <message>
-        <location filename="../src/Data.cpp" line="1854"/>
+        <location filename="../src/Data.cpp" line="1864"/>
         <source>导入的时间格式不符合要求</source>
         <translation>导入的时间格式不符合要求</translation>
     </message>
     <message>
-        <location filename="../src/Data.cpp" line="1860"/>
+        <location filename="../src/Data.cpp" line="1870"/>
         <source>导入的类型不符合要求 %1</source>
         <translation>导入的类型不符合要求 %1</translation>
     </message>
     <message>
-        <location filename="../src/Data.cpp" line="1874"/>
+        <location filename="../src/Data.cpp" line="1884"/>
         <source>导入成功</source>
         <translation>导入成功</translation>
     </message>
     <message>
-        <location filename="../src/Data.cpp" line="1887"/>
+        <location filename="../src/Data.cpp" line="1897"/>
         <source>%1 导入的数据语言不支持</source>
         <translation>%1 导入的数据语言不支持</translation>
     </message>
     <message>
-        <location filename="../src/Data.cpp" line="1902"/>
-        <location filename="../src/Data.cpp" line="1909"/>
+        <location filename="../src/Data.cpp" line="1912"/>
+        <location filename="../src/Data.cpp" line="1919"/>
         <source>%1 导入的数据有误</source>
         <translation>%1 导入的数据有误</translation>
     </message>
     <message>
-        <location filename="../src/Data.cpp" line="1916"/>
+        <location filename="../src/Data.cpp" line="1926"/>
         <source>%1 导入的时间格式不符合要求</source>
         <translation>%1 导入的时间格式不符合要求</translation>
     </message>
     <message>
-        <location filename="../src/Data.cpp" line="1923"/>
+        <location filename="../src/Data.cpp" line="1933"/>
         <source>%1 导入的类型不符合要求 %2</source>
         <translation>%1 导入的类型不符合要求 %2</translation>
     </message>
     <message>
-        <location filename="../src/Data.cpp" line="1945"/>
+        <location filename="../src/Data.cpp" line="1955"/>
         <source>导入成功，共导入%1个用户</source>
         <translation>导入成功，共导入%1个用户</translation>
     </message>
@@ -338,6 +339,25 @@
     </message>
 </context>
 <context>
+    <name>DownloadManager</name>
+    <message>
+        <location filename="../include/DownloadManager.h" line="159"/>
+        <source>线程崩溃 %1</source>
+        <translation>线程崩溃 %1</translation>
+    </message>
+    <message>
+        <location filename="../include/DownloadManager.h" line="167"/>
+        <source>线程崩溃</source>
+        <translation>线程崩溃</translation>
+    </message>
+    <message>
+        <location filename="../include/DownloadManager.h" line="200"/>
+        <location filename="../include/DownloadManager.h" line="208"/>
+        <source>下载文件 %1 失败 %2</source>
+        <translation>下载文件 %1 失败 %2</translation>
+    </message>
+</context>
+<context>
     <name>Header</name>
     <message>
         <location filename="../ui/Header.qml" line="17"/>
@@ -348,8 +368,25 @@
 <context>
     <name>LanguageManager</name>
     <message>
+        <location filename="../include/LanguageManager.h" line="59"/>
         <source>切换语言失败</source>
-        <translation type="vanished">切换语言失败</translation>
+        <translation>切换语言失败</translation>
+    </message>
+</context>
+<context>
+    <name>MyRadioButton</name>
+    <message>
+        <location filename="../ui/MyRadioButton.qml" line="6"/>
+        <source>选项</source>
+        <translation>选项</translation>
+    </message>
+</context>
+<context>
+    <name>MyRadioImageButton</name>
+    <message>
+        <location filename="../ui/MyRadioImageButton.qml" line="22"/>
+        <source></source>
+        <translation></translation>
     </message>
 </context>
 <context>
@@ -368,136 +405,133 @@
         <translation>选择文件夹</translation>
     </message>
     <message>
-        <location filename="../ui/SettingPopup.qml" line="122"/>
+        <location filename="../ui/SettingPopup.qml" line="124"/>
         <source>设置面板</source>
         <translation>设置面板</translation>
     </message>
     <message>
-        <location filename="../ui/SettingPopup.qml" line="223"/>
+        <location filename="../ui/SettingPopup.qml" line="225"/>
         <source>设置</source>
         <translation>设置</translation>
     </message>
     <message>
-        <location filename="../ui/SettingPopup.qml" line="237"/>
+        <location filename="../ui/SettingPopup.qml" line="239"/>
         <source>语言</source>
         <translation>语言</translation>
     </message>
     <message>
-        <location filename="../ui/SettingPopup.qml" line="297"/>
+        <location filename="../ui/SettingPopup.qml" line="299"/>
         <source>游戏路径</source>
         <translation>游戏路径</translation>
     </message>
     <message>
-        <source>请输入或选择文件夹路径</source>
-        <translation type="vanished">请输入或选择文件夹路径</translation>
-    </message>
-    <message>
-        <location filename="../ui/SettingPopup.qml" line="312"/>
+        <location filename="../ui/SettingPopup.qml" line="314"/>
         <source>请输入或选择游戏文件夹路径</source>
         <translation>请输入或选择游戏文件夹路径</translation>
     </message>
     <message>
-        <location filename="../ui/SettingPopup.qml" line="366"/>
+        <location filename="../ui/SettingPopup.qml" line="368"/>
         <source>自动查找</source>
         <translation>自动查找</translation>
     </message>
     <message>
-        <location filename="../ui/SettingPopup.qml" line="393"/>
-        <location filename="../ui/SettingPopup.qml" line="447"/>
-        <location filename="../ui/SettingPopup.qml" line="462"/>
+        <location filename="../ui/SettingPopup.qml" line="395"/>
+        <location filename="../ui/SettingPopup.qml" line="449"/>
+        <location filename="../ui/SettingPopup.qml" line="464"/>
         <source>数据管理</source>
         <translation>数据管理</translation>
     </message>
     <message>
-        <location filename="../ui/SettingPopup.qml" line="416"/>
-        <location filename="../ui/SettingPopup.qml" line="427"/>
+        <location filename="../ui/SettingPopup.qml" line="418"/>
+        <location filename="../ui/SettingPopup.qml" line="429"/>
         <source>备份管理</source>
         <translation>备份管理</translation>
     </message>
     <message>
-        <location filename="../ui/SettingPopup.qml" line="480"/>
+        <location filename="../ui/SettingPopup.qml" line="482"/>
         <source>跳过一次性卡池</source>
         <translation>跳过一次性卡池</translation>
     </message>
     <message>
-        <location filename="../ui/SettingPopup.qml" line="512"/>
-        <source>自动更新</source>
-        <translation>自动更新</translation>
+        <location filename="../ui/SettingPopup.qml" line="514"/>
+        <source>隐藏常驻物品</source>
+        <translation>隐藏常驻物品</translation>
     </message>
     <message>
-        <location filename="../ui/SettingPopup.qml" line="542"/>
-        <location filename="../ui/SettingPopup.qml" line="558"/>
+        <location filename="../ui/SettingPopup.qml" line="547"/>
+        <source>自动检查更新</source>
+        <translation>自动检查更新</translation>
+    </message>
+    <message>
+        <location filename="../ui/SettingPopup.qml" line="577"/>
+        <location filename="../ui/SettingPopup.qml" line="593"/>
         <source>检查更新</source>
         <translation>检查更新</translation>
     </message>
     <message>
-        <location filename="../ui/SettingPopup.qml" line="573"/>
+        <location filename="../ui/SettingPopup.qml" line="608"/>
         <source>下载更新</source>
         <translation>下载更新</translation>
     </message>
     <message>
-        <location filename="../ui/SettingPopup.qml" line="582"/>
+        <location filename="../ui/SettingPopup.qml" line="617"/>
         <source>正在下载</source>
         <translation>正在下载</translation>
     </message>
     <message>
-        <location filename="../ui/SettingPopup.qml" line="591"/>
+        <location filename="../ui/SettingPopup.qml" line="626"/>
         <source>继续下载</source>
         <translation>继续下载</translation>
     </message>
     <message>
-        <location filename="../ui/SettingPopup.qml" line="606"/>
+        <location filename="../ui/SettingPopup.qml" line="641"/>
         <source>立即更新</source>
         <translation>立即更新</translation>
     </message>
     <message>
-        <location filename="../ui/SettingPopup.qml" line="621"/>
+        <location filename="../ui/SettingPopup.qml" line="656"/>
         <source>立即重启</source>
         <translation>立即重启</translation>
     </message>
     <message>
-        <location filename="../ui/SettingPopup.qml" line="631"/>
+        <location filename="../ui/SettingPopup.qml" line="666"/>
         <source>正在加载</source>
         <translation>正在加载</translation>
     </message>
     <message>
-        <location filename="../ui/SettingPopup.qml" line="718"/>
+        <location filename="../ui/SettingPopup.qml" line="758"/>
         <source>查看url</source>
         <translation>查看url</translation>
     </message>
     <message>
-        <location filename="../ui/SettingPopup.qml" line="732"/>
+        <location filename="../ui/SettingPopup.qml" line="772"/>
         <source>点击获取</source>
         <translation>点击获取</translation>
     </message>
     <message>
-        <location filename="../ui/SettingPopup.qml" line="751"/>
+        <location filename="../ui/SettingPopup.qml" line="791"/>
         <source>选择需要的url</source>
         <translation>选择需要的url</translation>
     </message>
     <message>
-        <location filename="../ui/SettingPopup.qml" line="761"/>
+        <location filename="../ui/SettingPopup.qml" line="801"/>
         <source>暂无url</source>
         <translation>暂无url</translation>
     </message>
     <message>
-        <location filename="../ui/SettingPopup.qml" line="768"/>
+        <location filename="../ui/SettingPopup.qml" line="808"/>
         <source>复制成功</source>
         <translation>复制成功</translation>
     </message>
     <message>
-        <location filename="../ui/SettingPopup.qml" line="804"/>
+        <location filename="../ui/SettingPopup.qml" line="844"/>
         <source>关于</source>
         <translation>关于</translation>
     </message>
     <message>
-        <location filename="../ui/SettingPopup.qml" line="815"/>
+        <location filename="../ui/SettingPopup.qml" line="855"/>
         <source>作者：氧化铜&lt;br&gt;版本：%1&lt;br&gt;Github：&lt;a href = &apos;https://github.com/cuo-ren/Wuthering-Waves-Convene-Export&apos; &gt;github.com/cuo-ren/Wuthering-Waves-Convene-Export&lt;/a&gt;</source>
         <translation>作者：氧化铜&lt;br&gt;版本：%1&lt;br&gt;Github：&lt;a href = &apos;https://github.com/cuo-ren/Wuthering-Waves-Convene-Export&apos; &gt;github.com/cuo-ren/Wuthering-Waves-Convene-Export&lt;/a&gt;</translation>
-    </message>
-    <message>
-        <source>作者: 氧化铜&lt;br&gt;Github: &lt;a href = &apos;https://github.com/cuo-ren/Wuthering-Waves-Convene-Export&apos; &gt;github.com/cuo-ren/Wuthering-Waves-Convene-Export&lt;/a&gt;</source>
-        <translation type="vanished">作者: 氧化铜&lt;br&gt;Github: &lt;a href = &apos;https://github.com/cuo-ren/Wuthering-Waves-Convene-Export&apos; &gt;github.com/cuo-ren/Wuthering-Waves-Convene-Export&lt;/a&gt;</translation>
     </message>
 </context>
 <context>
@@ -530,78 +564,131 @@
     <name>Update</name>
     <message>
         <location filename="../src/update.cpp" line="68"/>
-        <location filename="../src/update.cpp" line="261"/>
-        <location filename="../src/update.cpp" line="313"/>
-        <location filename="../src/update.cpp" line="1184"/>
+        <location filename="../src/update.cpp" line="266"/>
+        <location filename="../src/update.cpp" line="322"/>
+        <location filename="../src/update.cpp" line="1182"/>
         <source>线程崩溃 %1</source>
         <translation>线程崩溃 %1</translation>
     </message>
     <message>
         <location filename="../src/update.cpp" line="72"/>
-        <location filename="../src/update.cpp" line="269"/>
-        <location filename="../src/update.cpp" line="324"/>
-        <location filename="../src/update.cpp" line="1189"/>
+        <location filename="../src/update.cpp" line="274"/>
+        <location filename="../src/update.cpp" line="333"/>
+        <location filename="../src/update.cpp" line="1187"/>
         <source>线程崩溃</source>
         <translation>线程崩溃</translation>
     </message>
     <message>
         <location filename="../src/update.cpp" line="151"/>
-        <location filename="../src/update.cpp" line="586"/>
+        <location filename="../src/update.cpp" line="595"/>
         <source>响应解析失败</source>
         <translation>响应解析失败</translation>
     </message>
     <message>
-        <location filename="../src/update.cpp" line="157"/>
+        <location filename="../src/update.cpp" line="158"/>
         <source>无需更新</source>
         <translation>无需更新</translation>
     </message>
     <message>
-        <location filename="../src/update.cpp" line="161"/>
+        <location filename="../src/update.cpp" line="163"/>
         <source>有新版本可以使用 %1</source>
         <translation>有新版本可以使用 %1</translation>
     </message>
     <message>
-        <location filename="../src/update.cpp" line="183"/>
+        <location filename="../src/update.cpp" line="185"/>
         <source>获取当前版本配置文件失败 错误码: %1</source>
         <translation>获取当前版本配置文件失败 错误码: %1</translation>
     </message>
     <message>
-        <location filename="../src/update.cpp" line="188"/>
-        <location filename="../src/update.cpp" line="196"/>
-        <location filename="../src/update.cpp" line="220"/>
+        <location filename="../src/update.cpp" line="190"/>
+        <location filename="../src/update.cpp" line="198"/>
+        <location filename="../src/update.cpp" line="222"/>
         <source>版本配置文件异常</source>
         <translation>版本配置文件异常</translation>
     </message>
     <message>
-        <location filename="../src/update.cpp" line="207"/>
+        <location filename="../src/update.cpp" line="209"/>
         <source>获取新版本配置文件失败 错误码: %1</source>
         <translation>获取新版本配置文件失败 错误码: %1</translation>
     </message>
     <message>
-        <location filename="../src/update.cpp" line="212"/>
+        <location filename="../src/update.cpp" line="214"/>
         <source>新版本配置文件异常</source>
         <translation>新版本配置文件异常</translation>
     </message>
     <message>
-        <location filename="../src/update.cpp" line="260"/>
-        <location filename="../src/update.cpp" line="268"/>
-        <location filename="../src/update.cpp" line="312"/>
-        <location filename="../src/update.cpp" line="323"/>
+        <location filename="../src/update.cpp" line="238"/>
+        <source>创建文件夹失败</source>
+        <translation>创建文件夹失败</translation>
+    </message>
+    <message>
+        <location filename="../src/update.cpp" line="248"/>
+        <location filename="../src/update.cpp" line="304"/>
+        <source>下载失败</source>
+        <translation>下载失败</translation>
+    </message>
+    <message>
+        <location filename="../src/update.cpp" line="258"/>
+        <location filename="../src/update.cpp" line="314"/>
+        <source>更新下载成功</source>
+        <translation>更新下载成功</translation>
+    </message>
+    <message>
+        <location filename="../src/update.cpp" line="265"/>
+        <location filename="../src/update.cpp" line="273"/>
+        <location filename="../src/update.cpp" line="321"/>
+        <location filename="../src/update.cpp" line="332"/>
         <source>更新失败</source>
         <translation>更新失败</translation>
     </message>
     <message>
-        <location filename="../src/update.cpp" line="774"/>
+        <location filename="../src/update.cpp" line="783"/>
         <source>下载中 %1% %2</source>
         <translation>下载中 %1% %2</translation>
     </message>
     <message>
-        <location filename="../src/update.cpp" line="1201"/>
-        <source>更新程序文件缺失</source>
-        <translation>更新程序文件缺失</translation>
+        <location filename="../src/update.cpp" line="1047"/>
+        <source>解压失败</source>
+        <translation>解压失败</translation>
     </message>
     <message>
-        <location filename="../src/update.cpp" line="1244"/>
+        <location filename="../src/update.cpp" line="1068"/>
+        <source>压缩包异常</source>
+        <translation>压缩包异常</translation>
+    </message>
+    <message>
+        <location filename="../src/update.cpp" line="1082"/>
+        <source>删除文件失败</source>
+        <translation>删除文件失败</translation>
+    </message>
+    <message>
+        <location filename="../src/update.cpp" line="1110"/>
+        <source>文件不存在</source>
+        <translation>文件不存在</translation>
+    </message>
+    <message>
+        <location filename="../src/update.cpp" line="1122"/>
+        <source>创建目录失败</source>
+        <translation>创建目录失败</translation>
+    </message>
+    <message>
+        <location filename="../src/update.cpp" line="1137"/>
+        <location filename="../src/update.cpp" line="1151"/>
+        <source>文件类型异常</source>
+        <translation>文件类型异常</translation>
+    </message>
+    <message>
+        <location filename="../src/update.cpp" line="1170"/>
+        <source>复制文件失败</source>
+        <translation>复制文件失败</translation>
+    </message>
+    <message>
+        <location filename="../src/update.cpp" line="1199"/>
+        <source>更新程序缺失</source>
+        <translation>更新程序缺失</translation>
+    </message>
+    <message>
+        <location filename="../src/update.cpp" line="1242"/>
         <source>更新进程启动失败</source>
         <translation>更新进程启动失败</translation>
     </message>
@@ -609,21 +696,17 @@
 <context>
     <name>barChart</name>
     <message>
-        <source>卡池名称</source>
-        <translation type="vanished">卡池名称</translation>
-    </message>
-    <message>
         <location filename="../ui/barChart.qml" line="14"/>
         <source></source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui/barChart.qml" line="101"/>
+        <location filename="../ui/barChart.qml" line="104"/>
         <source>暂无数据</source>
         <translation>暂无数据</translation>
     </message>
     <message>
-        <location filename="../ui/barChart.qml" line="223"/>
+        <location filename="../ui/barChart.qml" line="226"/>
         <source>抽</source>
         <translation>抽</translation>
     </message>
@@ -631,52 +714,59 @@
 <context>
     <name>main</name>
     <message>
-        <location filename="../ui/main.qml" line="108"/>
+        <location filename="../ui/main.qml" line="19"/>
+        <source>Wuthering Waves Convene Export</source>
+        <translation>鸣潮唤取记录导出分析工具</translation>
+    </message>
+    <message>
+        <location filename="../ui/main.qml" line="56"/>
+        <location filename="../ui/main.qml" line="119"/>
+        <location filename="../ui/main.qml" line="191"/>
+        <source>未找到游戏日志</source>
+        <translation>未找到游戏日志</translation>
+    </message>
+    <message>
+        <location filename="../ui/main.qml" line="110"/>
         <source>选择文件夹</source>
         <translation>选择文件夹</translation>
     </message>
     <message>
-        <location filename="../ui/main.qml" line="113"/>
-        <source>已定位到游戏日志</source>
-        <translation>已定位到游戏日志</translation>
+        <location filename="../ui/main.qml" line="115"/>
+        <source>成功定位到游戏日志</source>
+        <translation>成功定位到游戏日志</translation>
     </message>
     <message>
-        <location filename="../ui/main.qml" line="117"/>
-        <source>未定位到游戏日志</source>
-        <translation>未定位到游戏日志</translation>
-    </message>
-    <message>
-        <location filename="../ui/main.qml" line="164"/>
+        <location filename="../ui/main.qml" line="166"/>
         <source>更新数据</source>
         <translation>更新数据</translation>
     </message>
     <message>
-        <location filename="../ui/main.qml" line="164"/>
+        <location filename="../ui/main.qml" line="166"/>
         <source>查找游戏</source>
         <translation>查找游戏</translation>
     </message>
     <message>
-        <location filename="../ui/main.qml" line="206"/>
+        <location filename="../ui/main.qml" line="205"/>
         <source>导出数据</source>
         <translation>导出数据</translation>
     </message>
     <message>
-        <location filename="../ui/main.qml" line="227"/>
+        <location filename="../ui/main.qml" line="226"/>
         <source>导出为excel</source>
         <translation>导出为excel</translation>
     </message>
     <message>
-        <location filename="../ui/main.qml" line="228"/>
+        <location filename="../ui/main.qml" line="227"/>
         <source>导出为csv</source>
         <translation>导出为csv</translation>
     </message>
     <message>
-        <location filename="../ui/main.qml" line="229"/>
+        <location filename="../ui/main.qml" line="228"/>
         <source>导出为UIGF3</source>
         <translation>导出为UIGF3</translation>
     </message>
     <message>
-        <location filename="../ui/main.qml" line="230"/>
+        <location filename="../ui/main.qml" line="229"/>
         <source>导出为UIGF4</source>
         <translation>导出为UIGF4</translation>
     </message>
@@ -696,17 +786,37 @@
         <translation>正在加载</translation>
     </message>
     <message>
-        <location filename="../ui/main.qml" line="485"/>
+        <location filename="../ui/main.qml" line="498"/>
+        <source>标题</source>
+        <translation>标题</translation>
+    </message>
+    <message>
+        <location filename="../ui/main.qml" line="499"/>
+        <source>%1
+平均出金抽数%2
+平均限定抽数%3
+不歪概率%4%
+总抽数%5
+</source>
+        <translation>%1
+平均出金抽数%2
+平均限定抽数%3
+不歪概率%4%
+总抽数%5
+</translation>
+    </message>
+    <message>
+        <location filename="../ui/main.qml" line="574"/>
         <source>输入的url有误</source>
         <translation>输入的url有误</translation>
     </message>
     <message>
-        <location filename="../ui/main.qml" line="502"/>
+        <location filename="../ui/main.qml" line="591"/>
         <source>找不到游戏日志</source>
         <translation>找不到游戏日志</translation>
     </message>
     <message>
-        <location filename="../ui/main.qml" line="513"/>
+        <location filename="../ui/main.qml" line="602"/>
         <source>导出成功</source>
         <translation>导出成功</translation>
     </message>
