@@ -20,25 +20,21 @@
 
 ### ✅ 运行环境
 - Windows 10 或更高版本
-- 直接运行，无需额外依赖（内置所需库）
 
 ### 下载链接
 - github realease
 - 蓝奏云链接 https://wwuk.lanzouo.com/b004ina3gb 密码:1234
 
 ### 📥 使用步骤
-1. **打开游戏客户端**
-2. **点击游戏内的“历史记录”按钮**
-3. **运行本程序**
-4. 在控制台中选择：
-   - `查找游戏`：程序将尝试自动识别游戏安装目录与日志文件  
+1. **绑定游戏目录**
+   - 运行程序后，选择“查找游戏”，程序将自动识别游戏安装目录与日志文件
    - 若识别失败，可手动选择游戏目录
-5. **选择“更新数据”**：程序将自动解析日志并更新唤取记录
-6. **更新完成后**，你可以：
-   - 选择 **查看当前数据**
-     展示效果大致为
-     ![展示图片](./image/展示图片.png)
-   - 或选择 **导出唤取记录**，将其保存为 Excel / CSV / UIGF(这里指的是类uigf格式，uigf并不支持鸣潮) 等格式
+2. **获取记录**
+   - 方式1 点击游戏内的“历史记录”按钮
+   - 方式2 自行获取历史记录url
+3. **更新记录**
+   - 方式1 点击`更新数据`
+   - 方式2 点击`使用url更新数据`
 
 ### 📤 导出文件结构
 程序运行后将在 `./export/` 文件夹下生成对应格式的导出文件，目录结构如下：
@@ -49,17 +45,6 @@
 ├── UIGFv3/ # UIGF v3.0 兼容格式
 └── UIGFv4/ # UIGF v4.0 兼容格式
 ```
-
-
-## 🧩 技术实现
-- **语言**：C++17 + Python（辅助模块）
-- **主要依赖库**：
-  - [`nlohmann/json`](https://github.com/nlohmann/json)：用于 JSON 数据读写
-  - [`picosha2`](https://github.com/okdshin/PicoSHA2)：用于生成记录指纹
-  - [`cpp-httplib`](https://github.com/yhirose/cpp-httplib)：用于网络请求
-  - [`openssl`](https://github.com/openssl/openssl):用于https请求
-  - [`OpenXLSX`](https://github.com/troldal/OpenXLSX)：用于excel导出
-  - （计划）Qt：用于未来图形界面开发
 
 ## 📃 许可证
 本项目采用 **GNU General Public License v3.0 (GPLv3)**。
@@ -72,16 +57,18 @@
 ## 🛣️ 开发计划
 - [x] 支持游戏路径与日志的自动识别
 - [x] 支持数据更新与去重
-- [x] 多语言支持（简体中文、英文、其他）
-- [ ] 构建跨平台图形化界面（基于 Qt）
-- [ ] 绘制唤取分析图表（抽卡概率曲线、角色/武器获取分布等）
+- [x] 构建跨平台图形化界面（基于 Qt）
+- [x] 绘制唤取分析图表
+- [ ] 多语言支持（简体中文、英文、其他）
 
 ## 🙌 致谢
-- [nlohmann/json](https://github.com/nlohmann/json)
-- [picosha2](https://github.com/okdshin/PicoSHA2)
-- [cpp-httplib](https://github.com/yhirose/cpp-httplib)
-- [openssl](https://github.com/openssl/openssl)
-- [OpenXLSX](https://github.com/troldal/OpenXLSX)
+- [nlohmann/json](https://github.com/nlohmann/json) 用于 JSON 文件处理
+- [picosha2](https://github.com/okdshin/PicoSHA2) 用于生成sha256
+- [cpp-httplib](https://github.com/yhirose/cpp-httplib) 用于https请求
+- [openssl](https://github.com/openssl/openssl) 用于https请求
+- [OpenXLSX](https://github.com/troldal/OpenXLSX) 用于excel导出
+- [miniz](https://github.com/richgel999/miniz) 用于解压文件
+- [genshin-wish-export](https://github.com/biuuu/genshin-wish-export) 参考部分UI设计
 
 ## 📬 联系方式 / 问题反馈
 如果你在使用中遇到问题，欢迎通过 GitHub Issues 提出反馈或建议。
