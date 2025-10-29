@@ -155,7 +155,7 @@ Q_INVOKABLE void Update::checkUpdate(bool notNotifyNoupdate) {
 
         if (new_version == version or new_version == "") {
             if (!notNotifyNoupdate) {
-                Notifier::instance().notify(1, tr("无需更新"));
+                Notifier::instance().notify(1, tr("已是最新版本"));
             }
             emit updateInfo(false);
         }

@@ -178,7 +178,7 @@ int main(int argc, char* argv[]) {
 
     // 参数校验
     if (!parse_args(argc, argv, pid, path, updatePath, timeout)) {
-        show_message("参数错误！\n用法: program.exe -pid <进程号> -path <路径> [-timeout <秒>]");
+        show_message("参数错误！\n用法: program.exe -pid <进程号> -path <程序路径> -updatePath <更新文件路径> [-timeout <秒>]");
         return 1;
     }
 
