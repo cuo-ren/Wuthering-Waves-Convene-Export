@@ -17,7 +17,7 @@ Q_INVOKABLE void Update::init() {
             //未解压，下载阶段
             if (!updateConfig["isUnzip"]) {
                 //检查文件是否存在,不存在清空整个下载目录
-                std::filesystem::path downloadFilePath = std::filesystem::u8path(updatePath) / updateConfig["version"] / updateConfig["fileName"];
+                std::filesystem::path downloadFilePath = std::filesystem::path(updatePath) / updateConfig["version"].get<std::u8string>() / updateConfig["fileName"].get<std::u8string>();
                 if (!std::filesystem::exists(downloadFilePath) or updateConfig["version"].get<std::string>().length() == 0 or updateConfig["fileName"].get<std::string>().length() == 0) {
                     qWarning() << "找不到下载文件 即将重置更新目录";
                     resetUpdateConfig();
@@ -29,7 +29,7 @@ Q_INVOKABLE void Update::init() {
                     return;
                 }
                 std::string hash = sha256_file_streaming(downloadFilePath.string());
-                if (hash != updateConfig["hash"]) {
+                if (hash != updateConfig["hash"].get<std::string>()) {
                     qWarning() << "下载文件hash校验不通过 即将重置更新目录";
                     resetUpdateConfig();
                     new_version = "";
@@ -230,7 +230,7 @@ Q_INVOKABLE void Update::getUpdateFile() {
             updateConfig["fileName"] = new_version + ".zip";
 
             //保存updateconfig
-            WriteJsonFile(updatePath + "/" + updateConfigName + ".json", updateConfig);
+            WriteJsonFile(updatePath + u8"/" + updateConfigName + u8".json", updateConfig);
 
             //下载更新的压缩包
             if (!makedirs("./update/" + new_version)) {
@@ -343,7 +343,7 @@ Q_INVOKABLE void Update::continueDownload() {
 
 bool Update::checkUpdateConfig() {
     //读取并检查更新配置文件
-    std::filesystem::path filePath = std::filesystem::u8path(updatePath) / std::filesystem::u8path(updateConfigName + ".json");
+    std::filesystem::path filePath = std::filesystem::path(updatePath) / std::filesystem::path(updateConfigName + u8".json");
     json defaultConfig = {
         {"version",""},
         {"fileName",""},
@@ -663,7 +663,7 @@ int Update::download_file(const std::string url, const std::string& save_path, c
             {"Range", "bytes=" + std::to_string(updateConfig["downloaded"].get<int64_t>()) + "-"}
         };
 
-        std::filesystem::path fsPath = std::filesystem::u8path(updatePath)/ updateConfig["version"].get<std::string>()/ updateConfig["fileName"].get<std::string>();
+        std::filesystem::path fsPath = std::filesystem::path(updatePath)/ updateConfig["version"].get<std::u8string>()/ updateConfig["fileName"].get<std::u8string>();
 
         std::ifstream file(fsPath, std::ios::binary);
         if (!file.is_open()) {
@@ -709,10 +709,11 @@ int Update::download_file(const std::string url, const std::string& save_path, c
         [&](const httplib::Response& res) {//ResponseHandler
             std::string used_filename = final_filename;
             if (!isFirstDownload) {
-                std::filesystem::path file_path = std::filesystem::u8path(updatePath) / updateConfig["version"].get<std::string>() / updateConfig["fileName"].get<std::string>();
+                std::filesystem::path file_path = std::filesystem::path(updatePath) / updateConfig["version"].get<std::u8string>() / updateConfig["fileName"].get<std::u8string>();
                 ofs.open(file_path, std::ios::binary | std::ios::app);
                 if (!ofs) {
-                    qWarning() << "无法打开文件:" << QString::fromStdString(file_path.u8string());
+                    std::u8string outputPath = file_path.u8string();
+                    qWarning() << "无法打开文件:" << QString::fromUtf8(reinterpret_cast<const char*>(outputPath.data()), outputPath.size());
                     return false; // 中止下载
                 }
 
@@ -742,22 +743,20 @@ int Update::download_file(const std::string url, const std::string& save_path, c
                 final_filename = used_filename;
                 updateConfig["fileName"] = final_filename;
 
-                std::filesystem::path file_path = std::filesystem::u8path(save_path) / final_filename;
+                std::filesystem::path file_path = std::filesystem::path(std::u8string(save_path.data(), save_path.data() + save_path.size())) / std::u8string(final_filename.data(), final_filename.data() + final_filename.size());
                 ofs.open(file_path, std::ios::binary);
                 if (!ofs) {
-                    qWarning() << "无法创建文件:" << QString::fromStdString(file_path.u8string());
+                    std::u8string outputPath = file_path.u8string();
+                    qWarning() << "无法创建文件:" << QString::fromUtf8(reinterpret_cast<const char*>(outputPath.data()), outputPath.size());
                     return false; // 中止下载
                 }
-
                 return true; // 继续接收 body
             }
-            
         },
         [&](const char* data, size_t len) { // ContentReceiver
             if (ofs.is_open()) {
                 ofs.write(data, len);
                 hasher.process(data, data + len);
-                
                 return true;
             }
             return false; // 没有文件就中止
@@ -793,7 +792,6 @@ int Update::download_file(const std::string url, const std::string& save_path, c
             if (canceled) {
                 return false;//暂停下载
             }
-
             return true; // 继续下载
         }
     );
@@ -805,7 +803,7 @@ int Update::download_file(const std::string url, const std::string& save_path, c
         std::vector<unsigned char> hash(picosha2::k_digest_size);
         hasher.get_hash_bytes(hash.begin(), hash.end());
         updateConfig["hash"] = picosha2::bytes_to_hex_string(hash.begin(), hash.end());
-        WriteJsonFile(updatePath + "/" + updateConfigName + ".json", updateConfig);
+        WriteJsonFile(updatePath + u8"/" + updateConfigName + u8".json", updateConfig);
         emit paused();
         return 1;
     }
@@ -815,7 +813,7 @@ int Update::download_file(const std::string url, const std::string& save_path, c
         Notifier::instance().notify(2, "网络异常" + (res ? QString::fromStdString(std::to_string(res->status)) : "连接失败"));
 
         // 删除已写入的无效文件
-        std::filesystem::path file_path = std::filesystem::u8path(save_path) / final_filename;
+        std::filesystem::path file_path = std::filesystem::path(std::u8string(save_path.data(), save_path.data() + save_path.size())) / std::u8string(final_filename.data(), final_filename.data() + final_filename.size());
         if (std::filesystem::exists(file_path)) {
             std::error_code ec;
             std::filesystem::remove(file_path, ec);
@@ -823,7 +821,8 @@ int Update::download_file(const std::string url, const std::string& save_path, c
                 qWarning() << "删除失败文件时出错:" << QString::fromStdString(ec.message());
             }
             else {
-                qInfo() << "已删除无效文件:" << QString::fromStdString(file_path.u8string());
+                std::u8string outputpath = file_path.u8string();
+                qInfo() << "已删除无效文件:" << QString::fromUtf8(reinterpret_cast<const char*>(outputpath.data()), outputpath.size());
             }
         }
         return -1;
@@ -840,7 +839,7 @@ int Update::download_file(const std::string url, const std::string& save_path, c
             //return -1;
         }
         updateConfig["isDownloadCompleted"] = true;
-        WriteJsonFile(updatePath + "/" + updateConfigName + ".json", updateConfig);
+        WriteJsonFile(updatePath + u8"/" + updateConfigName + u8".json", updateConfig);
         return 0;
     }
 }
@@ -961,16 +960,16 @@ std::optional<std::pair<std::string, int>> Update::parse_proxy(const std::string
 }
 
 bool Update::unzip(const std::string& zipPath, const std::string& outDir, uint64_t maxSize) {
-    std::filesystem::path zippath = std::filesystem::u8path(zipPath);
+    std::filesystem::path zippath = std::filesystem::path(std::u8string(zipPath.data(), zipPath.data() + zipPath.size()));
     mz_zip_archive zip{};
-    if (!mz_zip_reader_init_file(&zip, zippath.u8string().c_str(), 0)) {
+    if (!mz_zip_reader_init_file(&zip, (char*)zippath.u8string().c_str(), 0)) {
         qWarning() << "打开ZIP失败: " << QString::fromStdString(zipPath);
         return false;
     }
 
     uint64_t totalUncompressedSize = 0;
 
-    std::filesystem::path base = std::filesystem::weakly_canonical(std::filesystem::u8path(outDir));
+    std::filesystem::path base = std::filesystem::weakly_canonical(std::filesystem::path(std::u8string(outDir.data(), outDir.data() + outDir.size())));
     std::filesystem::create_directories(base);
 
     int fileCount = (int)mz_zip_reader_get_num_files(&zip);
@@ -991,8 +990,8 @@ bool Update::unzip(const std::string& zipPath, const std::string& outDir, uint64
             mz_zip_reader_end(&zip);
             return false;
         }
-
-        std::filesystem::path outPath = base / st.m_filename;
+        std::string temp = st.m_filename;
+        std::filesystem::path outPath = base / std::u8string(temp.data(), temp.data() + temp.size());
 
         // ===== 路径穿越检查 =====
         std::filesystem::path canonPath;
@@ -1021,7 +1020,7 @@ bool Update::unzip(const std::string& zipPath, const std::string& outDir, uint64
         }
         else {
             std::filesystem::create_directories(outPath.parent_path());
-            if (!mz_zip_reader_extract_to_file(&zip, i, outPath.u8string().c_str(), 0)) {
+            if (!mz_zip_reader_extract_to_file(&zip, i, (char*)outPath.u8string().c_str(), 0)) {
                 qWarning() << "解压失败: " << QString::fromStdString(st.m_filename);
                 mz_zip_reader_end(&zip);
                 return false;
@@ -1046,8 +1045,11 @@ Q_INVOKABLE void Update::update() {
     updateFuture = QtConcurrent::run([this]() {
         try {
             //解压文件
-            bool result = unzip(updatePath + "/" + updateConfig["version"].get<std::string>() + "/" + updateConfig["fileName"].get<std::string>(), updatePath + "/" + updateConfig["version"].get<std::string>());
-            qInfo() << "开始解压文件" << QString::fromStdString(updatePath + "/" + updateConfig["version"].get<std::string>() + "/" + updateConfig["fileName"].get<std::string>());
+            std::u8string zipPath = updatePath + u8"/" + updateConfig["version"].get<std::u8string>() + u8"/" + updateConfig["fileName"].get<std::u8string>();
+            std::u8string outdir = updatePath + u8"/" + updateConfig["version"].get<std::u8string>();
+            bool result = unzip(std::string(zipPath.data(), zipPath.data() + zipPath.size()), std::string(outdir.data(), outdir.data() + outdir.size()));
+            std::u8string outputtext = updatePath + u8"/" + updateConfig["version"].get<std::u8string>() + u8"/" + updateConfig["fileName"].get<std::u8string>();
+            qInfo() << "开始解压文件" << QString::fromUtf8(outputtext.data(), outputtext.size());
             if (!result) {
                 if (!canceled) {
                     //解压失败
@@ -1069,7 +1071,7 @@ Q_INVOKABLE void Update::update() {
             //删除当前版本updater相关文件
             std::filesystem::path workPath = std::filesystem::current_path();
             for (auto& item : current_version_config["updater"]) {
-                std::filesystem::path itemPath = std::filesystem::u8path(item["path"].get<std::string>());
+                std::filesystem::path itemPath = std::filesystem::path(item["path"].get<std::u8string>());
                 if (std::filesystem::exists(itemPath)) {
                     if (!isSubPath(workPath, itemPath)) {
                         qCritical() << "检测到路径穿越" << QString::fromStdString(itemPath.string());
@@ -1102,13 +1104,13 @@ Q_INVOKABLE void Update::update() {
                 }
             }
             //替换更新版本updater相关文件
-            std::filesystem::path versionRoot = std::filesystem::u8path(updatePath + "/" + new_version);
-            std::filesystem::path contentRoot = std::filesystem::weakly_canonical(versionRoot / new_version_config["path"].get<std::string>());
+            std::filesystem::path versionRoot = std::filesystem::path(updatePath + u8"/" + std::u8string(new_version.data(), new_version.data() + new_version.size()));
+            std::filesystem::path contentRoot = std::filesystem::weakly_canonical(versionRoot / new_version_config["path"].get<std::u8string>());
 
             for (auto& item : new_version_config["updater"]) {
 
-                std::string relativePathStr = item["path"].get<std::string>();
-                std::filesystem::path relativePath = std::filesystem::u8path(relativePathStr);
+                std::u8string relativePathStr = item["path"].get<std::u8string>();
+                std::filesystem::path relativePath = std::filesystem::path(relativePathStr);
 
                 std::filesystem::path sourcePath = std::filesystem::weakly_canonical(contentRoot / relativePath);
                 std::filesystem::path targetPath = std::filesystem::weakly_canonical(workPath / relativePath);

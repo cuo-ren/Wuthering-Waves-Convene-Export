@@ -68,11 +68,38 @@ std::int64_t get_timestamp() {
 }
 
 std::string sha256_file_streaming(const std::string& filepath) {
-	std::filesystem::path fsPath = std::filesystem::u8path(filepath);
+	std::filesystem::path fsPath = std::filesystem::path(std::u8string(filepath.data(), filepath.data() + filepath.size()));
 
 	std::ifstream file(fsPath, std::ios::binary);
 	if (!file.is_open()) {
 		throw std::runtime_error("Cannot open file: " + filepath);
+	}
+
+	picosha2::hash256_one_by_one hasher;
+	hasher.init();
+
+	std::vector<unsigned char> buffer(8192);  // 8KB 缓冲区
+	while (file) {
+		file.read(reinterpret_cast<char*>(buffer.data()), buffer.size());
+		std::streamsize read_bytes = file.gcount();
+		if (read_bytes > 0) {
+			hasher.process(buffer.begin(), buffer.begin() + read_bytes);
+		}
+	}
+
+	hasher.finish();
+	std::vector<unsigned char> hash(picosha2::k_digest_size);
+	hasher.get_hash_bytes(hash.begin(), hash.end());
+
+	return picosha2::bytes_to_hex_string(hash.begin(), hash.end());
+}
+
+std::string sha256_file_streaming(const std::u8string& filepath) {
+	std::filesystem::path fsPath = std::filesystem::path(filepath);
+
+	std::ifstream file(fsPath, std::ios::binary);
+	if (!file.is_open()) {
+		throw std::runtime_error("Cannot open file: " + std::string(filepath.data(), filepath.data() + filepath.size()));
 	}
 
 	picosha2::hash256_one_by_one hasher;
@@ -176,7 +203,8 @@ std::string local_to_gbk(const std::string& local) {
 }
 
 json ReadJsonFile(const std::string& path) {
-	std::filesystem::path fsPath = std::filesystem::u8path(path);
+	std::filesystem::path fsPath = std::filesystem::path(std::u8string(path.data(), path.data() + path.size()));
+
 	std::ifstream file(fsPath);  // 这里会调用 _wfopen 支持 UTF-16 路径
 	if (!file.is_open()) {
 		qCritical().noquote() << "文件打开失败! " << "path:" << QString::fromUtf8(path);
@@ -219,7 +247,7 @@ json ReadJsonFile(const std::filesystem::path& path) {
 }
 
 void WriteJsonFile(const std::string& path, const json& data) {
-	std::filesystem::path fsPath = std::filesystem::u8path(path);
+	std::filesystem::path fsPath = std::filesystem::path(std::u8string(path.data(), path.data() + path.size()));
 
 	std::ofstream f(fsPath, std::ios::binary);  // 用 fs::path 保证 UTF-16 路径
 	f.exceptions(std::ofstream::failbit | std::ofstream::badbit);
@@ -275,9 +303,47 @@ void WriteJsonFile(const std::filesystem::path& path, const json& data) {
 }
 
 bool makedirs(const std::string& path) {
-	std::filesystem::path fsPath = std::filesystem::u8path(path);
+	std::filesystem::path fsPath = std::filesystem::path(std::u8string(path.data(), path.data() + path.size()));
+
 	std::error_code ec;
 
+	std::filesystem::path current;
+	//逐层检查是否是文件夹
+	for (const auto& part : fsPath) {
+		current /= part;
+		//避免出现符号链接
+		if (std::filesystem::is_symlink(current)) {
+			qFatal("路径包含符号链接，可能存在风险: %s", current.string().c_str());
+			return false;
+		}
+		if (std::filesystem::exists(current)) {
+			//存在文件夹同名文件
+			if (std::filesystem::is_regular_file(current)) {
+				qWarning() << "存在文件夹同名文件" << QString::fromStdString(current.string()) << "尝试删除";
+				std::filesystem::remove(current, ec);
+				if (ec) {
+					qCritical().noquote() << "删除文件失败: " << QString::fromStdString(current.string()) << " " << ec.message();
+					return false;
+				}
+			}
+		}
+		else {
+			break;
+		}
+	}
+	if (!std::filesystem::exists(fsPath)) {
+		std::filesystem::create_directories(fsPath, ec);
+		if (ec) {
+			qCritical().noquote() << "创建目录失败: " << QString::fromStdString(fsPath.string()) << " " << ec.message();
+			return false;
+		}
+	}
+	return true;
+}
+
+bool makedirs(const std::u8string& path) {
+	std::filesystem::path fsPath = std::filesystem::path(path);
+	std::error_code ec;
 	std::filesystem::path current;
 	//逐层检查是否是文件夹
 	for (const auto& part : fsPath) {
@@ -337,9 +403,8 @@ std::string timestamp_to_str(int timestamp) {
 	return dt.toString("yyyy-MM-dd HH:mm:ss").toStdString();
 }
 
-
 void reset_folder(const std::string& path) {
-	std::filesystem::path folder_path = std::filesystem::u8path(path);
+	std::filesystem::path folder_path = std::filesystem::path(std::u8string(path.data(), path.data() + path.size()));
 
 	// 如果文件夹存在，删除整个文件夹（包括内容）
 	if (std::filesystem::exists(folder_path)) {

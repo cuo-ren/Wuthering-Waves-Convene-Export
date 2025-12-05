@@ -14,8 +14,8 @@ class Update : public QObject {
 public:
 	explicit Update(QObject* parent = nullptr): QObject(parent) {
         qInfo() << "正在初始化更新模块";
-        updatePath = "./update";
-        updateConfigName = "updateConfig";
+        updatePath = u8"./update";
+        updateConfigName = u8"updateConfig";
         canceled = false;
         if (!makedirs(updatePath)) {
             qFatal("创建update目录失败");
@@ -55,8 +55,8 @@ signals:
     void continued();
 
 private:
-    std::string updatePath;
-    std::string updateConfigName;
+    std::u8string updatePath;
+    std::u8string updateConfigName;
 
     std::vector<std::string> old_versions = { "betav0.1","betav0.2","betav1.0","betav2.0","betav2.1"};
     bool canceled = false;

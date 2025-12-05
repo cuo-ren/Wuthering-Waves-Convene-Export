@@ -19,7 +19,7 @@ class Data : public QObject {
 
 public:
     explicit Data(QObject* parent = nullptr);
-    ~Data();
+    ~Data() = default;
 
     static Data& instance() {
         static Data instance;  // C++11 线程安全懒加载
@@ -65,8 +65,8 @@ public slots:
 
 private:
     json gacha_list;
-    std::string file_path;
-    std::string file_name;
+    std::u8string file_path;
+    std::u8string file_name;
     struct ExcelStyles {
         XLStyleIndex titleStyle;
         XLStyleIndex star3Style;

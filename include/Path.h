@@ -18,7 +18,8 @@ public:
     }
 
     Q_INVOKABLE QVariant validatePath(QString path) {
-		std::filesystem::path fsPath = std::filesystem::u8path(path.toStdString() + "/Client/Saved/Logs/Client.log");
+		std::string logpath = path.toStdString() + "/Client/Saved/Logs/Client.log";
+		std::filesystem::path fsPath = std::filesystem::path(std::u8string(logpath.data(), logpath.data() + logpath.size()));
         if (!std::filesystem::exists(fsPath)) {
             qDebug().noquote() << "目录内未找到游戏日志" << path;
             return false;
@@ -72,7 +73,7 @@ public:
 	}
 
 	Q_INVOKABLE QVariant findGameLog() {
-		std::filesystem::path fsPath = std::filesystem::u8path(ConfigManager::instance().get<std::string>("path") + "/Client/Saved/Logs/Client.log");
+		std::filesystem::path fsPath = std::filesystem::path(ConfigManager::instance().get<std::u8string>("path") + u8"/Client/Saved/Logs/Client.log");
 
 		if (!std::filesystem::exists(fsPath) and !findGamePath()) {
 			//配置文件中的不存在且找不到游戏路径

@@ -6,18 +6,14 @@ Data::Data(QObject* parent)
 	qInfo().noquote() << "正在加载数据模块";
 	QObject::connect(this, &Data::updateComplete,
 		this, &Data::onUpdateComplete);
-	file_path = "./data";
+	file_path = u8"./data";
 	if (!makedirs(file_path)) {
 		qFatal("创建data目录失败");
 	}
-	file_name = "gacha_list";
-	qDebug().noquote() << "当前数据文件目录:" << QString::fromStdString(file_path) << "/" <<  QString::fromStdString(file_name) << ".json";
+	file_name = u8"gacha_list";
+	qDebug().noquote() << "当前数据文件目录:" << QString::fromUtf8(file_path.data(), file_path.size()) << "/" << QString::fromUtf8(file_name.data(), file_name.size()) << ".json";
 	initGachaList();
 	qInfo().noquote() << "数据模块初始化完成";
-}
-
-Data::~Data() {
-
 }
 
 void Data::initGachaList() {
@@ -26,7 +22,7 @@ void Data::initGachaList() {
 	//读取hash值
 	std::string file_hash = ConfigManager::instance().get<std::string>("hash");
 	//确保json文件存在
-	std::filesystem::path filePath = std::filesystem::u8path(file_path) / std::filesystem::u8path(file_name + ".json");
+	std::filesystem::path filePath = std::filesystem::path(file_path) / std::filesystem::path(file_name + u8".json");
 	if (!std::filesystem::exists(filePath)) {
 		qWarning().noquote() << "数据文件不存在";
 		WriteJsonFile(filePath, default_data);
@@ -47,7 +43,7 @@ void Data::initGachaList() {
 		gacha_list = default_data;
 	}
 	//比对hash，若不一致，则检测文件是否合法
-	if (sha256_file_streaming(file_path + "/" + file_name + ".json") + sha256_file_streaming("./GachaType.json") == ConfigManager::instance().get<std::string>("hash")) {
+	if (sha256_file_streaming(file_path + u8"/" + file_name + u8".json") + sha256_file_streaming("./GachaType.json") == ConfigManager::instance().get<std::string>("hash")) {
 		qInfo().noquote() << "文件未变动，校验通过";
 	}
 	else {
@@ -58,7 +54,7 @@ void Data::initGachaList() {
 			json validate_result = validate_data(gacha_list);
 			if (validate_result["code"] == 0) {
 				qInfo().noquote() << "数据文件校验成功";
-				std::string hash = sha256_file_streaming(file_path + "/" + file_name + ".json") + sha256_file_streaming("./GachaType.json");
+				std::string hash = sha256_file_streaming(file_path + u8"/" + file_name + u8".json") + sha256_file_streaming("./GachaType.json");
 				qDebug().noquote() << "hash:" << hash;
 				ConfigManager::instance().set<std::string>("hash", hash);
 				break;
@@ -136,32 +132,37 @@ void Data::save(json data) {
 	std::int64_t timestamp = get_timestamp();
 	//备份当前文件
 	try {
-		std::filesystem::path src = std::filesystem::u8path(file_path) / (file_name + ".json");
-		std::filesystem::path dst = std::filesystem::u8path(file_path) / (file_name + "_" + std::to_string(timestamp) + ".json.bak");
+		std::filesystem::path src = std::filesystem::path(file_path) / (file_name + u8".json");
+		std::string backuptime = std::to_string(timestamp);
+		std::u8string backupfilepath = file_path + u8"/" + file_name + u8"_" + std::u8string(backuptime.data(), backuptime.data() + backuptime.size()) + u8".json";
+		std::filesystem::path dst = std::filesystem::path(file_path) / (file_name + u8"_" + std::u8string(backuptime.data(), backuptime.data() + backuptime.size()) + u8".json.bak");
 
 		std::filesystem::copy_file(src, dst, std::filesystem::copy_options::overwrite_existing);
-		qInfo().noquote() << "备份数据成功 " << QString::fromStdString(file_path + "/" + file_name + "_" + std::to_string(timestamp) + ".json.bak");
+		qInfo().noquote() << "备份数据成功 " << QString::fromUtf8(backupfilepath.data(), backupfilepath.size());
 	}
 	catch (const std::filesystem::filesystem_error& e) {
 		qWarning().noquote() << "备份数据失败 " << QString::fromLocal8Bit(e.what());
 		Notifier::instance().notify(2, "备份数据失败");
 	}
-	WriteJsonFile(file_path + "/" + file_name + ".json", data);
+	WriteJsonFile(file_path + u8"/" + file_name + u8".json", data);
 	//更新配置的hash值
-	ConfigManager::instance().set<std::string>("hash", sha256_file_streaming(file_path + "/" + file_name + ".json") + sha256_file_streaming("./GachaType.json"));
-	trim_backup_files(file_path, 9);
+	ConfigManager::instance().set<std::string>("hash", sha256_file_streaming(file_path + u8"/" + file_name + u8".json") + sha256_file_streaming("./GachaType.json"));
+	trim_backup_files(std::string(file_path.data(), file_path.data() + file_path.size()), 9);
 }
 
 void Data::trim_backup_files(const std::string& dir, int max_backup_count) {
 
-	std::filesystem::path baseDir = std::filesystem::u8path(dir);
-	std::regex backup_pattern(file_name + R"(_(\d+)\.json\.bak)");
+	std::filesystem::path baseDir = std::filesystem::path(std::u8string(dir.data(), dir.data() + dir.size()));
+	std::regex backup_pattern(std::string(file_name.data(), file_name.data() + file_name.size()) + R"(_(\d+)\.json\.bak)");
 	std::vector<std::pair<std::uint64_t, std::filesystem::path>> backups;
 
 	for (const auto& entry : std::filesystem::directory_iterator(baseDir)) {
 		const std::filesystem::path& path = entry.path();
 		std::smatch match;
-		std::string filename = path.filename().u8string(); // 保证 UTF-8
+
+		std::u8string temp = path.filename().u8string();
+		std::string filename(temp.data(), temp.data() + temp.size()); // 确保 UTF-8
+
 		if (std::filesystem::is_regular_file(path) && std::regex_match(filename, match, backup_pattern)) {
 			std::uint64_t ts = std::stoull(match[1].str());
 			backups.emplace_back(ts, path);
@@ -177,7 +178,9 @@ void Data::trim_backup_files(const std::string& dir, int max_backup_count) {
 			try {
 				std::filesystem::path& file_to_delete = backups[i].second;
 				std::filesystem::remove(file_to_delete);
-				qInfo().noquote() << "清理备份文件成功:" << QString::fromStdString(file_to_delete.u8string()).replace("\\", "/");
+
+				std::u8string temp = file_to_delete.u8string();
+				qInfo().noquote() << "清理备份文件成功:" << QString::fromUtf8(temp.data(), temp.size()).replace("\\", "/");
 			}
 			catch (const std::filesystem::filesystem_error& e) {
 				qWarning().noquote() << "清理备份文件失败 " << QString::fromLocal8Bit(e.what());
@@ -602,8 +605,8 @@ Q_INVOKABLE void Data::update_data(const int& mode, QString input_url) {
 			json urls = json::object();
 			if (mode == 1) {
 				qInfo().noquote() << "正在检测游戏日志";
-				std::string logPath = ConfigManager::instance().get<std::string>("path") + "/Client/Saved/Logs/Client.log";
-				std::filesystem::path fsPath = std::filesystem::u8path(logPath);
+				std::u8string logPath = ConfigManager::instance().get<std::u8string>("path") + u8"/Client/Saved/Logs/Client.log";
+				std::filesystem::path fsPath = std::filesystem::path(logPath);
 
 				if (!std::filesystem::exists(fsPath)) {
 					qWarning().noquote() << "游戏目录错误：" << QString::fromStdString(ConfigManager::instance().get<std::string>("path") + "/Client/Saved/Logs/Client.log");
@@ -790,8 +793,8 @@ json Data::findGachaUrls() {
 	json uid_url_map = json::object();
 
 	std::regex url_pattern(R"(https://[^"\\ ]*/aki/gacha/index\.html#/record\?[^"\\ ]+)");
-	std::string logPath = ConfigManager::instance().get<std::string>("path") + "/Client/Saved/Logs/Client.log";
-	std::filesystem::path fsPath = std::filesystem::u8path(logPath);
+	std::u8string logPath = ConfigManager::instance().get<std::u8string>("path") + u8"/Client/Saved/Logs/Client.log";
+	std::filesystem::path fsPath = std::filesystem::path(logPath);
 	std::ifstream file(fsPath);
 	if (!file.is_open()) {
 		qWarning().noquote() << "打开游戏日志文件失败";
@@ -1306,7 +1309,7 @@ Q_INVOKABLE void Data::exportToCsv() {
 
 			std::time_t now = std::time(nullptr);
 			std::string filename = "./export/csv/" + LanguageManager::instance().getValue((std::string)"fileName") + "_" + uid + "_" + std::to_string(now) + ".csv";
-			std::filesystem::path fsPath = std::filesystem::u8path(filename);
+			std::filesystem::path fsPath = std::filesystem::path(std::u8string(filename.data(), filename.data() + filename.size()));
 
 			std::ofstream file(fsPath, std::ios::binary);
 			if (!file.is_open()) {
@@ -1614,18 +1617,20 @@ Q_INVOKABLE void Data::setTimezone(QString uid, int timezone) {
 
 Q_INVOKABLE void Data::getBackupInfo() {
 	//扫描备份文件并发生信号
-	std::string dir = file_path;
+	std::u8string dir = file_path;
 
 	QtConcurrent::run([this, dir]() {
 		try {
-			std::filesystem::path baseDir = std::filesystem::u8path(dir);
-			qInfo() << "正在扫描备份文件" << QString::fromStdString(dir);
+			std::filesystem::path baseDir = std::filesystem::path(dir);
+			qInfo() << "正在扫描备份文件" << QString::fromUtf8(dir.data(), dir.size());
 			std::regex backup_pattern(R"(gacha_list_(\d+)\.json\.bak)");
 
 			for (const auto& entry : std::filesystem::directory_iterator(baseDir)) {
 				const std::filesystem::path& path = entry.path();
 				std::smatch match;
-				std::string filename = path.filename().u8string(); // 确保 UTF-8
+
+				std::u8string temp = path.filename().u8string();
+				std::string filename(temp.data(), temp.data() + temp.size()); // 确保 UTF-8
 
 				if (std::filesystem::is_regular_file(path) && std::regex_match(filename, match, backup_pattern)) {
 					try {
@@ -1639,7 +1644,7 @@ Q_INVOKABLE void Data::getBackupInfo() {
 						json validate_result;
 						try {
 							qInfo() << "正在校验" << QString::fromStdString(filename);
-							backupGachaList = ReadJsonFile(file_path + "/" + filename);
+							backupGachaList = ReadJsonFile(std::string(file_path.data(), file_path.data() + file_path.size()) + "/" + filename);
 							validate_result = validate_data(backupGachaList);
 							if (validate_result["code"] == 0) {
 								qInfo() << QString::fromStdString(filename) << "文件正常";
@@ -1697,19 +1702,20 @@ Q_INVOKABLE void Data::getBackupInfo() {
 
 Q_INVOKABLE bool Data::removeBackupFile(const QString& fileName) {
 	try {
-		std::filesystem::path filePath = std::filesystem::u8path(file_path) / std::filesystem::u8path(fileName.toStdString());
+		std::string FileName = fileName.toStdString();
+		std::filesystem::path filePath = std::filesystem::path(file_path) / std::filesystem::path(std::u8string(FileName.data(), FileName.data() + FileName.size()));
 
 		if (std::filesystem::exists(filePath) && std::filesystem::is_regular_file(filePath)) {
 			std::filesystem::remove(filePath);
-			qInfo().noquote() << "已删除备份文件:"
-				<< QString::fromStdString(filePath.u8string()).replace("\\", "/");
+			std::u8string output = filePath.u8string();
+			qInfo().noquote() << "已删除备份文件:" << QString::fromUtf8(reinterpret_cast<const char*>(output.data()), output.size()).replace("\\", "/");
 			Notifier::instance().notify(0, tr("删除成功"));
 			emit backupDeletedSuccessed(fileName);
 			return true;
 		}
 		else {
-			qWarning().noquote() << "文件不存在:"
-				<< QString::fromStdString(filePath.u8string()).replace("\\", "/");
+			std::u8string output = filePath.u8string();
+			qWarning().noquote() << "文件不存在:" << QString::fromUtf8(reinterpret_cast<const char*>(output.data()), output.size()).replace("\\", "/");
 			Notifier::instance().notify(3, tr("文件不存在"));
 			emit backupHadDeleted(fileName);
 		}
@@ -1724,7 +1730,8 @@ Q_INVOKABLE bool Data::removeBackupFile(const QString& fileName) {
 Q_INVOKABLE void Data::recoveryBackup(const QString& fileName) {
 	//不进行校验，确保数据无误
 	qInfo().noquote() << "正在恢复备份" << fileName;
-	std::filesystem::path filePath = std::filesystem::u8path(file_path) / std::filesystem::u8path(fileName.toStdString());
+	std::string FileName = fileName.toStdString();
+	std::filesystem::path filePath = std::filesystem::path(file_path) / std::filesystem::path(std::u8string(FileName.data(), FileName.data() + FileName.size()));
 	json backupData = json::object();
 	//确保data目录存在
 	//确保文件夹存在
@@ -1742,7 +1749,7 @@ Q_INVOKABLE void Data::recoveryBackup(const QString& fileName) {
 	}
 	//读取数据
 	try {
-		backupData = ReadJsonFile(file_path + "/" + fileName.toStdString());
+		backupData = ReadJsonFile(std::string(file_path.data(), file_path.data() + file_path.size()) + "/" + fileName.toStdString());
 	}
 	catch (const json::parse_error& e) {
 		qWarning().noquote() << "备份文件解析失败 " << QString::fromLocal8Bit(e.what());

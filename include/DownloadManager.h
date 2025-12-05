@@ -193,7 +193,8 @@ private:
         qInfo() << "开始下载文件 " + fileName;
         auto res = cli.Get(("/cuo-ren/Wuthering-Waves-Convene-Export/refs/heads/main/resource/" + fileName.toStdString()).c_str());
         if (res && res->status == 200) {
-            std::filesystem::path fsPath = std::filesystem::u8path(resourcePath + fileName.toStdString());
+            std::string temp = resourcePath + fileName.toStdString();
+            std::filesystem::path fsPath = std::filesystem::path(std::u8string(temp.data(), temp.data() + temp.size()));
             std::ofstream ofs(fsPath, std::ios::binary | std::ios::trunc);
             if (!ofs.is_open()) {
                 qWarning() << "创建文件失败 " << QString::fromStdString(fsPath.string());
