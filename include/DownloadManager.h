@@ -5,8 +5,7 @@
 #include <QtConcurrent/QtConcurrent>
 #include <QFuture>
 #include <queue>
-#define CPPHTTPLIB_OPENSSL_SUPPORT
-#include "httplib.h"
+#include "requests.hpp"
 
 class DownloadManager : public QObject {
     Q_OBJECT
@@ -175,24 +174,12 @@ private:
 
     bool downloadFile(const QString& fileName) {
         httplib::Client cli("https://raw.githubusercontent.com");
-        httplib::user_agent_override = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36 Edg/133.0.0.0";
-
-        cli.set_read_timeout(10, 0);
-        cli.set_connection_timeout(10, 0);
-
-        std::string proxy = get_system_proxy();
-
-        if (!proxy.empty()) {
-            qInfo() << "检测到系统代理：" << QString::fromStdString(proxy);
-
-            auto r = parse_proxy(proxy);
-            qDebug() << "ip:" << r->first << "端口:" << r->second;
-            cli.set_proxy(r->first, r->second);
-        }
+        json header = { {"user-agent","Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36 Edg/133.0.0.0"} };
 
         qInfo() << "开始下载文件 " + fileName;
-        auto res = cli.Get(("/cuo-ren/Wuthering-Waves-Convene-Export/refs/heads/main/resource/" + fileName.toStdString()).c_str());
-        if (res && res->status == 200) {
+        auto res = Requests::get("https://raw.githubusercontent.com/cuo-ren/Wuthering-Waves-Convene-Export/refs/heads/main/resource/" + fileName.toStdString(), { .headers = header });
+
+        if (res.ok()) {
             std::string temp = resourcePath + fileName.toStdString();
             std::filesystem::path fsPath = std::filesystem::path(std::u8string(temp.data(), temp.data() + temp.size()));
             std::ofstream ofs(fsPath, std::ios::binary | std::ios::trunc);
@@ -201,12 +188,12 @@ private:
                 Notifier::instance().notify(3, tr("下载文件 %1 失败 %2").arg(fileName).arg("无法创建文件"));
                 return false;
             }
-            ofs.write(res->body.data(), res->body.size());
+            ofs.write(res.content.data(), res.content.size());
             qInfo() << "下载完成";
             return true;
         }
-        qWarning() << "下载失败: " << (res ? QString::fromStdString(std::to_string(res->status)) : "网络请求超时");
-        Notifier::instance().notify(3, tr("下载文件 %1 失败 %2").arg(fileName).arg(res ? QString::fromStdString(std::to_string(res->status)) : "网络请求超时"));
+        qWarning() << "下载失败: " << (res ? QString::fromStdString(std::to_string(res.status_code)) : "网络请求超时");
+        Notifier::instance().notify(3, tr("下载文件 %1 失败 %2").arg(fileName).arg(res ? QString::fromStdString(std::to_string(res.status_code)) : "网络请求超时"));
         return false;
     }
 

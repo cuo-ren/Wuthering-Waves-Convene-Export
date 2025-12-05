@@ -426,7 +426,7 @@ private:
 	static std::string get_redirects_url(const std::string& url, const json& headers);
 };
 
-std::vector<std::string> CookiesJar::list_domains() {
+inline std::vector<std::string> CookiesJar::list_domains() {
 	std::vector<std::string> domains;
 	for (const auto& item : cookies) {
 		domains.push_back(item.first);
@@ -434,7 +434,7 @@ std::vector<std::string> CookiesJar::list_domains() {
 	return domains;
 }
 
-std::vector<std::string> CookiesJar::list_paths(std::string domain) {
+inline std::vector<std::string> CookiesJar::list_paths(std::string domain) {
 	std::set<std::string> paths;
 	if (domain.empty()) {
 		for (const auto& item1 : cookies) {
@@ -451,11 +451,11 @@ std::vector<std::string> CookiesJar::list_paths(std::string domain) {
 	return std::vector<std::string>(paths.begin(), paths.end());
 }
 
-bool CookiesJar::multiple_domains() {
+inline bool CookiesJar::multiple_domains() {
 	return cookies.size() > 1;
 }
 
-std::string CookiesJar::get(const std::string& key, std::string domain, std::string path) {
+inline std::string CookiesJar::get(const std::string& key, std::string domain, std::string path) {
 	for (const auto& [dm, paths] : cookies) {
 		if (!domain.empty() && dm != domain) continue;
 
@@ -469,7 +469,7 @@ std::string CookiesJar::get(const std::string& key, std::string domain, std::str
 	return {};
 }
 
-Cookie CookiesJar::get_cookie(const std::string& key, std::string domain, std::string path) {
+inline Cookie CookiesJar::get_cookie(const std::string& key, std::string domain, std::string path) {
 	for (const auto& [dm, paths] : cookies) {
 		if (!domain.empty() && dm != domain) continue;
 
@@ -483,7 +483,7 @@ Cookie CookiesJar::get_cookie(const std::string& key, std::string domain, std::s
 	return {};
 }
 
-json CookiesJar::get_dict(std::string domain, std::string path) {
+inline json CookiesJar::get_dict(std::string domain, std::string path) {
 	json result = json::object();
 
 	for (const auto& [dm, paths] : cookies) {
@@ -501,7 +501,7 @@ json CookiesJar::get_dict(std::string domain, std::string path) {
 	return result;
 }
 
-void CookiesJar::set(const std::string& key, const std::string& value, const std::string& domain, SetCookieOptions op) {
+inline void CookiesJar::set(const std::string& key, const std::string& value, const std::string& domain, SetCookieOptions op) {
 	Cookie cookie;
 	if (op.path.empty()) {
 		op.path = "/";
@@ -528,14 +528,14 @@ void CookiesJar::set(const std::string& key, const std::string& value, const std
 	cookies[domain][op.path][key] = cookie;
 }
 
-void CookiesJar::setCookie(Cookie c) {
+inline void CookiesJar::setCookie(Cookie c) {
 	if (c.path.empty()) {
 		c.path = "/";
 	}
 	cookies[c.domain][c.path][c.name] = c;
 }
 
-Cookie CookiesJar::pop(const std::string& key, std::string domain, std::string path) {
+inline Cookie CookiesJar::pop(const std::string& key, std::string domain, std::string path) {
 	Cookie c;
 	std::string del_domain;
 	std::string del_path;
@@ -565,7 +565,7 @@ Cookie CookiesJar::pop(const std::string& key, std::string domain, std::string p
 	return {};
 }
 
-std::string CookiesJar::to_header(const std::string& url) {
+inline std::string CookiesJar::to_header(const std::string& url) {
 	std::string cookie = {};
 	ParsedUrl u = Requests::parse_url(url);
 
@@ -608,7 +608,7 @@ std::string CookiesJar::to_header(const std::string& url) {
 	return cookie;
 }
 
-bool CookiesJar::is_matcheddomain(const std::string& host, const std::string& domain) {
+inline bool CookiesJar::is_matcheddomain(const std::string& host, const std::string& domain) {
 	std::string h = Requests::trim(host);
 	h = Requests::to_lower(h);
 	std::string d = Requests::trim(domain);
@@ -641,7 +641,7 @@ bool CookiesJar::is_matcheddomain(const std::string& host, const std::string& do
 	return true;
 }
 
-bool CookiesJar::is_matchedpath(const std::string& url_path, const std::string& path) {
+inline bool CookiesJar::is_matchedpath(const std::string& url_path, const std::string& path) {
 	std::string up = Requests::trim(url_path);
 	std::string p = Requests::trim(path);
 	if (up.length() == 0)up = "/";
@@ -670,7 +670,7 @@ bool CookiesJar::is_matchedpath(const std::string& url_path, const std::string& 
 	return false;
 }
 
-void CookiesJar::clear_expired_cookies() {
+inline void CookiesJar::clear_expired_cookies() {
 	auto now = std::chrono::system_clock::now();
 	auto timestamp = std::chrono::duration_cast<std::chrono::seconds>(
 		now.time_since_epoch()
@@ -702,7 +702,7 @@ void CookiesJar::clear_expired_cookies() {
 	}
 }
 
-void CookiesJar::clear_session_cookies() {
+inline void CookiesJar::clear_session_cookies() {
 	for (auto it1 = cookies.begin(); it1 != cookies.end();) {
 		for (auto it2 = it1->second.begin(); it2 != it1->second.end();) {
 			for (auto it3 = it2->second.begin(); it3 != it2->second.end(); ) {
@@ -730,7 +730,7 @@ void CookiesJar::clear_session_cookies() {
 	}
 }
 
-void CookiesJar::extract_cookies_from_setCookie(const std::string& url, const std::string& setCookie) {
+inline void CookiesJar::extract_cookies_from_setCookie(const std::string& url, const std::string& setCookie) {
 	Cookie cookie = parseSetCookie(url, setCookie);
 	if (!cookie.name.empty()) {
 		//有效cookie
@@ -744,7 +744,7 @@ void CookiesJar::extract_cookies_from_setCookie(const std::string& url, const st
 	}
 }
 
-void CookiesJar::extract_cookies_from_header(const std::string& url, const json& header) {
+inline void CookiesJar::extract_cookies_from_header(const std::string& url, const json& header) {
 	for (const auto& [key, value] : header.items()) {
 		if (Requests::to_lower(key) == "set-cookie") {
 			for (const auto& i : value) {
@@ -754,7 +754,7 @@ void CookiesJar::extract_cookies_from_header(const std::string& url, const json&
 	}
 }
 
-void CookiesJar::merge(const CookiesJar& jar, bool priority) {
+inline void CookiesJar::merge(const CookiesJar& jar, bool priority) {
 	for (const auto& cookie : jar) {
 		if (cookies.contains(cookie.domain) and cookies.at(cookie.domain).contains(cookie.path) and cookies.at(cookie.domain).at(cookie.path).contains(cookie.name)) {
 			//存在此cookie
@@ -776,7 +776,7 @@ void CookiesJar::merge(const CookiesJar& jar, bool priority) {
 	}
 }
 
-Cookie CookiesJar::parseSetCookie(const std::string& url, std::string set_cookie_string) {
+inline Cookie CookiesJar::parseSetCookie(const std::string& url, std::string set_cookie_string) {
 	Cookie cookie;
 	set_cookie_string = Requests::trim(set_cookie_string);
 	if (set_cookie_string.find(";") != std::string::npos) {
@@ -936,7 +936,7 @@ Cookie CookiesJar::parseSetCookie(const std::string& url, std::string set_cookie
 	}
 }
 
-time_t CookiesJar::parseExpires(std::string& expires) {
+inline time_t CookiesJar::parseExpires(std::string& expires) {
 	//解析失败返回-1
 	std::vector<char> delimiters = { '\t',' ','!','\"','#','$','%','&','\'','(',')','*','+',',','-','.','/',';','<','=','>','?','@','[','\\',']','^','_','`','{','|','}','~' };
 	std::string date = "";
@@ -1068,7 +1068,7 @@ time_t CookiesJar::parseExpires(std::string& expires) {
 	return ts;
 }
 
-std::optional<std::pair<std::string, int>> Requests::parse_proxy(const std::string& proxy_raw) {
+inline std::optional<std::pair<std::string, int>> Requests::parse_proxy(const std::string& proxy_raw) {
 	/*
 	parse_proxy:
 	- 支持这些形式：
@@ -1153,7 +1153,7 @@ std::optional<std::pair<std::string, int>> Requests::parse_proxy(const std::stri
 	}
 }
 
-std::string Requests::get_system_proxy() {
+inline std::string Requests::get_system_proxy() {
 	HKEY hKey;
 	if (RegOpenKeyExA(HKEY_CURRENT_USER,
 		"Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings",
@@ -1175,7 +1175,7 @@ std::string Requests::get_system_proxy() {
 	return {};
 }
 
-ParsedUrl Requests::parse_url(const std::string& url) {
+inline ParsedUrl Requests::parse_url(const std::string& url) {
 	std::string url_c = trim(url);
 	if (url_c.find("://") == std::string::npos) {
 		throw std::invalid_argument("URL 缺少协议部分");
@@ -1238,7 +1238,7 @@ ParsedUrl Requests::parse_url(const std::string& url) {
 	return result;
 }
 
-Response Requests::get(std::string url, GetOptions op, GetCallBackOptions cop) {
+inline Response Requests::get(std::string url, GetOptions op, GetCallBackOptions cop) {
 	Response r = op.response;
 	size_t retryCount = 0, redirectCount = 0;
 
@@ -1273,7 +1273,7 @@ Response Requests::get(std::string url, GetOptions op, GetCallBackOptions cop) {
 	return r;
 }
 
-Response Requests::getOnce(std::string url, Response& res, json headers, json params, bool allow_redirects, bool allowProxies, int readTimeout, int connectionTimeout, std::function<bool(const httplib::Response&)> ResponseHandler, std::function<bool(const char*, size_t)> ContentReceiver, std::function<bool(uint64_t, uint64_t)> DownloadProgress) {
+inline Response Requests::getOnce(std::string url, Response& res, json headers, json params, bool allow_redirects, bool allowProxies, int readTimeout, int connectionTimeout, std::function<bool(const httplib::Response&)> ResponseHandler, std::function<bool(const char*, size_t)> ContentReceiver, std::function<bool(uint64_t, uint64_t)> DownloadProgress) {
 	//解析url
 	std::string protocol;
 	std::string host;
@@ -1384,7 +1384,7 @@ Response Requests::getOnce(std::string url, Response& res, json headers, json pa
 	return new_res;
 }
 
-json Requests::parse_headers(const json& headers) {
+inline json Requests::parse_headers(const json& headers) {
 	json header = json::object();
 	if (!headers.is_object()) {
 		return header;
@@ -1409,7 +1409,7 @@ json Requests::parse_headers(const json& headers) {
 	return header;
 }
 
-std::string Requests::get_redirects_url(const std::string& url, const json& headers) {
+inline std::string Requests::get_redirects_url(const std::string& url, const json& headers) {
 	std::string location_url = headers.at("location").at(0);
 	ParsedUrl up = parse_url(url);
 
@@ -1472,7 +1472,7 @@ std::string Requests::get_redirects_url(const std::string& url, const json& head
 	}
 }
 
-Response Requests::post(std::string url, PostOptioms op, PostCallBackOptions cop) {
+inline Response Requests::post(std::string url, PostOptioms op, PostCallBackOptions cop) {
 	//优先级 multipart > raw > file > json > xml > urlencode > text
 	//先只实现json后的，get重定向先不处理
 	Response r = {};
@@ -1547,7 +1547,7 @@ Response Requests::post(std::string url, PostOptioms op, PostCallBackOptions cop
 	return r;
 }
 
-Response Requests::postOnce(std::string url, Response& res, std::string& contentType, json headers, std::string body, std::filesystem::path file, bool allow_redirects, bool allowProxies, int readTimeout, int connectionTimeout) {
+inline Response Requests::postOnce(std::string url, Response& res, std::string& contentType, json headers, std::string body, std::filesystem::path file, bool allow_redirects, bool allowProxies, int readTimeout, int connectionTimeout) {
 	//解析url
 	std::string protocol;
 	std::string host;

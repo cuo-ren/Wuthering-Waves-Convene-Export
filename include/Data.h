@@ -6,11 +6,8 @@
 #include <regex>
 #include <QtConcurrent/QtConcurrent>
 #include <QFuture>
-#define CPPHTTPLIB_OPENSSL_SUPPORT
-#include "httplib.h"
+#include "requests.hpp"
 #include <OpenXLSX.hpp>
-using namespace OpenXLSX;
-
 
 class Data : public QObject {
     Q_OBJECT
@@ -68,10 +65,10 @@ private:
     std::u8string file_path;
     std::u8string file_name;
     struct ExcelStyles {
-        XLStyleIndex titleStyle;
-        XLStyleIndex star3Style;
-        XLStyleIndex star4Style;
-        XLStyleIndex star5Style;
+        OpenXLSX::XLStyleIndex titleStyle;
+        OpenXLSX::XLStyleIndex star3Style;
+        OpenXLSX::XLStyleIndex star4Style;
+        OpenXLSX::XLStyleIndex star5Style;
     };
     QFuture<void> updateDataFuture;
 
@@ -85,5 +82,5 @@ private:
     json get_gacha_data(const std::string cardPoolId, const std::string cardPoolType, const std::string playerId, const std::string recordId, const std::string serverId, const std::string lang, const std::string service_area);
     json get_gacha_data_retry(const std::string cardPoolId, const std::string cardPoolType, const std::string playerId, const std::string recordId, const std::string serverId, const std::string lang, const std::string service_area, int max_retry = 3);
     json merge(const std::string target_uid, json old_gacha_list, json new_gacha_list);
-    ExcelStyles create_styles(XLDocument& doc);
+    ExcelStyles create_styles(OpenXLSX::XLDocument& doc);
 };

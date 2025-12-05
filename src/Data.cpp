@@ -871,12 +871,11 @@ std::map<std::string, std::string> Data::get_params(const std::string& url) {
 }
 
 json Data::get_gacha_data(const std::string cardPoolId, const std::string cardPoolType, const std::string playerId, const std::string recordId, const std::string serverId, const std::string lang, const std::string service_area) {
-
 	std::string url;
 	httplib::Headers headers;
 	if (service_area == "cn") {
 		//国服域名
-		url = "https://gmserver-api.aki-game2.com";
+		url = "https://gmserver-api.aki-game2.com/gacha/record/query";
 		// 构造请求头
 		headers = {
 			{ "User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36 Edg/133.0.0.0" },
@@ -886,29 +885,13 @@ json Data::get_gacha_data(const std::string cardPoolId, const std::string cardPo
 	}
 	else {
 		//国际服域名
-		url = "https://gmserver-api.aki-game2.net";
+		url = "https://gmserver-api.aki-game2.net/gacha/record/query";
 		// 构造请求头
 		headers = {
 			{ "User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36 Edg/133.0.0.0" },
 			{ "Content-Type", "application/json" },
 			{ "referer", "https://aki-gm-resources-oversea.aki-game.net/" }
 		};
-	}
-
-	httplib::Client cli(url);
-	httplib::user_agent_override = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36 Edg/133.0.0.0";
-
-	cli.set_read_timeout(10, 0);
-	cli.set_connection_timeout(10, 0);
-
-	//设置代理
-	std::string proxy = DownloadManager::instance().get_system_proxy();
-	if (!proxy.empty()) {
-		qInfo() << "检测到系统代理：" << QString::fromStdString(proxy);
-
-		auto r = DownloadManager::instance().parse_proxy(proxy);
-		qDebug() << "ip:" << r->first << "端口:" << r->second;
-		cli.set_proxy(r->first, r->second);
 	}
 
 	// 构造请求体（JSON）
@@ -920,19 +903,17 @@ json Data::get_gacha_data(const std::string cardPoolId, const std::string cardPo
 		{"recordId", recordId},
 		{"serverId", serverId}
 	};
-	qDebug() << "Data:" << post_data.dump(2);
 
 	// 发起 POST 请求
-	auto res = cli.Post("/gacha/record/query", headers, post_data.dump(), "application/json");
+	auto res = Requests::post(url, { .headers = headers,.Json = post_data });
 
-	if (!res || res->status != 200) {
-		qWarning().noquote() << "网络异常 状态码：" << (res ? QString::fromStdString(std::to_string(res->status)) : "连接失败");
-		Notifier::instance().notify(2, "网络异常" + (res ? QString::fromStdString(std::to_string(res->status)) : "连接失败"));
+	if (!res.ok()) {
+		qWarning().noquote() << "网络异常 状态码：" << (res ? QString::fromStdString(std::to_string(res.status_code)) : "连接失败");
+		Notifier::instance().notify(2, "网络异常" + (res ? QString::fromStdString(std::to_string(res.status_code)) : "连接失败"));
 		return { {"code", -2} };
 	}
 	try {
-		qDebug().noquote() << QString::fromStdString(res->body);
-		json result = json::parse(res->body);
+		json result = json::parse(res.text);
 		return result;
 	}
 	catch (...) {
@@ -1121,9 +1102,9 @@ Q_INVOKABLE void Data::exportToExcel() {
 
 	QtConcurrent::run([this]() {
 		try {
-			XLDocument doc;
+			OpenXLSX::XLDocument doc;
 			std::string uid = ConfigManager::instance().get<std::string>("active_uid");
-			doc.create("./export/excel/" + LanguageManager::instance().getValue((std::string)"fileName") + "_" + uid + "_" + std::to_string(get_timestamp()) + ".xlsx", XLForceOverwrite);
+			doc.create("./export/excel/" + LanguageManager::instance().getValue((std::string)"fileName") + "_" + uid + "_" + std::to_string(get_timestamp()) + ".xlsx", OpenXLSX::XLForceOverwrite);
 
 			ExcelStyles styles = create_styles(doc); // 初始化样式
 
@@ -1145,7 +1126,7 @@ Q_INVOKABLE void Data::exportToExcel() {
 				catch (const std::exception& e) {
 					qWarning() << "添加工作表失败" << QString::fromStdString(pool_name) << QString::fromLocal8Bit(e.what());
 				}
-				XLWorksheet ws = doc.workbook().worksheet(pool_name);
+				OpenXLSX::XLWorksheet ws = doc.workbook().worksheet(pool_name);
 				// 创建表头
 				std::vector<std::string> headers = {
 					tr("时间").toStdString(),
@@ -1157,7 +1138,7 @@ Q_INVOKABLE void Data::exportToExcel() {
 				};
 				// 设置表头
 				for (size_t i = 0; i < headers.size(); ++i) {
-					auto cell = ws.cell(XLCellReference(1, i + 1));
+					auto cell = ws.cell(OpenXLSX::XLCellReference(1, i + 1));
 					cell.value() = headers[i];
 					cell.setCellFormat(styles.titleStyle);
 				}
@@ -1178,7 +1159,7 @@ Q_INVOKABLE void Data::exportToExcel() {
 					ws.cell(row, 6).value() = since5;
 
 					// 设置样式
-					XLStyleIndex style;
+					OpenXLSX::XLStyleIndex style;
 					if (item["qualityLevel"] == 5) {
 						style = styles.star5Style;
 						since5 = 0;
@@ -1200,7 +1181,7 @@ Q_INVOKABLE void Data::exportToExcel() {
 					{ "F", 15 }
 				};
 				for (const auto& [col_letter, width] : column_widths) {
-					uint16_t col_index = XLCellReference::columnAsNumber(col_letter);
+					uint16_t col_index = OpenXLSX::XLCellReference::columnAsNumber(col_letter);
 					ws.column(col_index).setWidth(width);
 				}
 				doc.save();
@@ -1226,7 +1207,7 @@ Q_INVOKABLE void Data::exportToExcel() {
 	});
 }
 
-Data::ExcelStyles Data::create_styles(XLDocument& doc){
+Data::ExcelStyles Data::create_styles(OpenXLSX::XLDocument& doc){
 	auto& styles = doc.styles();
 	auto& fonts = styles.fonts();
 	auto& fills = styles.fills();
@@ -1234,59 +1215,59 @@ Data::ExcelStyles Data::create_styles(XLDocument& doc){
 	auto& cellFormats = styles.cellFormats();
 
 	// 通用边框（细线 C4C2BF）
-	XLStyleIndex border = borders.create();
-	borders[border].setTop(XLLineStyleThin, XLColor("FFC4C2BF"));
-	borders[border].setBottom(XLLineStyleThin, XLColor("FFC4C2BF"));
-	borders[border].setLeft(XLLineStyleThin, XLColor("FFC4C2BF"));
-	borders[border].setRight(XLLineStyleThin, XLColor("FFC4C2BF"));
+	OpenXLSX::XLStyleIndex border = borders.create();
+	borders[border].setTop(OpenXLSX::XLLineStyleThin, OpenXLSX::XLColor("FFC4C2BF"));
+	borders[border].setBottom(OpenXLSX::XLLineStyleThin, OpenXLSX::XLColor("FFC4C2BF"));
+	borders[border].setLeft(OpenXLSX::XLLineStyleThin, OpenXLSX::XLColor("FFC4C2BF"));
+	borders[border].setRight(OpenXLSX::XLLineStyleThin, OpenXLSX::XLColor("FFC4C2BF"));
 
 	// 标题样式
-	XLStyleIndex titleFont = fonts.create();
+	OpenXLSX::XLStyleIndex titleFont = fonts.create();
 	fonts[titleFont].setFontName("Microsoft YaHei");
 	fonts[titleFont].setBold(true);
-	fonts[titleFont].setFontColor(XLColor("FF757575"));
+	fonts[titleFont].setFontColor(OpenXLSX::XLColor("FF757575"));
 
-	XLStyleIndex titleFill = fills.create();
-	fills[titleFill].setPatternType(XLPatternSolid);
-	fills[titleFill].setColor(XLColor("FFDBD7D3"));
+	OpenXLSX::XLStyleIndex titleFill = fills.create();
+	fills[titleFill].setPatternType(OpenXLSX::XLPatternSolid);
+	fills[titleFill].setColor(OpenXLSX::XLColor("FFDBD7D3"));
 
-	XLStyleIndex titleStyle = cellFormats.create();
+	OpenXLSX::XLStyleIndex titleStyle = cellFormats.create();
 	cellFormats[titleStyle].setFontIndex(titleFont);
 	cellFormats[titleStyle].setFillIndex(titleFill);
 	cellFormats[titleStyle].setBorderIndex(border);
 
 	// 3星样式（黑字）
-	XLStyleIndex star3Font = fonts.create();
+	OpenXLSX::XLStyleIndex star3Font = fonts.create();
 	fonts[star3Font].setFontName("Microsoft YaHei");
-	fonts[star3Font].setFontColor(XLColor("FF8E8E8E"));
+	fonts[star3Font].setFontColor(OpenXLSX::XLColor("FF8E8E8E"));
 
-	XLStyleIndex contentFill = fills.create();
-	fills[contentFill].setPatternType(XLPatternSolid);
-	fills[contentFill].setColor(XLColor("FFEBEBEB"));
+	OpenXLSX::XLStyleIndex contentFill = fills.create();
+	fills[contentFill].setPatternType(OpenXLSX::XLPatternSolid);
+	fills[contentFill].setColor(OpenXLSX::XLColor("FFEBEBEB"));
 
-	XLStyleIndex star3Style = cellFormats.create();
+	OpenXLSX::XLStyleIndex star3Style = cellFormats.create();
 	cellFormats[star3Style].setFontIndex(star3Font);
 	cellFormats[star3Style].setFillIndex(contentFill);
 	cellFormats[star3Style].setBorderIndex(border);
 
 	// 4星样式（紫色）
-	XLStyleIndex star4Font = fonts.create();
+	OpenXLSX::XLStyleIndex star4Font = fonts.create();
 	fonts[star4Font].setFontName("Microsoft YaHei");
 	fonts[star4Font].setBold(true);
-	fonts[star4Font].setFontColor(XLColor("FFA256E1"));
+	fonts[star4Font].setFontColor(OpenXLSX::XLColor("FFA256E1"));
 
-	XLStyleIndex star4Style = cellFormats.create();
+	OpenXLSX::XLStyleIndex star4Style = cellFormats.create();
 	cellFormats[star4Style].setFontIndex(star4Font);
 	cellFormats[star4Style].setFillIndex(contentFill);
 	cellFormats[star4Style].setBorderIndex(border);
 
 	// 5星样式（金色）
-	XLStyleIndex star5Font = fonts.create();
+	OpenXLSX::XLStyleIndex star5Font = fonts.create();
 	fonts[star5Font].setFontName("Microsoft YaHei");
 	fonts[star5Font].setBold(true);
-	fonts[star5Font].setFontColor(XLColor("FFBD6932"));
+	fonts[star5Font].setFontColor(OpenXLSX::XLColor("FFBD6932"));
 
-	XLStyleIndex star5Style = cellFormats.create();
+	OpenXLSX::XLStyleIndex star5Style = cellFormats.create();
 	cellFormats[star5Style].setFontIndex(star5Font);
 	cellFormats[star5Style].setFillIndex(contentFill);
 	cellFormats[star5Style].setBorderIndex(border);

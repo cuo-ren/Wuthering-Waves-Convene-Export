@@ -5,8 +5,7 @@
 #include <QFuture>
 #include "DownloadManager.h"
 #include "miniz.h"
-#define CPPHTTPLIB_OPENSSL_SUPPORT
-#include "httplib.h"
+#include "requests.hpp"
 
 class Update : public QObject {
 	Q_OBJECT

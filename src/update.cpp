@@ -95,42 +95,25 @@ Q_INVOKABLE void Update::checkUpdate(bool notNotifyNoupdate) {
         httplib::Headers headers;
 
         //release url
-        url = "https://api.github.com";
+        url = "https://api.github.com/repos/cuo-ren/Wuthering-Waves-Convene-Export/releases";
         //headers
         headers = {
             { "User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36 Edg/133.0.0.0" },
             { "Accept", "application/json" }
         };
 
-        httplib::Client cli(url);
-        httplib::user_agent_override = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36 Edg/133.0.0.0";
-
-        cli.set_read_timeout(10, 0);
-        cli.set_connection_timeout(10, 0);
-
-        //设置代理
-        std::string proxy = DownloadManager::instance().get_system_proxy();
-        if (!proxy.empty()) {
-            qInfo() << "检测到系统代理：" << QString::fromStdString(proxy);
-
-            auto r = DownloadManager::instance().parse_proxy(proxy);
-            qDebug().noquote() << "ip:" << r->first << "端口:" << r->second;
-            cli.set_proxy(r->first, r->second);
-        }
-
         // 发起 GET 请求
-        auto res = cli.Get("/repos/cuo-ren/Wuthering-Waves-Convene-Export/releases", headers);
+        auto res = Requests::get(url, { .headers = headers });
 
         //连接失败
-        if (!res || res->status != 200) {
-            qWarning().noquote() << "网络异常 状态码：" << (res ? QString::fromStdString(std::to_string(res->status)) : "连接失败");
-            Notifier::instance().notify(2, "网络异常" + (res ? QString::fromStdString(std::to_string(res->status)) : "连接失败"));
+        if (!res.ok()) {
+            qWarning().noquote() << "网络异常 状态码：" << (res ? QString::fromStdString(std::to_string(res.status_code)) : "连接失败");
+            Notifier::instance().notify(2, "网络异常" + (res ? QString::fromStdString(std::to_string(res.status_code)) : "连接失败"));
             emit checkUpdateFailed();
             return;
         }
         try {
-            json result = json::parse(res->body);
-            qDebug() << QString::fromStdString(res->body);
+            json result = json::parse(res.text);
             for (auto& it : result) {
                 if (it["prerelease"].get<bool>() or it["draft"].get<bool>()) {
                     //排除预览版，草稿
@@ -562,40 +545,23 @@ json Update::getVersionInfo(std::string version) {
     httplib::Headers headers;
 
     //veersion文件url
-    url = "https://raw.githubusercontent.com";
+    url = "https://raw.githubusercontent.com/cuo-ren/Wuthering-Waves-Convene-Export/refs/heads/main/versions/" + version + ".json";
     //headers
     headers = {
         { "User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36 Edg/133.0.0.0" },
         { "Accept", "application/json" }
     };
 
-    httplib::Client cli(url);
-    httplib::user_agent_override = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36 Edg/133.0.0.0";
-
-    cli.set_connection_timeout(10, 0);
-    cli.set_read_timeout(10, 0); // 10 秒超时
-
-    //设置代理
-    std::string proxy = DownloadManager::instance().get_system_proxy();
-    if (!proxy.empty()) {
-        qInfo() << "检测到系统代理：" << QString::fromStdString(proxy);
-
-        auto r = DownloadManager::instance().parse_proxy(proxy);
-        qDebug().noquote() << "ip:" << r->first << "端口:" << r->second;
-        cli.set_proxy(r->first, r->second);
-    }
-
     // 发起 GET 请求
-    auto res = cli.Get("/cuo-ren/Wuthering-Waves-Convene-Export/refs/heads/main/versions/" + version + ".json", headers);
+    auto res = Requests::get(url, { .headers = headers });
 
     //连接失败
-    if (!res || res->status != 200) {
-        qWarning().noquote() << "网络异常 状态码：" << (res ? QString::fromStdString(std::to_string(res->status)) : "连接失败");
-        return res ? res->status : -1;
+    if (!res.ok()) {
+        qWarning().noquote() << "网络异常 状态码：" << (res ? QString::fromStdString(std::to_string(res.status_code)) : "连接失败");
+        return res ? res.status_code : -1;
     }
     try {
-        qDebug().noquote() << QString::fromStdString(res->body);
-        json result = json::parse(res->body);
+        json result = json::parse(res.text);
         return result;
     }
     catch (...) {
