@@ -810,7 +810,7 @@ json Data::findGachaUrls() {
 			std::string url = matches[0];
 			search_start = matches.suffix().first;
 			try {
-				std::map<std::string, std::string> d = get_params(utf8_to_local(url));
+				std::map<std::string, std::string> d = get_params(url);
 				uid_url_map[d["player_id"]] = {
 					{"url", url},
 					{"svr_id", d["svr_id"]},
@@ -843,30 +843,29 @@ std::map<std::string, std::string> Data::get_params(const std::string& url) {
 		qWarning().noquote() << "url不含参数" << QString::fromStdString(url);
 		return params;
 	}
-	std::string find_url = url.substr(url.find("?") + 1);
-	std::string key = "";
-	std::string value = "";
-	int flag = 1;
-	for (char c : find_url) {
-		if (c == '=') {
-			flag = 2;
+	std::string query_str = url.substr(url.find("?") + 1);
+	size_t start = 0;
+	query_str = query_str + "&";
+	while (start < query_str.size()) {
+		size_t end = query_str.find("&", start);
+		if (end == std::string::npos) {
+			break;
+		}
+
+		size_t mid = query_str.substr(start, end - start).find("=");
+
+		if (mid == std::string::npos) {
+			start = end + 1;
 			continue;
 		}
-		if (c == '&') {
-			params[key] = value;
-			key = "";
-			value = "";
-			flag = 1;
-			continue;
-		}
-		if (flag == 1) {
-			key += c;
-		}
-		if (flag == 2) {
-			value += c;
-		}
+
+		mid += +start;
+
+		std::string key = query_str.substr(start, mid - start);
+		std::string value = query_str.substr(mid + 1, end - mid - 1);
+		params[key] = value;
+		start = end + 1;
 	}
-	params[key] = value;
 	return params;
 }
 
