@@ -57,7 +57,7 @@ private:
     std::u8string updatePath;
     std::u8string updateConfigName;
 
-    std::vector<std::string> old_versions = { "betav0.1","betav0.2","betav1.0","betav2.0","betav2.1"};
+    std::vector<std::string> old_versions = { "betav0.1","betav0.2","betav1.0","betav2.0","betav2.1","v1.0.0"};
     bool canceled = false;
 
     enum UpdateStatus {
@@ -78,18 +78,6 @@ private:
     json current_version_config;
     json new_version_config;
 
-    static inline std::string trim(const std::string& s) {
-        size_t a = 0, b = s.size();
-        while (a < b && std::isspace((unsigned char)s[a])) ++a;
-        while (b > a && std::isspace((unsigned char)s[b - 1])) --b;
-        return s.substr(a, b - a);
-    }
-
-    static inline std::string to_lower(std::string s) {
-        std::transform(s.begin(), s.end(), s.begin(), [](unsigned char c) { return std::tolower(c); });
-        return s;
-    }
-
     void onUpdateInfo(bool flag, QString version = "");
 
     void resetUpdateConfig();
@@ -99,7 +87,5 @@ private:
     json getVersionInfo(std::string version);
     int download_file(const std::string url, const std::string& save_path, const std::string& filename = "");
     bool unzip(const std::string& zipPath, const std::string& outDir, const uint64_t maxSize = 2ull * 1024ull * 1024ull * 1024ull);
-    std::string get_system_proxy();
-    std::optional<std::pair<std::string, int>> parse_proxy(const std::string& proxy_raw);
     bool isSubPath(const std::filesystem::path& base, const std::filesystem::path& target);
 };
