@@ -34,3 +34,13 @@ bool compareByTime(const json& a, const json& b);
 bool is_digit(const std::string&);
 void reset_folder(const std::string& path);
 void reset_folder(const std::filesystem::path& path);
+
+inline std::string operator+(const std::string& lhs, const std::u8string& rhs) {
+	std::string r(rhs.data(), rhs.data() + rhs.size());
+	return lhs + r;
+}
+
+inline std::u8string operator+(const std::u8string& lhs, const std::string& rhs) {
+	std::u8string r(rhs.data(), rhs.data() + rhs.size());
+	return lhs + r;
+}

@@ -134,8 +134,8 @@ void Data::save(json data) {
 	try {
 		std::filesystem::path src = std::filesystem::path(file_path) / (file_name + u8".json");
 		std::string backuptime = std::to_string(timestamp);
-		std::u8string backupfilepath = file_path + u8"/" + file_name + u8"_" + std::u8string(backuptime.data(), backuptime.data() + backuptime.size()) + u8".json";
-		std::filesystem::path dst = std::filesystem::path(file_path) / (file_name + u8"_" + std::u8string(backuptime.data(), backuptime.data() + backuptime.size()) + u8".json.bak");
+		std::u8string backupfilepath = file_path + u8"/" + file_name + u8"_" + backuptime + u8".json";
+		std::filesystem::path dst = std::filesystem::path(file_path) / (file_name + u8"_" + backuptime + u8".json.bak");
 
 		std::filesystem::copy_file(src, dst, std::filesystem::copy_options::overwrite_existing);
 		qInfo().noquote() << "备份数据成功 " << QString::fromUtf8(backupfilepath.data(), backupfilepath.size());
@@ -605,8 +605,7 @@ Q_INVOKABLE void Data::update_data(const int& mode, QString input_url) {
 			json urls = json::object();
 			if (mode == 1) {
 				qInfo().noquote() << "正在检测游戏日志";
-				std::string gamepath = ConfigManager::instance().get<std::string>("path");
-				std::u8string logPath = std::u8string(gamepath.data(), gamepath.data()+ gamepath.size()) + u8"/Client/Saved/Logs/Client.log";
+				std::u8string logPath = ConfigManager::instance().get<std::u8string>("path") + u8"/Client/Saved/Logs/Client.log";
 				std::filesystem::path fsPath = std::filesystem::path(logPath);
 
 				if (!std::filesystem::exists(fsPath)) {
@@ -794,8 +793,7 @@ json Data::findGachaUrls() {
 	json uid_url_map = json::object();
 
 	std::regex url_pattern(R"(https://[^"\\ ]*/aki/gacha/index\.html#/record\?[^"\\ ]+)");
-	std::string gamepath = ConfigManager::instance().get<std::string>("path");
-	std::u8string logPath = std::u8string(gamepath.data(), gamepath.data() + gamepath.size()) + u8"/Client/Saved/Logs/Client.log";
+	std::u8string logPath = ConfigManager::instance().get<std::u8string>("path") + u8"/Client/Saved/Logs/Client.log";
 	std::filesystem::path fsPath = std::filesystem::path(logPath);
 	std::ifstream file(fsPath);
 	if (!file.is_open()) {

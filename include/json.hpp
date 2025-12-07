@@ -25524,3 +25524,43 @@ inline void swap(nlohmann::NLOHMANN_BASIC_JSON_TPL& j1, nlohmann::NLOHMANN_BASIC
 
 
 #endif  // INCLUDE_NLOHMANN_JSON_HPP_
+namespace nlohmann {
+
+    // special-case serializer for std::u8string
+    template<>
+    struct adl_serializer<std::u8string>
+    {
+        // to_json: convert std::u8string -> json string (via std::string bytes)
+        static void to_json(nlohmann::json& j, const std::u8string& value)
+        {
+            // construct a std::string from the bytes (no encoding conversion, just bytes)
+            std::string s;
+            s.reserve(value.size());
+            for (char8_t c : value) s.push_back(static_cast<char>(c));
+            j = s;
+        }
+
+        // from_json (output parameter): convert json string -> std::u8string
+        static void from_json(const nlohmann::json& j, std::u8string& value)
+        {
+            if (!j.is_string())
+            {
+                // mimic library behaviour: throw a type_error
+                throw(json::type_error::create(302, std::string("type must be string, but is ") + j.type_name(), &j));
+            }
+            std::string s = j.get<std::string>(); // get underlying byte string
+            value.clear();
+            value.reserve(s.size());
+            for (unsigned char ch : s) value.push_back(static_cast<char8_t>(ch));
+        }
+
+        // optional value-returning overload used by some get_impl entry paths
+        static std::u8string from_json(const nlohmann::json& j)
+        {
+            std::u8string v;
+            from_json(j, v);
+            return v;
+        }
+    };
+
+}

@@ -943,7 +943,7 @@ Q_INVOKABLE void Update::update() {
                 }
             }
             //替换更新版本updater相关文件
-            std::filesystem::path versionRoot = std::filesystem::path(updatePath + u8"/" + std::u8string(new_version.data(), new_version.data() + new_version.size()));
+            std::filesystem::path versionRoot = std::filesystem::path(updatePath + u8"/" + new_version);
             std::filesystem::path contentRoot = std::filesystem::weakly_canonical(versionRoot / new_version_config["path"].get<std::u8string>());
 
             for (auto& item : new_version_config["updater"]) {
