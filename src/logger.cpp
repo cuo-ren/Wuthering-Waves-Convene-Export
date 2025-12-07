@@ -86,17 +86,10 @@ void Logger::messageHandler(QtMsgType type, const QMessageLogContext& context, c
         levelColored = "[\033[41;37mFATAL\033[0m]";
         break;
     }
-    /*
-    QString contextInfo = QString("(%1:%2, %3)")
-        .arg(QString::fromUtf8(context.file))
-        .arg(context.line)
-        .arg(QString::fromUtf8(context.function));
-        */
-    QString logLineColored = QString("%1 %2 %3")
-        .arg(QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss"))
-        .arg(levelColored)
-        //.arg(contextInfo)
-        .arg(msg);
+    
+    QString contextInfo = QString::fromUtf8(context.file) + " " + QString::number(context.line) + " " + QString::fromUtf8(context.function);
+        
+    QString logLineColored = QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss") + " " + levelColored + " " + contextInfo + " " + msg;
 
     QString logLinePlain = QString("%1 %2 %3")
         .arg(QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss"))

@@ -587,34 +587,13 @@ int Update::download_file(const std::string url, const std::string& save_path, c
         isFirstDownload = true;
     }
 
-    std::string protocol;
-    std::string host;
-    std::string path;
-
     std::string url_copy = QString::fromStdString(url).trimmed().toStdString();
 
     if (url_copy.find("://") == std::string::npos) {
-        qWarning() << "协议提取失败";
+        qWarning() << "url协议提取失败";
         return -1;
     }
-    protocol = url_copy.substr(0, url_copy.find("://"));
 
-    url_copy = url_copy.substr(url_copy.find("://") + 3);
-
-    if (url_copy.find("/") == std::string::npos) {
-        host = url_copy;
-        path = "";
-    }
-    else {
-        host = url_copy.substr(0, url_copy.find("/"));
-        path = url_copy.substr(url_copy.find("/"));
-    }
-
-    httplib::Client cli(protocol + "://" + host);
-    httplib::user_agent_override = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36 Edg/133.0.0.0";
-
-    cli.set_follow_location(true); // 支持 301/302 跳转
-    cli.set_read_timeout(10, 0); // 10 秒超时
     httplib::Headers headers;
     picosha2::hash256_one_by_one hasher;
 
@@ -653,114 +632,105 @@ int Update::download_file(const std::string url, const std::string& save_path, c
         };
     }
 
-    //设置代理
-    std::string proxy = DownloadManager::instance().get_system_proxy();
-    if (!proxy.empty()) {
-        qDebug() << "检测到系统代理：" << QString::fromStdString(proxy);
-
-        auto r = DownloadManager::instance().parse_proxy(proxy);
-        qDebug() << "ip:" << r->first << "端口:" << r->second;
-        cli.set_proxy(r->first, r->second);
-    }
-
     std::ofstream ofs;
     std::string final_filename = filename;
 
     auto last_time = std::chrono::steady_clock::now();
     int64_t last_current_bites = standedBites;
 
-    auto res = cli.Get(
-        path, // 请求路径
-        headers,
-        [&](const httplib::Response& res) {//ResponseHandler
-            std::string used_filename = final_filename;
-            if (!isFirstDownload) {
-                std::filesystem::path file_path = std::filesystem::path(updatePath) / updateConfig["version"].get<std::u8string>() / updateConfig["fileName"].get<std::u8string>();
-                ofs.open(file_path, std::ios::binary | std::ios::app);
-                if (!ofs) {
-                    std::u8string outputPath = file_path.u8string();
-                    qWarning() << "无法打开文件:" << QString::fromUtf8(reinterpret_cast<const char*>(outputPath.data()), outputPath.size());
-                    return false; // 中止下载
-                }
+    auto res = Requests::get(
+        url_copy, 
+        { .headers = headers },
+        { 
+            .ResponseHandler = [&](const httplib::Response& res) {//ResponseHandler
+                std::string used_filename = final_filename;
+                if (!isFirstDownload) {
+                    std::filesystem::path file_path = std::filesystem::path(updatePath) / updateConfig["version"].get<std::u8string>() / updateConfig["fileName"].get<std::u8string>();
+                    ofs.open(file_path, std::ios::binary | std::ios::app);
+                    if (!ofs) {
+                        std::u8string outputPath = file_path.u8string();
+                        qWarning() << "无法打开文件:" << QString::fromUtf8(reinterpret_cast<const char*>(outputPath.data()), outputPath.size());
+                        return false; // 中止下载
+                    }
 
-                return true; // 继续接收 body
-            }
-            else {
-                hasher.init();
-                if (used_filename.empty()) {
-                    // 1. 从 Content-Disposition 中取 filename
-                    auto it = res.headers.find("Content-Disposition");
-                    if (it != res.headers.end()) {
-                        std::string cd = it->second;
-                        auto pos = cd.find("filename=");
-                        if (pos != std::string::npos) {
-                            used_filename = cd.substr(pos + 9); // 去掉 filename=
-                            if (!used_filename.empty() && used_filename.front() == '\"' && used_filename.back() == '\"') {
-                                used_filename = used_filename.substr(1, used_filename.size() - 2); // 去掉引号
+                    return true; // 继续接收 body
+                }
+                else {
+                    hasher.init();
+                    if (used_filename.empty()) {
+                        // 1. 从 Content-Disposition 中取 filename
+                        auto it = res.headers.find("Content-Disposition");
+                        if (it != res.headers.end()) {
+                            std::string cd = it->second;
+                            auto pos = cd.find("filename=");
+                            if (pos != std::string::npos) {
+                                used_filename = cd.substr(pos + 9); // 去掉 filename=
+                                if (!used_filename.empty() && used_filename.front() == '\"' && used_filename.back() == '\"') {
+                                    used_filename = used_filename.substr(1, used_filename.size() - 2); // 去掉引号
+                                }
                             }
                         }
+                        // 2. fallback
+                        if (used_filename.empty()) {
+                            used_filename = "temp";
+                        }
                     }
-                    // 2. fallback
-                    if (used_filename.empty()) {
-                        used_filename = "temp";
+
+                    final_filename = used_filename;
+                    updateConfig["fileName"] = final_filename;
+
+                    std::filesystem::path file_path = std::filesystem::path(std::u8string(save_path.data(), save_path.data() + save_path.size())) / std::u8string(final_filename.data(), final_filename.data() + final_filename.size());
+                    ofs.open(file_path, std::ios::binary);
+                    if (!ofs) {
+                        std::u8string outputPath = file_path.u8string();
+                        qWarning() << "无法创建文件:" << QString::fromUtf8(reinterpret_cast<const char*>(outputPath.data()), outputPath.size());
+                        return false; // 中止下载
                     }
+                    return true; // 继续接收 body
+                }
+            },
+            .ContentReceiver = [&](const char* data, size_t len) { // ContentReceiver
+                if (ofs.is_open()) {
+                    ofs.write(data, len);
+                    hasher.process(data, data + len);
+                    return true;
+                }
+                return false; // 没有文件就中止
+            },
+            .DownloadProgress = [&](uint64_t current, uint64_t total) { // DownloadProgress
+                auto now = std::chrono::steady_clock::now();
+                double elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - last_time).count() / 1000.0;
+                double speed;
+                if (elapsed > 0.0) {
+                    last_time = now;
+                    speed = (current + standedBites - last_current_bites) / elapsed; // bytes per sec
+                    last_current_bites = current + standedBites;
+                }
+                else {
+                    speed = 0.0;
                 }
 
-                final_filename = used_filename;
-                updateConfig["fileName"] = final_filename;
+                std::string speed_str;
+                if (speed > 1024 * 1024)
+                    speed_str = std::to_string(speed / 1024.0 / 1024.0).substr(0, 5) + " MB/s";
+                else if (speed > 1024)
+                    speed_str = std::to_string(speed / 1024.0).substr(0, 5) + " KB/s";
+                else
+                    speed_str = std::to_string(speed).substr(0, 5) + " B/s";
 
-                std::filesystem::path file_path = std::filesystem::path(std::u8string(save_path.data(), save_path.data() + save_path.size())) / std::u8string(final_filename.data(), final_filename.data() + final_filename.size());
-                ofs.open(file_path, std::ios::binary);
-                if (!ofs) {
-                    std::u8string outputPath = file_path.u8string();
-                    qWarning() << "无法创建文件:" << QString::fromUtf8(reinterpret_cast<const char*>(outputPath.data()), outputPath.size());
-                    return false; // 中止下载
+                int percent = (total > 0) ? static_cast<int>(100.0 * (current + standedBites) / (total + standedBites)) : 0;
+                updateConfig["downloaded"] = current + standedBites;
+                updateConfig["totalSize"] = total + standedBites;
+
+                qInfo() << "Downloading " << final_filename << " [" << percent << "%] " << speed_str;
+                emit refreshText(tr("下载中 %1% %2").arg(percent).arg(QString::fromStdString(speed_str)));
+
+                if (canceled) {
+                    return false;//暂停下载
                 }
-                return true; // 继续接收 body
+                return true; // 继续下载
             }
-        },
-        [&](const char* data, size_t len) { // ContentReceiver
-            if (ofs.is_open()) {
-                ofs.write(data, len);
-                hasher.process(data, data + len);
-                return true;
-            }
-            return false; // 没有文件就中止
-        },
-        [&](uint64_t current, uint64_t total) { // DownloadProgress
-            auto now = std::chrono::steady_clock::now();
-            double elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - last_time).count() / 1000.0;
-            double speed;
-            if (elapsed > 0.0) {
-                last_time = now;
-                speed = (current + standedBites - last_current_bites) / elapsed; // bytes per sec
-                last_current_bites = current + standedBites;
-            }
-            else {
-                speed = 0.0;
-            }
-
-            std::string speed_str;
-            if (speed > 1024 * 1024)
-                speed_str = std::to_string(speed / 1024.0 / 1024.0).substr(0, 5) + " MB/s";
-            else if (speed > 1024)
-                speed_str = std::to_string(speed / 1024.0).substr(0, 5) + " KB/s";
-            else
-                speed_str = std::to_string(speed).substr(0, 5) + " B/s";
-
-            int percent = (total > 0) ? static_cast<int>(100.0 * (current + standedBites) / (total + standedBites)) : 0;
-            updateConfig["downloaded"] = current + standedBites;
-            updateConfig["totalSize"] = total + standedBites;
-
-            qInfo() << "Downloading " << final_filename << " [" << percent << "%] " << speed_str;
-            emit refreshText(tr("下载中 %1% %2").arg(percent).arg(QString::fromStdString(speed_str)));
-
-            if (canceled) {
-                return false;//暂停下载
-            }
-            return true; // 继续下载
-        }
-    );
+        });
 
     ofs.close();
 
@@ -774,9 +744,9 @@ int Update::download_file(const std::string url, const std::string& save_path, c
         return 1;
     }
 
-    if (!res || !(res->status == 200 || res->status == 206)) {
-        qWarning().noquote() << "网络异常 状态码：" << (res ? QString::fromStdString(std::to_string(res->status)) : "连接失败");
-        Notifier::instance().notify(2, "网络异常" + (res ? QString::fromStdString(std::to_string(res->status)) : "连接失败"));
+    if (!res || !(res.status_code == 200 || res.status_code == 206)) {
+        qWarning().noquote() << "网络异常 状态码：" << (res ? QString::fromStdString(std::to_string(res.status_code)) : "连接失败");
+        Notifier::instance().notify(2, "网络异常" + (res ? QString::fromStdString(std::to_string(res.status_code)) : "连接失败"));
 
         // 删除已写入的无效文件
         std::filesystem::path file_path = std::filesystem::path(std::u8string(save_path.data(), save_path.data() + save_path.size())) / std::u8string(final_filename.data(), final_filename.data() + final_filename.size());

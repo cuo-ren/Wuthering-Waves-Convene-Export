@@ -9,6 +9,11 @@
 #define CPPHTTPLIB_OPENSSL_SUPPORT
 #include "httplib.h"
 
+#define QT_DEBUG_URL
+#define QT_DEBUG_HEADERS
+#define QT_DEBUG_PARAMS
+#define QT_DEBUG_CONTENT
+
 using json = nlohmann::json;
 
 struct ParsedUrl
@@ -370,7 +375,7 @@ struct GetOptions {
 	Response response = Response();
 	bool allowProxies = true;
 	bool allow_redirects = true;
-	bool no_exception = false;
+	bool no_exception = true;
 	int readTimeout = 10;
 	int connectionTimeout = 10;
 	int maxRetries = 1;
@@ -389,7 +394,7 @@ struct PostOptioms {
 	std::filesystem::path file = {};
 	bool allow_redirects = true;
 	bool allowProxies = true;
-	bool no_exception = false;
+	bool no_exception = true;
 	int readTimeout = 10;
 	int connectionTimeout = 10;
 	int maxRetries = 1;
@@ -1244,6 +1249,16 @@ inline Response Requests::get(std::string url, GetOptions op, GetCallBackOptions
 
 	json headers = parse_headers(op.headers);
 	json params = parse_headers(op.params);
+#ifdef QT_DEBUG_URL
+	qDebug() << "url: " << QString::fromStdString(url);
+#endif
+#ifdef QT_DEBUG_HEADERS
+	qDebug() << "headers: " << QString::fromStdString(headers.dump(2));
+#endif
+#ifdef QT_DEBUG_PARAMS
+	qDebug() << "params: " << QString::fromStdString(params.dump(2));
+#endif
+
 	std::string last_url = url;
 	r = getOnce(last_url, r, headers, params, op.allow_redirects, op.allowProxies, op.readTimeout, op.connectionTimeout, cop.ResponseHandler, cop.ContentReceiver, cop.DownloadProgress);
 
@@ -1256,6 +1271,9 @@ inline Response Requests::get(std::string url, GetOptions op, GetCallBackOptions
 				r = getOnce(location, r, headers, params, op.allow_redirects, op.allowProxies, op.readTimeout, op.connectionTimeout, cop.ResponseHandler, cop.ContentReceiver, cop.DownloadProgress);
 			}
 			else {
+#ifdef QT_DEBUG_CONTENT
+				qDebug() << "content: " << QString::fromStdString(r.content);
+#endif
 				return r;
 			}
 		}

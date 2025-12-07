@@ -605,7 +605,8 @@ Q_INVOKABLE void Data::update_data(const int& mode, QString input_url) {
 			json urls = json::object();
 			if (mode == 1) {
 				qInfo().noquote() << "正在检测游戏日志";
-				std::u8string logPath = ConfigManager::instance().get<std::u8string>("path") + u8"/Client/Saved/Logs/Client.log";
+				std::string gamepath = ConfigManager::instance().get<std::string>("path");
+				std::u8string logPath = std::u8string(gamepath.data(), gamepath.data()+ gamepath.size()) + u8"/Client/Saved/Logs/Client.log";
 				std::filesystem::path fsPath = std::filesystem::path(logPath);
 
 				if (!std::filesystem::exists(fsPath)) {
@@ -793,7 +794,8 @@ json Data::findGachaUrls() {
 	json uid_url_map = json::object();
 
 	std::regex url_pattern(R"(https://[^"\\ ]*/aki/gacha/index\.html#/record\?[^"\\ ]+)");
-	std::u8string logPath = ConfigManager::instance().get<std::u8string>("path") + u8"/Client/Saved/Logs/Client.log";
+	std::string gamepath = ConfigManager::instance().get<std::string>("path");
+	std::u8string logPath = std::u8string(gamepath.data(), gamepath.data() + gamepath.size()) + u8"/Client/Saved/Logs/Client.log";
 	std::filesystem::path fsPath = std::filesystem::path(logPath);
 	std::ifstream file(fsPath);
 	if (!file.is_open()) {
