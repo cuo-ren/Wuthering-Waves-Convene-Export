@@ -3,7 +3,6 @@
 #include <QStringList>
 #include <QVariantMap>
 #include "utils.h"
-#include "json.hpp"
 #include <QUrl>
 #include <QDir>
 
