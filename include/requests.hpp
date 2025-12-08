@@ -1307,7 +1307,12 @@ inline Response Requests::getOnce(std::string url, Response& res, json headers, 
 	cli.set_read_timeout(readTimeout, 0);
 	cli.set_connection_timeout(connectionTimeout, 0);
 	cli.set_follow_location(false);
-
+	if (headers.contains("user-agent")) {
+		httplib::user_agent_override = headers["user-agent"][0];
+	}
+	else {
+		httplib::user_agent_override = "cpp-httplib/0.26.0";
+	}
 	//将json headers转化成httplib headers
 	httplib::Headers header;
 	if (res) {
@@ -1498,7 +1503,12 @@ inline Response Requests::post(std::string url, PostOptioms op, PostCallBackOpti
 
 	json headers = parse_headers(op.headers);
 	std::string last_url = url;
-
+#ifdef QT_DEBUG_URL
+	qDebug() << "url: " << QString::fromStdString(url);
+#endif
+#ifdef QT_DEBUG_HEADERS
+	qDebug() << "headers: " << QString::fromStdString(headers.dump(2));
+#endif
 	std::string postBody = {};
 	std::string contentType = {};
 
@@ -1523,6 +1533,9 @@ inline Response Requests::post(std::string url, PostOptioms op, PostCallBackOpti
 		contentType = "";
 	}
 
+#ifdef QT_DEBUG_PARAMS
+	qDebug() << "params: " << QString::fromStdString(postBody);
+#endif
 	bool isGet = false;
 
 	r = postOnce(last_url, r, contentType, headers, postBody, "", op.allow_redirects, op.allowProxies, op.readTimeout, op.connectionTimeout);
@@ -1548,6 +1561,9 @@ inline Response Requests::post(std::string url, PostOptioms op, PostCallBackOpti
 				}
 			}
 			else {
+#ifdef QT_DEBUG_CONTENT
+				qDebug() << "content: " << QString::fromStdString(r.content);
+#endif
 				return r;
 			}
 		}
@@ -1582,6 +1598,12 @@ inline Response Requests::postOnce(std::string url, Response& res, std::string& 
 	cli.set_connection_timeout(connectionTimeout, 0);
 	cli.set_follow_location(false);
 
+	if (headers.contains("user-agent")) {
+		httplib::user_agent_override = headers["user-agent"][0];
+	}
+	else {
+		httplib::user_agent_override = "cpp-httplib/0.26.0";
+	}
 	//将json headers转化成httplib headers
 	httplib::Headers header;
 	if (res) {

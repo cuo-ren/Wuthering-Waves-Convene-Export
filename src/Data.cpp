@@ -586,7 +586,12 @@ Q_INVOKABLE QVariantList Data::getBarChartData(const QString& key) {
 	map["ItemName"] = tr("已垫");
 	map["source"] = "unknown";
 	map["count"] = count;
-	map["isOffTarget"] = pendingOffTarget or isOffTarget;
+	if (!ConfigManager::instance().get<bool>("hiddenStandardItem")) {
+		map["isOffTarget"] = false;
+	}
+	else {
+		map["isOffTarget"] = pendingOffTarget or isOffTarget;
+	}
 	list.append(map);
 	return list;
 }
