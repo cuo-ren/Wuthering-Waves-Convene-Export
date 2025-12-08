@@ -1,5 +1,4 @@
 ﻿#pragma once
-#include "global.h"
 #include "config.h"
 #include "LanguageManager.h"
 #include "DownloadManager.h"
