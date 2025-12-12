@@ -32,10 +32,11 @@ public:
     Q_INVOKABLE void deleteUid(QString uid);
     Q_INVOKABLE void setTimezone(QString uid,int timezone);
     Q_INVOKABLE void update_data(const int& mode, QString input_url = "");
-    Q_INVOKABLE void exportToExcel();
-    Q_INVOKABLE void exportToCsv();
-    Q_INVOKABLE void exportToUIGF3();
-    Q_INVOKABLE void exportToUIGF4(bool isTotal);
+    Q_INVOKABLE void exportData(const QString mode, const QString path = "");
+    Q_INVOKABLE void exportToExcel(const std::string& path);
+    Q_INVOKABLE void exportToCsv(const std::string& path);
+    Q_INVOKABLE void exportToUIGF3(const std::string& path);
+    Q_INVOKABLE void exportToUIGF4(const std::string& path, bool isTotal);
     Q_INVOKABLE void importUIGF(const QString& path);
     Q_INVOKABLE void importUIGF3(const json& uigf);
     Q_INVOKABLE void importUIGF4(const json& uigf);

@@ -334,7 +334,7 @@ bool makedirs(const std::string& path) {
 	if (!std::filesystem::exists(fsPath)) {
 		std::filesystem::create_directories(fsPath, ec);
 		if (ec) {
-			qCritical().noquote() << "创建目录失败: " << QString::fromStdString(fsPath.string()) << " " << ec.message();
+			qCritical().noquote() << "创建目录失败: " << QString::fromLocal8Bit(fsPath.string()) << " " << ec.message();
 			return false;
 		}
 	}
@@ -371,7 +371,7 @@ bool makedirs(const std::u8string& path) {
 	if (!std::filesystem::exists(fsPath)) {
 		std::filesystem::create_directories(fsPath, ec);
 		if (ec) {
-			qCritical().noquote() << "创建目录失败: " << QString::fromStdString(fsPath.string()) << " " << ec.message();
+			qCritical().noquote() << "创建目录失败: " << QString::fromLocal8Bit(fsPath.string()) << " " << ec.message();
 			return false;
 		}
 	}

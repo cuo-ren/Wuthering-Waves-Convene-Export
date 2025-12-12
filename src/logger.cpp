@@ -89,13 +89,9 @@ void Logger::messageHandler(QtMsgType type, const QMessageLogContext& context, c
     
     QString contextInfo = QString::fromUtf8(context.file) + " " + QString::number(context.line) + " " + QString::fromUtf8(context.function);
         
-    QString logLineColored = QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss") + " " + levelColored + " " + contextInfo + " " + msg;
+    QString logLineColored = QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss") + " " + levelColored + " " + msg;
 
-    QString logLinePlain = QString("%1 %2 %3")
-        .arg(QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss"))
-        .arg(levelPlain)
-        //.arg(contextInfo)
-        .arg(msg);
+    QString logLinePlain = QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss") + " " + levelPlain + " " + contextInfo + " " + msg;
 
     std::cerr << logLineColored.toUtf8().constData() << std::endl;
     logStream << logLinePlain << "\n";

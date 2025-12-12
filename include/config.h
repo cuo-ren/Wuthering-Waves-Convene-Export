@@ -166,6 +166,7 @@ private:
             {"fix", false},//修复记录
             {"checkUpdate", false},//自动更新
             {"hiddenStandardItem", false},//隐藏常驻角色
+            {"exportToDefaultPath",true},//导出至默认目录
             {"hash",""}//数据文件hash值
         };
 

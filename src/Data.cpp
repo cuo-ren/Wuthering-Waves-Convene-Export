@@ -1096,19 +1096,53 @@ Q_INVOKABLE QStringList Data::getUidList() {
 	return uid_list;
 }
 
-Q_INVOKABLE void Data::exportToExcel() {
+Q_INVOKABLE void Data::exportData(const QString mode, const QString path) {
+	std::string exportpath = path.toStdString();
+	if (mode == "excel") {
+		if (exportpath.empty()) {
+			exportpath = "./export/excel";
+		}
+		exportToExcel(exportpath);
+	}
+	else if (mode == "csv") {
+		if (exportpath.empty()) {
+			exportpath = "./export/csv";
+		}
+		exportToCsv(exportpath);
+	}
+	else if (mode == "uigf3") {
+		if (exportpath.empty()) {
+			exportpath = "./export/UIGFv3";
+		}
+		exportToUIGF3(exportpath);
+	}
+	else if (mode == "uigf4") {
+		if (exportpath.empty()) {
+			exportpath = "./export/UIGFv4";
+		}
+		exportToUIGF4(exportpath, false);
+	}
+	else if (mode == "uigf4total") {
+		if (exportpath.empty()) {
+			exportpath = "./export/UIGFv4";
+		}
+		exportToUIGF4(exportpath, true);
+	}
+}
+
+Q_INVOKABLE void Data::exportToExcel(const std::string& path) {
 	//确保文件夹存在
-	if (!makedirs("./export/excel")) {
+	if (!makedirs(path)) {
 		emit exportFail();
 		Notifier::instance().notify(3, "创建目录失败");
 		return;
 	}
 
-	QtConcurrent::run([this]() {
+	QtConcurrent::run([this,path]() {
 		try {
 			OpenXLSX::XLDocument doc;
 			std::string uid = ConfigManager::instance().get<std::string>("active_uid");
-			doc.create("./export/excel/" + LanguageManager::instance().getValue((std::string)"fileName") + "_" + uid + "_" + std::to_string(get_timestamp()) + ".xlsx", OpenXLSX::XLForceOverwrite);
+			doc.create(path + "/" + LanguageManager::instance().getValue((std::string)"fileName") + "_" + uid + "_" + std::to_string(get_timestamp()) + ".xlsx", OpenXLSX::XLForceOverwrite);
 
 			ExcelStyles styles = create_styles(doc); // 初始化样式
 
@@ -1279,22 +1313,22 @@ Data::ExcelStyles Data::create_styles(OpenXLSX::XLDocument& doc){
 	return { titleStyle, star3Style, star4Style, star5Style };
 }
 
-Q_INVOKABLE void Data::exportToCsv() {
+Q_INVOKABLE void Data::exportToCsv(const std::string& path) {
 	//确保文件夹存在
-	if (!makedirs("./export/csv")) {
+	if (!makedirs(path)) {
 		emit exportFail();
 		Notifier::instance().notify(3, "创建目录失败");
 		return;
 	}
 
-	QtConcurrent::run([this]() {
+	QtConcurrent::run([this, path]() {
 		try {
 			json gacha_type = Global::instance().get_gacha_type();
 			std::string uid = ConfigManager::instance().get<std::string>("active_uid");
 
 			std::time_t now = std::time(nullptr);
-			std::string filename = "./export/csv/" + LanguageManager::instance().getValue((std::string)"fileName") + "_" + uid + "_" + std::to_string(now) + ".csv";
-			std::filesystem::path fsPath = std::filesystem::path(std::u8string(filename.data(), filename.data() + filename.size()));
+			std::string filename = LanguageManager::instance().getValue((std::string)"fileName") + "_" + uid + "_" + std::to_string(now) + ".csv";
+			std::filesystem::path fsPath = std::filesystem::path(std::u8string(path.data(), path.data() + path.size())) / std::filesystem::path(std::u8string(filename.data(), filename.data() + filename.size()));
 
 			std::ofstream file(fsPath, std::ios::binary);
 			if (!file.is_open()) {
@@ -1359,15 +1393,15 @@ Q_INVOKABLE void Data::exportToCsv() {
 	});
 }
 
-Q_INVOKABLE void Data::exportToUIGF3() {
+Q_INVOKABLE void Data::exportToUIGF3(const std::string& path) {
 	//确保文件夹存在
-	if (!makedirs("./export/UIGFv3")) {
+	if (!makedirs(path)) {
 		emit exportFail();
 		Notifier::instance().notify(3, "创建目录失败");
 		return;
 	}
 
-	QtConcurrent::run([this]() {
+	QtConcurrent::run([this, path]() {
 		try {
 			json gacha_type = Global::instance().get_gacha_type();
 			std::string uid = ConfigManager::instance().get<std::string>("active_uid");
@@ -1413,7 +1447,7 @@ Q_INVOKABLE void Data::exportToUIGF3() {
 				}
 			}
 
-			std::string filename = "./export/UIGFv3/UIGFv3_" + uid + "_" + std::to_string(uigf3["info"]["export_timestamp"].get<int>()) + ".json";
+			std::string filename = path + "/UIGFv3_" + uid + "_" + std::to_string(uigf3["info"]["export_timestamp"].get<int>()) + ".json";
 			WriteJsonFile(filename, uigf3);
 
 			emit exportCompleted();
@@ -1433,15 +1467,15 @@ Q_INVOKABLE void Data::exportToUIGF3() {
 	});
 }
 
-Q_INVOKABLE void Data::exportToUIGF4(bool isTotal) {
+Q_INVOKABLE void Data::exportToUIGF4(const std::string& path, bool isTotal) {
 	//确保文件夹存在
-	if (!makedirs("./export/UIGFv4")) {
+	if (!makedirs(path)) {
 		emit exportFail();
 		Notifier::instance().notify(3, "创建目录失败");
 		return;
 	}
 
-	QtConcurrent::run([this, isTotal]() {
+	QtConcurrent::run([this, path, isTotal]() {
 		try {
 			json gacha_type = Global::instance().get_gacha_type();
 			std::string uid = ConfigManager::instance().get<std::string>("active_uid");
@@ -1484,7 +1518,7 @@ Q_INVOKABLE void Data::exportToUIGF4(bool isTotal) {
 
 					export_data["aki"].push_back(uid_entry);
 				}
-				std::string filename = "./export/UIGFv4/UIGFv4_" + std::to_string(export_data["info"]["export_timestamp"].get<int>()) + ".json";
+				std::string filename = path + "/UIGFv4_" + std::to_string(export_data["info"]["export_timestamp"].get<int>()) + ".json";
 				WriteJsonFile(filename, export_data);
 			}
 			else {
@@ -1516,7 +1550,7 @@ Q_INVOKABLE void Data::exportToUIGF4(bool isTotal) {
 
 				export_data["aki"].push_back(uid_entry);
 
-				std::string filename = "./export/UIGFv4/UIGFv4_" + uid + "_" + std::to_string(export_data["info"]["export_timestamp"].get<int>()) + ".json";
+				std::string filename = path + "/UIGFv4_" + uid + "_" + std::to_string(export_data["info"]["export_timestamp"].get<int>()) + ".json";
 				WriteJsonFile(filename, export_data);
 			}
 			emit exportCompleted();

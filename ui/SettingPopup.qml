@@ -63,6 +63,8 @@ Popup {
         updateSettingSwitch.checked = ConfigManager.getValue("checkUpdate")
         //展示常驻物品设置
         showStandardItemSettingSwitch.checked = ConfigManager.getValue("hiddenStandardItem")
+        //导出目录设置
+        exportPathSettingSwitch.checked = ConfigManager.getValue("exportToDefaultPath")
         //初始化更新
         Update.init()
         //语言设置
@@ -529,6 +531,38 @@ Popup {
                             if(ConfigManager.getValue("hiddenStandardItem") != checked){
                                 console.log("修改展示常驻物品设置 "+ "当前设置 " + checked)
                                 ConfigManager.setValue("hiddenStandardItem",checked)
+                                settingsPopup.refresh()
+                            }
+                        }
+                    }
+                }
+
+                Item{
+                    id: exportPathSetting
+                    width: parent.width
+                    height: 35
+                    Text {
+                        id: exportPathSettingText
+                        font.pixelSize: 14
+                        width: 150
+                        text: qsTr("导出至默认目录")
+
+                        horizontalAlignment: Text.AlignRight
+                        anchors.verticalCenter: parent.verticalCenter
+                        verticalAlignment:  Text.AlignVCenter
+
+                        anchors.left: parent.left
+                    }
+                    MySwitch {
+                        id: exportPathSettingSwitch
+                        anchors.left: exportPathSettingText.right
+                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.margins: 10
+                        text:""
+                        onCheckedChanged: {
+                            if(ConfigManager.getValue("exportToDefaultPath") != checked){
+                                console.log("导出至默认目录设置 "+ "当前设置 " + checked)
+                                ConfigManager.setValue("exportToDefaultPath",checked)
                                 settingsPopup.refresh()
                             }
                         }

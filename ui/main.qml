@@ -59,7 +59,13 @@ Window {
         }
         onExportData: {
             exportBtn.disabled = true
-            Data.exportToUIGF4(true)
+            exportFolderDialog.exportMode = "uigf4total"
+            if(ConfigManager.getValue("exportToDefaultPath")){
+                Data.exportData(exportFolderDialog.exportMode)
+            }
+            else{
+                exportFolderDialog.open()
+            }
         }
     }
 
@@ -230,19 +236,51 @@ Window {
                 ListElement { text: qsTr("导出为UIGF4") }
             }
 
+            FolderDialog {
+                id: exportFolderDialog
+                title: qsTr("选择导出的位置")
+                property string exportMode: ""
+                onAccepted: {
+                    var path = exportFolderDialog.selectedFolder.toString().replace("file:///", "")
+                    console.log("选择的文件夹:", path, "模式:", exportMode)
+                    switch(exportMode) {
+                        case "excel": Data.exportData("excel", path); break;
+                        case "csv":   Data.exportData("csv", path);   break;
+                        case "uigf3": Data.exportData("uigf3", path); break;
+                        case "uigf4": Data.exportData("uigf4", path); break;
+                        case "uigf4total": Data.exportData("uigf4total", path); break;
+                    }
+                }
+                onRejected: {
+                    exportBtn.disabled = false
+                }
+            }
+
             onClicked: {
                 exportBtn.disabled = true
-                Data.exportToExcel()
+                exportFolderDialog.exportMode = "excel"
+                if(ConfigManager.getValue("exportToDefaultPath")){
+                    Data.exportData(exportFolderDialog.exportMode)
+                }
+                else{
+                    exportFolderDialog.open()
+                }
             }
 
             onTriggered: function(index, item) {
                 exportBtn.disabled = true
                 console.log("开始导出数据 模式:",index)
                 switch(index){
-                    case 0:Data.exportToExcel();break;
-                    case 1:Data.exportToCsv();break;
-                    case 2:Data.exportToUIGF3();break;
-                    case 3:Data.exportToUIGF4(false);break;
+                    case 0:exportFolderDialog.exportMode = "excel";break;
+                    case 1:exportFolderDialog.exportMode = "csv";break;
+                    case 2:exportFolderDialog.exportMode = "uigf3";break;
+                    case 3:exportFolderDialog.exportMode = "uigf4";break;
+                }
+                if(ConfigManager.getValue("exportToDefaultPath")){
+                    Data.exportData(exportFolderDialog.exportMode)
+                }
+                else{
+                    exportFolderDialog.open()
                 }
             }
         }
