@@ -10,7 +10,6 @@
 #include "httplib.h"
 
 #define QT_DEBUG_URL
-#define QT_DEBUG_HEADERS
 #define QT_DEBUG_PARAMS
 #define QT_DEBUG_CONTENT
 
@@ -1252,27 +1251,38 @@ inline Response Requests::get(std::string url, GetOptions op, GetCallBackOptions
 #ifdef QT_DEBUG_URL
 	qDebug() << "url: " << QString::fromStdString(url);
 #endif
+#ifdef DEBUG_URL
+	Debug() << "url: " << url;
+#endif
 #ifdef QT_DEBUG_HEADERS
 	qDebug() << "headers: " << QString::fromStdString(headers.dump(2));
+#endif
+#ifdef DEBUG_HEADERS
+	Debug() << "headers: " << headers.dump(2);
 #endif
 #ifdef QT_DEBUG_PARAMS
 	qDebug() << "params: " << QString::fromStdString(params.dump(2));
 #endif
+#ifdef DEBUG_PARAMS
+	Debug() << "params: " << params.dump(2);
+#endif
 
 	std::string last_url = url;
-	r = getOnce(last_url, r, headers, params, op.allow_redirects, op.allowProxies, op.readTimeout, op.connectionTimeout, cop.ResponseHandler, cop.ContentReceiver, cop.DownloadProgress);
 
 	while (retryCount < op.maxRetries and redirectCount < 30) {
+		r = getOnce(last_url, r, headers, params, op.allow_redirects, op.allowProxies, op.readTimeout, op.connectionTimeout, cop.ResponseHandler, cop.ContentReceiver, cop.DownloadProgress);
 		if (r) {
 			if (op.allow_redirects and r.status_code >= 300 and r.status_code < 400) {
 				redirectCount++;
-				std::string location = get_redirects_url(last_url, r.headers);
-				last_url = location;
-				r = getOnce(location, r, headers, params, op.allow_redirects, op.allowProxies, op.readTimeout, op.connectionTimeout, cop.ResponseHandler, cop.ContentReceiver, cop.DownloadProgress);
+				last_url = get_redirects_url(last_url, r.headers);
+				continue;
 			}
 			else {
 #ifdef QT_DEBUG_CONTENT
 				qDebug() << "content: " << QString::fromStdString(r.content);
+#endif
+#ifdef DEBUG_CONTENT
+				Debug() << "content: " << r.content;
 #endif
 				return r;
 			}
@@ -1502,12 +1512,17 @@ inline Response Requests::post(std::string url, PostOptioms op, PostCallBackOpti
 	size_t retryCount = 0, redirectCount = 0;
 
 	json headers = parse_headers(op.headers);
-	std::string last_url = url;
 #ifdef QT_DEBUG_URL
 	qDebug() << "url: " << QString::fromStdString(url);
 #endif
+#ifdef DEBUG_URL
+	Debug() << "url: " << url;
+#endif
 #ifdef QT_DEBUG_HEADERS
 	qDebug() << "headers: " << QString::fromStdString(headers.dump(2));
+#endif
+#ifdef DEBUG_HEADERS
+	Debug() << "headers: " << headers.dump(2);
 #endif
 	std::string postBody = {};
 	std::string contentType = {};
@@ -1536,33 +1551,35 @@ inline Response Requests::post(std::string url, PostOptioms op, PostCallBackOpti
 #ifdef QT_DEBUG_PARAMS
 	qDebug() << "params: " << QString::fromStdString(postBody);
 #endif
+#ifdef DEBUG_PARAMS
+	Debug() << "params: " << postBody;
+#endif
 	bool isGet = false;
 
-	r = postOnce(last_url, r, contentType, headers, postBody, "", op.allow_redirects, op.allowProxies, op.readTimeout, op.connectionTimeout);
-
+	std::string last_url = url;
 	while (retryCount < op.maxRetries and redirectCount < 30) {
+		if (isGet) {
+			r = getOnce(last_url, r, headers, json::object(), false, op.allowProxies, op.readTimeout, op.connectionTimeout, nullptr, nullptr, nullptr);
+		}
+		else {
+			r = postOnce(last_url, r, contentType, headers, postBody, "", op.allow_redirects, op.allowProxies, op.readTimeout, op.connectionTimeout);
+		}
 		if (r) {
 			if (op.allow_redirects and r.status_code >= 300 and r.status_code < 400) {
 				redirectCount++;
-				std::string location = get_redirects_url(last_url, r.headers);
-				last_url = location;
+				last_url = get_redirects_url(last_url, r.headers);
 				if (r.status_code == 303) {
 					isGet = true;
 					//重定向到get
-					r = getOnce(url, r, headers, json::object(), false, op.allowProxies, op.readTimeout, op.connectionTimeout, nullptr, nullptr, nullptr);
 				}
-				else if (isGet) {
-					//后续都是get
-					r = getOnce(url, r, headers, json::object(), false, op.allowProxies, op.readTimeout, op.connectionTimeout, nullptr, nullptr, nullptr);
-				}
-				else {
-					//重定向到post
-					r = postOnce(last_url, r, contentType, headers, postBody, "", op.allow_redirects, op.allowProxies, op.readTimeout, op.connectionTimeout);
-				}
+				continue;
 			}
 			else {
 #ifdef QT_DEBUG_CONTENT
 				qDebug() << "content: " << QString::fromStdString(r.content);
+#endif
+#ifdef DEBUG_CONTENT
+				Debug() << "content: " << r.content;
 #endif
 				return r;
 			}
