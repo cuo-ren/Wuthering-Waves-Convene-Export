@@ -11,7 +11,6 @@
 namespace fs = std::filesystem;
 using json = nlohmann::json;
 
-
 bool makedirs(const std::string& path) {
 	std::filesystem::path fsPath = std::filesystem::u8path(path);
 	std::error_code ec;
@@ -50,7 +49,6 @@ bool makedirs(const std::string& path) {
 	}
 	return true;
 }
-
 
 bool isSubPath(const std::filesystem::path& base, const std::filesystem::path& target) {
     auto baseCanonical = std::filesystem::weakly_canonical(base);
