@@ -617,12 +617,14 @@ Window {
             loading.visible = false
         }
         function onQUpdateComplete(){
+            loadingText.text = qsTr("正在加载")
             updateBtn.disabled = false
             loadingImage.stop()
             loading.visible = false
             updateData()
         }
         function onUpdateFail(){
+            loadingText.text = qsTr("正在加载")
             updateBtn.disabled = false
             loadingImage.stop()
             loading.visible = false
