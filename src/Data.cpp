@@ -1016,7 +1016,7 @@ json Data::merge(const std::string target_uid, json old_gacha_list, json new_gac
 			}
 			else {
 				//删除旧数据last_time时间点的数据
-				for (int i = old_gacha_list[target_uid]["data"][gacha_key].size() - 1; i >= 0; i--) {
+				for (int i = (int)old_gacha_list[target_uid]["data"][gacha_key].size() - 1; i >= 0; i--) {
 					if (old_gacha_list[target_uid]["data"][gacha_key][i]["time"] == last_date) {
 						old_gacha_list[target_uid]["data"][gacha_key].erase(old_gacha_list[target_uid]["data"][gacha_key].begin() + i);
 					}
@@ -1035,7 +1035,7 @@ json Data::merge(const std::string target_uid, json old_gacha_list, json new_gac
 			std::vector<json> temp_old;
 			std::vector<json> temp_new;
 			//将旧纪录等于last_time的记录单独提取出来并删除旧纪录的数据
-			for (int i = old_gacha_list[target_uid]["data"][gacha_key].size() - 1; i >= 0; i--) {
+			for (int i = (int)old_gacha_list[target_uid]["data"][gacha_key].size() - 1; i >= 0; i--) {
 				std::string temp_date = old_gacha_list[target_uid]["data"][gacha_key][i]["time"];
 				if (last_date == temp_date) {
 					temp_old.push_back(old_gacha_list[target_uid]["data"][gacha_key][i]);
@@ -1066,7 +1066,7 @@ json Data::merge(const std::string target_uid, json old_gacha_list, json new_gac
 				}
 			}
 			//拼接数据
-			for (int i = 0; i < temp_old.size() - max_num; i++) {
+			for (int i = 0; i < (int)temp_old.size() - max_num; i++) {
 				old_gacha_list[target_uid]["data"][gacha_key].push_back(temp_old[i]);
 			}
 			for (int i = 0; i < temp_new.size(); i++) {
