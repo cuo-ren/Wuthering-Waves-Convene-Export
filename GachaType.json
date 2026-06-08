@@ -53,6 +53,18 @@
       "key": "9",
       "name": "New Voyage Weapon Convene",
       "skip": true
+    },
+    {
+      "isStandard": false,
+      "key": "10",
+      "name": "Collab Resonator Convene",
+      "skip": false
+    },
+    {
+      "isStandard": false,
+      "key": "11",
+      "name": "Collab Weapon Convene",
+      "skip": false
     }
   ]
 }
