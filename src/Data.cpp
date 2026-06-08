@@ -419,17 +419,20 @@ json Data::validate_data(const json& gacha_list) {
 				}
 				//校验type类型是否为武器/角色
 				if (item["type"] != LanguageManager::instance().getValueByCode(gacha_list[uid]["info"]["lang"].get<std::string>(), "Weapon") and item["type"] != LanguageManager::instance().getValueByCode(gacha_list[uid]["info"]["lang"].get<std::string>(), "Resonator")) {
-					qWarning().noquote() << "数据文件UID->data->key[i]->type不是对应语言的角色或武器";
-					json error16 = {
-						{"code", 16},
-						{"data", {
-							{"uid", uid},
-							{"key", key},
-							{"index",index}
+					if (item["type"].get<std::string>() != "道具") {
+						//当前 尘云旋臂 的类型错误 为道具，暂时补丁
+						qWarning().noquote() << "数据文件UID->data->key[i]->type不是对应语言的角色或武器";
+						json error16 = {
+							{"code", 16},
+							{"data", {
+								{"uid", uid},
+								{"key", key},
+								{"index",index}
+								}
 							}
-						}
-					};
-					return error16;
+						};
+						return error16;
+					}
 				}
 				//校验星级是否在3~5之间
 				if (item["qualityLevel"] > 5 or item["qualityLevel"] < 3) {
@@ -793,22 +796,71 @@ Q_INVOKABLE void Data::update_data(const int& mode, QString input_url) {
 	});
 }
 
+std::string readAndDecryptLog(const std::filesystem::path& path) {
+
+	constexpr uint8_t HEADER_MAGIC[3] = { 0x00, 0x54, 0x50 };
+	constexpr uint8_t KEY_ODD_ENC = 0xA5;
+	constexpr uint8_t KEY_EVEN_ENC = 0xEF;
+
+	std::ifstream file(path, std::ios::binary);
+
+	if (!file.is_open()) {
+		qWarning().noquote() << "打开游戏日志文件失败";
+		return {};
+	}
+
+	std::vector<uint8_t> enc_data{ std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>() };
+
+	if (enc_data.size() < 3)
+	{
+		qWarning().noquote() << "日志文件过小";
+		return {};
+	}
+
+	if (enc_data[0] != HEADER_MAGIC[0] or enc_data[1] != HEADER_MAGIC[1] or	enc_data[2] != HEADER_MAGIC[2]){
+		qWarning().noquote() << "日志头错误";
+		return {};
+	}
+
+	std::string result;
+	result.reserve(enc_data.size() - 3);
+
+	for (size_t i = 3; i < enc_data.size(); i++)	{
+		uint8_t e = enc_data[i];
+		result.push_back(
+			static_cast<char>(
+				(e & 1)
+				? (e ^ KEY_ODD_ENC)
+				: (e ^ KEY_EVEN_ENC)
+				)
+		);
+	}
+	return result;
+}
+
 json Data::findGachaUrls() {
 	qInfo().noquote() << "正在查找抽卡记录url";
 	json uid_url_map = json::object();
 
 	std::regex url_pattern(R"(https://[^"\\ ]*/aki/gacha/index\.html#/record\?[^"\\ ]+)");
+
 	std::u8string logPath = ConfigManager::instance().get<std::u8string>("path") + u8"/Client/Saved/Logs/Client.log";
 	std::filesystem::path fsPath = std::filesystem::path(logPath);
+	/*
 	std::ifstream file(fsPath);
 	if (!file.is_open()) {
 		qWarning().noquote() << "打开游戏日志文件失败";
 		return uid_url_map;
 	}
+	*/
+
+	std::string logs = readAndDecryptLog(fsPath);
+	std::istringstream stream(logs);
 	//清空上次保存的url
 	ConfigManager::instance().clearUrlList();
+	
 	std::string line;
-	while (std::getline(file, line)) {
+	while (std::getline(stream, line)) {
 		std::smatch matches;
 		std::string::const_iterator search_start(line.cbegin());
 		while (std::regex_search(search_start, line.cend(), matches, url_pattern)) {
@@ -840,6 +892,7 @@ json Data::findGachaUrls() {
 	ConfigManager::instance().setUrlList(temp);
 	qDebug().noquote() << "抽卡记录url查找完成";
 	return uid_url_map;
+	
 }
 
 std::map<std::string, std::string> Data::get_params(const std::string& url) {

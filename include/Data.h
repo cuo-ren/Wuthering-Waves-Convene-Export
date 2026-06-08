@@ -7,6 +7,7 @@
 #include <QFuture>
 #include "requests.hpp"
 #include <OpenXLSX.hpp>
+#include <fstream>
 
 class Data : public QObject {
     Q_OBJECT
