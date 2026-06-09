@@ -816,11 +816,11 @@ std::string readAndDecryptLog(const std::filesystem::path& path) {
 		qWarning().noquote() << "日志文件过小";
 		return {};
 	}
-
+	/*
 	if (enc_data[0] != HEADER_MAGIC[0] or enc_data[1] != HEADER_MAGIC[1] or	enc_data[2] != HEADER_MAGIC[2]){
 		qWarning().noquote() << "日志头错误";
-		return {};
-	}
+		//return {};
+	}*/
 
 	std::string result;
 	result.reserve(enc_data.size() - 3);

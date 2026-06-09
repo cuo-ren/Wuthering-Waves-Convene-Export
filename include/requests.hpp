@@ -1376,7 +1376,8 @@ inline Response Requests::getOnce(std::string url, Response& res, json headers, 
 				header,
 				[&](const httplib::Response& res) {
 					if (res.status >= 300 and res.status < 400) {
-						return !allow_redirects;
+						//return !allow_redirects;
+						return true;
 					}
 					return ResponseHandler(res);
 				},

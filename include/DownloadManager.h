@@ -77,7 +77,7 @@ private:
             std::filesystem::path fsPath = std::filesystem::path(std::u8string(temp.data(), temp.data() + temp.size()));
             std::ofstream ofs(fsPath, std::ios::binary | std::ios::trunc);
             if (!ofs.is_open()) {
-                qWarning() << "创建文件失败 " << QString::fromStdString(fsPath.string());
+                qWarning() << "创建文件失败 " << QString::fromLocal8Bit(fsPath.string());
                 Notifier::instance().notify(3, tr("下载文件 %1 失败 %2").arg(fileName).arg("无法创建文件"));
                 return false;
             }
