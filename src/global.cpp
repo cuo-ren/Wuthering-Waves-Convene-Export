@@ -91,7 +91,9 @@ void Global::initGachaType() {
             { { "key", "6" }, { "name", "Beginner's Choice Convene" }, { "skip", true }, {"isStandard", true} },
             { { "key", "7" }, { "name", "Beginner's Choice Convene(Giveback Custom Convene)" }, { "skip", true }, {"isStandard", true} },
             { { "key", "8" }, { "name", "New Voyage Resonator Convene" }, { "skip", true }, {"isStandard", false} },
-            { { "key", "9" }, { "name", "New Voyage Weapon Convene" }, { "skip", true }, {"isStandard", false} }
+            { { "key", "9" }, { "name", "New Voyage Weapon Convene" }, { "skip", true }, {"isStandard", false} },
+            { { "key", "10" }, { "name", "Collab Resonator Convene" }, { "skip", false }, {"isStandard", false} },
+            { { "key", "11" }, { "name", "Collab Weapon Convene" }, { "skip", false }, {"isStandard", false} }
         }}
     };
     //读取卡池配置文件
