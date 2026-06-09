@@ -1,5 +1,5 @@
 {
-  "url": "https://github.com/cuo-ren/Wuthering-Waves-Convene-Export/releases/download/v1.1.0/Wuthering.Waves.Convene.Export.zip",
+  "url": "https://github.com/cuo-ren/Wuthering-Waves-Convene-Export/releases/download/v1.1.1/Wuthering.Waves.Convene.Export.zip",
   "foldername": "Wuthering Waves Convene Export",
   "hash": "53565dfd86616832cc92853b71d8de94f0023710657cf369cc51716d136a5b43",
   "path": "./Wuthering Waves Convene Export",
@@ -9,7 +9,7 @@
     {
       "type": "file",
       "path": "./updater.exe",
-      "version": "v1.1.0",
+      "version": "v1.1.1",
       "hash": "59880f873b3aed4f6a29b094cfdfc7cc64b37d364ddf5c01affb07ef3009e3d4",
       "url": ""
     }
@@ -20,392 +20,392 @@
       "path": "./D3Dcompiler_47.dll",
       "type": "file",
       "url": "",
-      "version": "v1.1.0"
+      "version": "v1.1.1"
     },
     {
       "hash": "",
       "path": "./generic",
       "type": "folder",
       "url": "",
-      "version": "v1.1.0"
+      "version": "v1.1.1"
     },
     {
       "hash": "",
       "path": "./iconengines",
       "type": "folder",
       "url": "",
-      "version": "v1.1.0"
+      "version": "v1.1.1"
     },
     {
       "hash": "",
       "path": "./imageformats",
       "type": "folder",
       "url": "",
-      "version": "v1.1.0"
+      "version": "v1.1.1"
     },
     {
       "hash": "a831d1740158d9f04d2a2fdf762aa6ee8d96ab865ad9e99fdec6a1f2d1877735",
       "path": "./libcrypto-3-x64.dll",
       "type": "file",
       "url": "",
-      "version": "v1.1.0"
+      "version": "v1.1.1"
     },
     {
       "hash": "5e65b08505f2f0989fc4d61217d10306ce6558815adf51c030af4db3fb2f6838",
       "path": "./libssl-3-x64.dll",
       "type": "file",
       "url": "",
-      "version": "v1.1.0"
+      "version": "v1.1.1"
     },
     {
       "hash": "230184f60bae2feaf244f10a8bac053c8ff33a183bcc365b4d8b876d2b7f4809",
       "path": "./LICENSE",
       "type": "file",
       "url": "",
-      "version": "v1.1.0"
+      "version": "v1.1.1"
     },
     {
       "hash": "",
       "path": "./licenses",
       "type": "folder",
       "url": "",
-      "version": "v1.1.0"
+      "version": "v1.1.1"
     },
     {
       "hash": "",
       "path": "./networkinformation",
       "type": "folder",
       "url": "",
-      "version": "v1.1.0"
+      "version": "v1.1.1"
     },
     {
       "hash": "b04de4541863bc7d8879040a78889c4849c1b1da2784c4630f734c146c2998ce",
       "path": "./opengl32sw.dll",
       "type": "file",
       "url": "",
-      "version": "v1.1.0"
+      "version": "v1.1.1"
     },
     {
       "hash": "351b9878cbc57415ae245d4daf6e69e968ca693e5740bae703c01469073de6b1",
       "path": "./OpenXLSX.dll",
       "type": "file",
       "url": "",
-      "version": "v1.1.0"
+      "version": "v1.1.1"
     },
     {
       "hash": "",
       "path": "./platforms",
       "type": "folder",
       "url": "",
-      "version": "v1.1.0"
+      "version": "v1.1.1"
     },
     {
       "hash": "",
       "path": "./qml",
       "type": "folder",
       "url": "",
-      "version": "v1.1.0"
+      "version": "v1.1.1"
     },
     {
       "hash": "",
       "path": "./qmltooling",
       "type": "folder",
       "url": "",
-      "version": "v1.1.0"
+      "version": "v1.1.1"
     },
     {
       "hash": "b95236241ce0b825857064a386b9a22b0f28fa24f3e246ad63528e87c2688b94",
       "path": "./Qt6Core.dll",
       "type": "file",
       "url": "",
-      "version": "v1.1.0"
+      "version": "v1.1.1"
     },
     {
       "hash": "8e81c9fafd4711667ce81824dd9d54e128c562557a1ad5b247eafb85e64a14e0",
       "path": "./Qt6Gui.dll",
       "type": "file",
       "url": "",
-      "version": "v1.1.0"
+      "version": "v1.1.1"
     },
     {
       "hash": "670623c84d6c16c472ae0b605d09e1e76925449400c2c27d9c33a214d5eb4375",
       "path": "./Qt6LabsFolderListModel.dll",
       "type": "file",
       "url": "",
-      "version": "v1.1.0"
+      "version": "v1.1.1"
     },
     {
       "hash": "78702feedd9841d8f5d8b7827e10f2cd7fc728c36107ee95e8db059d14c70281",
       "path": "./Qt6LabsQmlModels.dll",
       "type": "file",
       "url": "",
-      "version": "v1.1.0"
+      "version": "v1.1.1"
     },
     {
       "hash": "f1a184c8ffb602a1550be4ca0ba06cd97551920b5e802b4ffa74587bf3a550bb",
       "path": "./Qt6Network.dll",
       "type": "file",
       "url": "",
-      "version": "v1.1.0"
+      "version": "v1.1.1"
     },
     {
       "hash": "4e86476ee3a26348361fd5e6c4fa5ff9416fef3b387899f6159709579287bfd0",
       "path": "./Qt6OpenGL.dll",
       "type": "file",
       "url": "",
-      "version": "v1.1.0"
+      "version": "v1.1.1"
     },
     {
       "hash": "c88470dc865c7b364399ffe2ddd8255bf2569b7412043addc4730b097b74e413",
       "path": "./Qt6Qml.dll",
       "type": "file",
       "url": "",
-      "version": "v1.1.0"
+      "version": "v1.1.1"
     },
     {
       "hash": "6a95687b4cdea40df8b6789febd9869648e4c4c6497cea1426f7abacbc5e0af3",
       "path": "./Qt6QmlMeta.dll",
       "type": "file",
       "url": "",
-      "version": "v1.1.0"
+      "version": "v1.1.1"
     },
     {
       "hash": "1c1bef114b9dfdd693c9818b5dd5441c046ce9f3a4a4bcf171c43589484eecff",
       "path": "./Qt6QmlModels.dll",
       "type": "file",
       "url": "",
-      "version": "v1.1.0"
+      "version": "v1.1.1"
     },
     {
       "hash": "032b65a20f42c2760f4b86ff0061afc4cf1bd9e6c54e41b532de3066dafe4a00",
       "path": "./Qt6QmlWorkerScript.dll",
       "type": "file",
       "url": "",
-      "version": "v1.1.0"
+      "version": "v1.1.1"
     },
     {
       "hash": "4cd6a48920d33a8aef09967f33371f6c8847be64d25dc5b921e75f0446ab848d",
       "path": "./Qt6Quick.dll",
       "type": "file",
       "url": "",
-      "version": "v1.1.0"
+      "version": "v1.1.1"
     },
     {
       "hash": "68c44b7b084680d0fb64923b8b2964249a2bbe9816fbb60984858e4683861bb4",
       "path": "./Qt6Quick3DUtils.dll",
       "type": "file",
       "url": "",
-      "version": "v1.1.0"
+      "version": "v1.1.1"
     },
     {
       "hash": "d84a346aa425651f84150570d79d7c6722a44ae910ec390b4251ebb524072a60",
       "path": "./Qt6QuickControls2.dll",
       "type": "file",
       "url": "",
-      "version": "v1.1.0"
+      "version": "v1.1.1"
     },
     {
       "hash": "d74f1bc06bdd322240087e8a4ade06b7d779dae2d0af6360e79a3fa9bc2bae0e",
       "path": "./Qt6QuickControls2Basic.dll",
       "type": "file",
       "url": "",
-      "version": "v1.1.0"
+      "version": "v1.1.1"
     },
     {
       "hash": "668f48c5c038d77a265649843f93b20253d98e006c0471c2aaef4b62304c77da",
       "path": "./Qt6QuickControls2BasicStyleImpl.dll",
       "type": "file",
       "url": "",
-      "version": "v1.1.0"
+      "version": "v1.1.1"
     },
     {
       "hash": "c5b15f1b5f12c8293f048ca5fd2a685dc470e5946993f10183b266c4b989538e",
       "path": "./Qt6QuickControls2FluentWinUI3StyleImpl.dll",
       "type": "file",
       "url": "",
-      "version": "v1.1.0"
+      "version": "v1.1.1"
     },
     {
       "hash": "0fe0e9b9f4c43f7fbb7a53c91d4523a11ee4331c7c1eac58e92df331463114e6",
       "path": "./Qt6QuickControls2Fusion.dll",
       "type": "file",
       "url": "",
-      "version": "v1.1.0"
+      "version": "v1.1.1"
     },
     {
       "hash": "505be0948065046231a52b05205f484c75c3d7cdabff3daa746210669e1f8308",
       "path": "./Qt6QuickControls2FusionStyleImpl.dll",
       "type": "file",
       "url": "",
-      "version": "v1.1.0"
+      "version": "v1.1.1"
     },
     {
       "hash": "8071358b94bed17e486043adf8fca4ee495b0a2a882ea4a374ef69d4baf1fd90",
       "path": "./Qt6QuickControls2Imagine.dll",
       "type": "file",
       "url": "",
-      "version": "v1.1.0"
+      "version": "v1.1.1"
     },
     {
       "hash": "7bb5dc67744850eaf317a80b849884f32fadc61f781105198668a9215d3f5802",
       "path": "./Qt6QuickControls2ImagineStyleImpl.dll",
       "type": "file",
       "url": "",
-      "version": "v1.1.0"
+      "version": "v1.1.1"
     },
     {
       "hash": "f35bec47683823d9d0e014457d32b685dae5fa17bd7adeeef801412df0bc60f4",
       "path": "./Qt6QuickControls2Impl.dll",
       "type": "file",
       "url": "",
-      "version": "v1.1.0"
+      "version": "v1.1.1"
     },
     {
       "hash": "0d84352db663f49ff79f87c8721d285119bf75c0db9fb281ad4c66e56ed0d33b",
       "path": "./Qt6QuickControls2Material.dll",
       "type": "file",
       "url": "",
-      "version": "v1.1.0"
+      "version": "v1.1.1"
     },
     {
       "hash": "a62847752517cf598075ec3c3f159ee6cef56eb0826e245f83252150c4804fd1",
       "path": "./Qt6QuickControls2MaterialStyleImpl.dll",
       "type": "file",
       "url": "",
-      "version": "v1.1.0"
+      "version": "v1.1.1"
     },
     {
       "hash": "77083bd2738cf6e3be6a791b31fba8176787284ebfe211ad79a5de87e226aeb1",
       "path": "./Qt6QuickControls2Universal.dll",
       "type": "file",
       "url": "",
-      "version": "v1.1.0"
+      "version": "v1.1.1"
     },
     {
       "hash": "8635f9390d232a20fc0d42b1e49d069ba4edb29208a71ff09277258aaafc1ccb",
       "path": "./Qt6QuickControls2UniversalStyleImpl.dll",
       "type": "file",
       "url": "",
-      "version": "v1.1.0"
+      "version": "v1.1.1"
     },
     {
       "hash": "9c37a0a662d8ddef4df22f7a5984a23e6c1ed9cae5dae5153787ee4fe7190769",
       "path": "./Qt6QuickControls2WindowsStyleImpl.dll",
       "type": "file",
       "url": "",
-      "version": "v1.1.0"
+      "version": "v1.1.1"
     },
     {
       "hash": "5512902f0010d66bb9440a1105436afd5a155d3886215219857ef3cf7c5715ac",
       "path": "./Qt6QuickDialogs2.dll",
       "type": "file",
       "url": "",
-      "version": "v1.1.0"
+      "version": "v1.1.1"
     },
     {
       "hash": "a96b1bb8bf1b3cbbc2639c8b3747f40ed7d76c618676ea2efeccb89952458d22",
       "path": "./Qt6QuickDialogs2QuickImpl.dll",
       "type": "file",
       "url": "",
-      "version": "v1.1.0"
+      "version": "v1.1.1"
     },
     {
       "hash": "7ef137ce5f8d295f01816cb8c72bcbecb6e4749a7577f1ec0691e0abe94f6613",
       "path": "./Qt6QuickDialogs2Utils.dll",
       "type": "file",
       "url": "",
-      "version": "v1.1.0"
+      "version": "v1.1.1"
     },
     {
       "hash": "1ac32b9bbb4943603e97abb65f153242b7188aa4adac6928d12d185fb6b54a81",
       "path": "./Qt6QuickEffects.dll",
       "type": "file",
       "url": "",
-      "version": "v1.1.0"
+      "version": "v1.1.1"
     },
     {
       "hash": "2f84c56e7d724e4c83a9c20d3d4740b06650b2f3834d1f99d8a2f211e6ab1d8f",
       "path": "./Qt6QuickLayouts.dll",
       "type": "file",
       "url": "",
-      "version": "v1.1.0"
+      "version": "v1.1.1"
     },
     {
       "hash": "e23ff422f37c78da8e6a57a8fa7977aa11d593c6619cac4f7da0affcb9ecd561",
       "path": "./Qt6QuickShapes.dll",
       "type": "file",
       "url": "",
-      "version": "v1.1.0"
+      "version": "v1.1.1"
     },
     {
       "hash": "f801f0766b87bb71b271a504fee0acc6100b9902dcd28373a565c7dd45aba393",
       "path": "./Qt6QuickTemplates2.dll",
       "type": "file",
       "url": "",
-      "version": "v1.1.0"
+      "version": "v1.1.1"
     },
     {
       "hash": "b5ca074bff9dba6216b3e8fd95b1ada42cc615a7bd62cc6f085da743d2c0d18b",
       "path": "./Qt6ShaderTools.dll",
       "type": "file",
       "url": "",
-      "version": "v1.1.0"
+      "version": "v1.1.1"
     },
     {
       "hash": "acaaa68bf7dc518b4daa17d92a4e7ad4fce3b0a8ef7e6e4d2c587c56d44b1da4",
       "path": "./Qt6Svg.dll",
       "type": "file",
       "url": "",
-      "version": "v1.1.0"
+      "version": "v1.1.1"
     },
     {
       "hash": "e7ca7a7095204c9c527aca6d849a3560a292549fafc595d63ffce79d2e5f7331",
       "path": "./Qt6Widgets.dll",
       "type": "file",
       "url": "",
-      "version": "v1.1.0"
+      "version": "v1.1.1"
     },
     {
       "hash": "",
       "path": "./resource",
       "type": "folder",
       "url": "",
-      "version": "v1.1.0"
+      "version": "v1.1.1"
     },
     {
       "hash": "",
       "path": "./styles",
       "type": "folder",
       "url": "",
-      "version": "v1.1.0"
+      "version": "v1.1.1"
     },
     {
       "hash": "",
       "path": "./tls",
       "type": "folder",
       "url": "",
-      "version": "v1.1.0"
+      "version": "v1.1.1"
     },
     {
       "hash": "",
       "path": "./translations",
       "type": "folder",
       "url": "",
-      "version": "v1.1.0"
+      "version": "v1.1.1"
     },
     {
       "hash": "3642e3f95d50cc193e4b5a0b0ffbf7fe2c08801517758b4c8aeb7105a091208a",
       "path": "./vc_redist.x64.exe",
       "type": "file",
       "url": "",
-      "version": "v1.1.0"
+      "version": "v1.1.1"
     },
     {
       "hash": "d2368824b205e0f7fa5571aad078f387d1b58cae45a3a171f37abc4722da35d0",
       "path": "./Wuthering Waves Convene Export.exe",
       "type": "file",
       "url": "",
-      "version": "v1.1.0"
+      "version": "v1.1.1"
     }
   ]
 }

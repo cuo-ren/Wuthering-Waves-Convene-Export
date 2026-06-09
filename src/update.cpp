@@ -1058,7 +1058,7 @@ void Update::reboot(){
 
     // 构造命令行参数
     std::string cmdLine = "\"" + updaterPath.string() + "\"" + " -pid " + std::to_string(pid) + +" -path " + "\"" + cwd.string() + "\"" + " -updatePath " + "\"" + std::filesystem::weakly_canonical(cwd / updatePath).string() + "\"";
-
+    qDebug() << "命令行参数" << cmdLine;
     // 启动新进程（非阻塞）
     STARTUPINFOA si = { sizeof(si) };
     PROCESS_INFORMATION pi;
