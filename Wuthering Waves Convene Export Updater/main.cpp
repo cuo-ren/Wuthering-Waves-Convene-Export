@@ -1,4 +1,5 @@
-﻿#include <iostream>
+﻿#pragma comment( linker, "/subsystem:\"windows\" /entry:\"mainCRTStartup\"" )
+#include <iostream>
 #include <string>
 #include <filesystem>
 #include <fstream>
@@ -7,7 +8,7 @@
 #include <unordered_set>
 #include "json.hpp"
 
-#pragma comment( linker, "/subsystem:\"windows\" /entry:\"mainCRTStartup\"" )
+
 namespace fs = std::filesystem;
 using json = nlohmann::json;
 
