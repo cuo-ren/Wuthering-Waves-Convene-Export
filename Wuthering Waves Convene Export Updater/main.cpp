@@ -12,6 +12,22 @@
 namespace fs = std::filesystem;
 using json = nlohmann::json;
 
+std::string local_to_utf8(const std::string& gbk) {
+    UINT acp = GetACP();
+    if (acp == CP_UTF8) {
+        return gbk;
+    }
+    int wide_len = MultiByteToWideChar(CP_ACP, 0, gbk.c_str(), -1, nullptr, 0);
+    std::wstring wide_str(wide_len, 0);
+    MultiByteToWideChar(CP_ACP, 0, gbk.c_str(), -1, &wide_str[0], wide_len);
+
+    int utf8_len = WideCharToMultiByte(CP_UTF8, 0, wide_str.c_str(), -1, nullptr, 0, nullptr, nullptr);
+    std::string utf8_str(utf8_len, 0);
+    WideCharToMultiByte(CP_UTF8, 0, wide_str.c_str(), -1, &utf8_str[0], utf8_len, nullptr, nullptr);
+    utf8_str.pop_back();
+    return utf8_str;
+}
+
 bool makedirs(const std::string& path) {
 	std::filesystem::path fsPath = std::filesystem::u8path(path);
 	std::error_code ec;
@@ -144,22 +160,22 @@ bool parse_args(int argc, char* argv[], DWORD& pid, std::string& path, std::stri
         if (arg == "-pid" && i + 1 < argc) {
             if (seen.count("-pid")) return false;
             seen.insert("-pid");
-            pid = std::stoul(argv[++i]);
+            pid = std::stoul(local_to_utf8(argv[++i]));
         }
         else if (arg == "-path" && i + 1 < argc) {
             if (seen.count("-path")) return false;
             seen.insert("-path");
-            path = argv[++i];
+            path = local_to_utf8(argv[++i]);
         }
         else if (arg == "-timeout" && i + 1 < argc) {
             if (seen.count("-timeout")) return false;
             seen.insert("-timeout");
-            timeout = std::stoi(argv[++i]);
+            timeout = std::stoi(local_to_utf8(argv[++i]));
         }
         else if (arg == "-updatePath" && i + 1 < argc) {
             if (seen.count("-updatePath")) return false;
             seen.insert("-updatePath");
-            updatePath = argv[++i];
+            updatePath = local_to_utf8(argv[++i]);
         }
         else {
             return false;
