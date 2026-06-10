@@ -1,4 +1,6 @@
 ﻿#pragma comment( linker, "/subsystem:\"windows\" /entry:\"mainCRTStartup\"" )
+#include "logger.h"
+#include "file_log_handler.h"
 #include <iostream>
 #include <string>
 #include <filesystem>
@@ -154,6 +156,9 @@ bool force_kill(DWORD pid) {
 bool parse_args(int argc, char* argv[], DWORD& pid, std::string& path, std::string& updatePath, int& timeout) {
     timeout = 10; // 默认值
     std::unordered_set<std::string> seen;
+    for (int i = 1; i < argc; i++) {
+        Debug() << "参数 " << i << " " << argv[i];
+    }
 
     for (int i = 1; i < argc; i++) {
         std::string arg = argv[i];
@@ -186,6 +191,8 @@ bool parse_args(int argc, char* argv[], DWORD& pid, std::string& path, std::stri
 
 int main(int argc, char* argv[]) {
     SetConsoleOutputCP(CP_UTF8); // 控制台输出 UTF-8
+    logger::installDailyFileLogger("./log", 7);
+    Info() << "更新程序启动";
     DWORD pid = 0;
     std::string path;
     std::string updatePath;
@@ -193,28 +200,31 @@ int main(int argc, char* argv[]) {
 
     // 参数校验
     if (!parse_args(argc, argv, pid, path, updatePath, timeout)) {
+        Warning() << "参数错误";
         show_message("参数错误！\n用法: program.exe -pid <进程号> -path <程序路径> -updatePath <更新文件路径> [-timeout <秒>]");
         return 1;
     }
-
+    
     // 路径检查
-    if (!fs::exists(path)) {
+    if (!fs::exists(std::filesystem::u8path(path))) {
+        Warning() << "path不存在 " << path;
         show_message("指定路径不存在: " + path);
         return 1;
     }
 
-    if (!fs::exists(updatePath)) {
+    if (!fs::exists(std::filesystem::u8path(updatePath))) {
+        Warning() << "updatePath不存在 " << updatePath;
         show_message("指定路径不存在: " + updatePath);
         return 1;
     }
 
     // 检测进程状态
-    std::cout << "检测 PID " << pid << " 是否存在..." << std::endl;
+    Info() << "检测 PID " << pid << " 是否存在";
     int elapsed = 0;
     bool finished = false;
     while (elapsed < timeout) {
         if (!process_exists(pid)) {
-            std::cout << "进程已结束，继续流程..." << std::endl;
+            Info() << "进程已结束，开始更新";
             finished = true;
             break;
         }
@@ -224,8 +234,9 @@ int main(int argc, char* argv[]) {
 
     // 超时未退出，尝试强杀
     if (!finished) {
-        std::cout << "进程未退出，尝试强制结束..." << std::endl;
+        Warning() << "进程未退出，尝试强制结束";
         if (!force_kill(pid)) {
+            Error() << "无法强制结束进程 PID " << std::to_string(pid);
             show_message("无法强制结束进程 PID " + std::to_string(pid));
             return 1;
         }
@@ -234,7 +245,7 @@ int main(int argc, char* argv[]) {
         elapsed = 0;
         while (elapsed < timeout) {
             if (!process_exists(pid)) {
-                std::cout << "进程已成功结束。" << std::endl;
+                Info() << "进程已成功结束";
                 finished = true;
                 break;
             }
@@ -243,19 +254,21 @@ int main(int argc, char* argv[]) {
         }
         if (!finished) {
             // 强杀失败
+            Error() << "无法强制结束进程 PID " << std::to_string(pid);
             show_message("进程强制结束失败！");
             return 1;
         }
     }
-    // === 后续流程 ===
-    std::cout << "进入后续处理逻辑..." << std::endl;
+
     
     //读取updateConfig
     json updateConfig;
+    Info() << "读取更新配置";
     try {
         updateConfig = ReadJsonFile(updatePath + "/updateConfig.json");
     }
     catch (const std::exception& e) {
+        Error() << "更新配置读取失败 " << e.what();
         show_message(std::string("读取 updateConfig.json 失败: ") + e.what());
         return 1;
     }
@@ -264,28 +277,33 @@ int main(int argc, char* argv[]) {
     json new_version_config = updateConfig["newVersion"];
     //删除当前版本updater相关文件
     std::filesystem::path workPath = std::filesystem::u8path(path);
+    Info() << "正在删除文件";
 
     for (auto& item : current_version_config["files"]) {
         std::filesystem::path itemPath = std::filesystem::u8path(item["path"].get<std::string>());
         if (std::filesystem::exists(itemPath)) {
             if (!isSubPath(workPath, itemPath)) {
+                Error() << "检测到路径穿越 工作路径:" << workPath.u8string() << " 目标路径:" << itemPath.u8string();
                 show_message("检测到路径穿越");
                 return -1;
             }
             std::error_code ec;
+            Info() << "删除文件: " << itemPath.u8string();
             std::filesystem::remove_all(itemPath, ec);
             if (ec) {
+                Error() << "删除文件失败 " << itemPath.u8string() << " " << ec.message();
                 show_message("删除文件失败");
                 return -1;
             }
         }
         else {
-            std::cerr << "文件不存在 " << itemPath << std::endl;
+            Warning() << "文件不存在 " << itemPath;
         }
     }
     //替换更新版本updater相关文件
     std::filesystem::path versionRoot = std::filesystem::u8path(updatePath + "/" + updateConfig["version"].get<std::string>());
     std::filesystem::path contentRoot = std::filesystem::weakly_canonical(versionRoot / new_version_config["path"].get<std::string>());
+    Info() << "正在复制文件";
 
     for (auto& item : new_version_config["files"]) {
 
@@ -296,11 +314,13 @@ int main(int argc, char* argv[]) {
         std::filesystem::path targetPath = std::filesystem::weakly_canonical(workPath / relativePath);
 
         if (!std::filesystem::exists(sourcePath)) {
+            Error() << "源文件不存在 " << sourcePath.u8string();
             show_message("源文件不存在");
             return -1;
         }
 
-        if (!makedirs(targetPath.parent_path().string())) {
+        if (!makedirs(targetPath.parent_path().u8string())) {
+            Error() << "创建目录失败 " << targetPath.parent_path().u8string();
             show_message("创建目录失败");
             return -1;
         }
@@ -309,32 +329,36 @@ int main(int argc, char* argv[]) {
         std::error_code ec;
         if (type == "file") {
             if (!std::filesystem::is_regular_file(sourcePath)) {
+                Error() << "文件类型错误 " << sourcePath.u8string() << "应为file 而非 folder";
                 show_message("文件类型错误");
                 return -1;
             }
+            Info() << "正在复制文件: " << sourcePath.u8string() << " 至 " << targetPath.u8string();
             std::filesystem::copy_file(sourcePath, targetPath, std::filesystem::copy_options::overwrite_existing, ec);
         }
         else if (type == "folder") {
             if (!std::filesystem::is_directory(sourcePath)) {
+                Error() << "文件类型错误 " << sourcePath.u8string() << "应为folder 而非 file";
                 show_message("文件类型错误");
                 return -1;
             }
+            Info() << "正在复制文件: " << sourcePath.u8string() << " 至 " << targetPath.u8string();
             std::filesystem::copy(sourcePath, targetPath, std::filesystem::copy_options::overwrite_existing | std::filesystem::copy_options::recursive, ec);
         }
         else {
-            std::cerr << "未知类型";
+            Error() << "未知类型";
             continue;
         }
 
         if (ec) {
+            Error() << sourcePath.u8string() << " 至 " << targetPath.u8string() << " 复制失败 " << ec.message();
             show_message("复制文件失败");
             return -1;
         }
-
-        std::cout << "已替换：" << targetPath.string() << std::endl;
     }
     // 构造命令行参数
     std::string cmdLine = "\".\\" + new_version_config["mainFile"].get<std::string>() + "\"";
+    Debug() << "命令行参数 " << cmdLine;
 
     // 启动新进程（非阻塞）
     STARTUPINFOA si = { sizeof(si) };
@@ -353,13 +377,15 @@ int main(int argc, char* argv[]) {
     );
 
     if (success) {
-        std::cout << "更新程序已启动，PID: " << pi.dwProcessId << std::endl;
+        Info() << "程序已启动，PID: " << pi.dwProcessId;
         CloseHandle(pi.hProcess);
         CloseHandle(pi.hThread);
         //删除配置文件
         std::error_code ec;
-        std::filesystem::remove(updatePath + "/updateConfig.json",ec);
+        std::filesystem::path removePath = std::filesystem::u8path(updatePath + "/updateConfig.json");
+        std::filesystem::remove(removePath, ec);
         if (ec) {
+            Warning() << "删除配置文件失败 " << removePath.u8string() << " 原因 " << ec.message();
             show_message("删除配置文件失败");
             return -1;
         }
@@ -373,6 +399,7 @@ int main(int argc, char* argv[]) {
             MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
             (LPSTR)&msgBuf, 0, nullptr
         );
+        Error() << "启动程序失败" << local_to_utf8(std::string((char*)msgBuf));
         show_message("启动程序失败");
         LocalFree(msgBuf);
         return -1;
