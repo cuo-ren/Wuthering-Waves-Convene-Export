@@ -1,7 +1,7 @@
 {
   "url": "https://github.com/cuo-ren/Wuthering-Waves-Convene-Export/releases/download/v1.1.2/Wuthering.Waves.Convene.Export.zip",
   "foldername": "Wuthering Waves Convene Export",
-  "hash": "b4a08af8c694e1420e229c4504b0850cc0bb94ef77adc594c8b7676a5c1e0b86",
+  "hash": "a64501b36c6c301f887d45bca1d438559f5860b73b76833e31dc9571ecb9f70a",
   "path": "./Wuthering Waves Convene Export",
   "updaterMainFile": "updater.exe",
   "mainFile": "Wuthering Waves Convene Export.exe",
@@ -10,7 +10,7 @@
       "type": "file",
       "path": "./updater.exe",
       "version": "v1.1.2",
-      "hash": "863616cd7f1ce6adf80d5bd4686250166443e321bb9dadbc1b106f8841e9c3ac",
+      "hash": "1f0b2300c9bb5ed7ecf8033f3db3b85af62642d8dc126629ced1801e22a807e0",
       "url": ""
     }
   ],
