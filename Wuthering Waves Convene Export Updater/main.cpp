@@ -318,7 +318,7 @@ int main(int argc, char* argv[]) {
         std::cout << "已替换：" << targetPath.string() << std::endl;
     }
     // 构造命令行参数
-    std::string cmdLine = "\".\\" + new_version_config["updaterMainFile"].get<std::string>() + "\"";
+    std::string cmdLine = "\".\\" + new_version_config["mainFile"].get<std::string>() + "\"";
 
     // 启动新进程（非阻塞）
     STARTUPINFOA si = { sizeof(si) };
