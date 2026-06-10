@@ -15,7 +15,7 @@ Global::Global(QObject* parent)
 
     json version = {
         {"name", "Wuthering Waves Convene Export"},
-        {"version", "v1.1.1"}
+        {"version", "v1.1.2"}
     };
     qDebug().noquote() << "程序名称:" << QString::fromStdString(version["name"]) << " " << QString::fromStdString(version["version"]);
     m_version = jsonToVariantMap(version);
